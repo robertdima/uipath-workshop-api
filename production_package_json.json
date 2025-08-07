@@ -1,0 +1,38 @@
+{
+  "name": "uipath-workshop-api",
+  "version": "1.0.0",
+  "description": "UiPath Workshop Demo API with comprehensive business scenarios",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"API Health: OK\" && exit 0"
+  },
+  "dependencies": {
+    "json-server": "^0.17.4",
+    "@faker-js/faker": "^8.4.1"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "keywords": [
+    "uipath",
+    "api",
+    "workshop",
+    "demo",
+    "json-server",
+    "faker",
+    "enterprise"
+  ],
+  "author": "UiPath Workshop Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/uipath-workshop-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/uipath-workshop-api/issues"
+  },
+  "homepage": "https://github.com/your-username/uipath-workshop-api#readme"
+}

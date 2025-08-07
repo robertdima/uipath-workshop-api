@@ -14,7 +14,7 @@ console.log(`🚀 Port: ${PORT}`);
 // Import data generator
 let generateDb;
 try {
-  generateDb = require('./db.js');
+  generateDb = require('./enhanced_db_generator.js');
   console.log('✅ Database generator loaded');
 } catch (error) {
   console.error('❌ Failed to load database generator:', error.message);
@@ -34,7 +34,7 @@ Object.keys(db).forEach(key => {
 /* ---------- Load Routes ---------- */
 let rewrites = {};
 try {
-  const routesPath = path.join(__dirname, 'routes.json');
+  const routesPath = path.join(__dirname, 'enhanced_routes_complete.json');
   rewrites = JSON.parse(fs.readFileSync(routesPath, 'utf-8'));
   console.log(`✅ Routes loaded: ${Object.keys(rewrites).length} endpoints`);
 } catch (error) {

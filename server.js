@@ -363,7 +363,7 @@ Object.keys(db).forEach(key => {
 /* ---------- Load Routes ---------- */
 let rewrites = {};
 try {
-  const routesPath = path.join(__dirname, 'routes.json');
+  const routesPath = path.join(__dirname, 'enhanced_routes_complete.json');
   rewrites = JSON.parse(fs.readFileSync(routesPath, 'utf-8'));
   console.log(`✅ Routes loaded: ${Object.keys(rewrites).length} endpoints`);
 } catch (error) {

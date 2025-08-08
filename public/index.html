@@ -733,12 +733,14 @@
           const methodClass = `method-${endpoint.method.toLowerCase()}`;
           const hasBody = endpoint.body;
           const needsParam = endpoint.needsId;
+          const isFiltered = endpoint.description.includes('filtered in UiPath');
 
           return `
             <div class="endpoint-card">
               <div class="endpoint-header">
                 <span class="method-badge ${methodClass}">${endpoint.method}</span>
                 <span class="endpoint-path">${endpoint.path}</span>
+                ${isFiltered ? '<span style="background: #fdcb6e; color: black; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 0.5rem;">UiPath Filter</span>' : ''}
               </div>
               <div class="endpoint-description">${endpoint.description}</div>
               
@@ -757,7 +759,7 @@
               ` : ''}
               
               <button class="test-button" id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${!!needsParam}, ${!!hasBody})">
-                Test Endpoint 🚀
+                ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Test Endpoint'} 🚀
               </button>
               
               <div class="response-area" id="response-${cardId}">
@@ -873,14 +875,20 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
             opportunity: '/crm/opportunities'
           };
 
+          const endpoint = endpoints[type];
+          if (!endpoint) {
+            console.warn(`No endpoint defined for type: ${type}`);
+            return null;
+          }
+
           try {
-            const response = await axios.get(`${API_BASE}${endpoints[type]}`);
+            const response = await axios.get(`${API_BASE}${endpoint}`);
             if (response.data && response.data.length > 0) {
               sampleIds[type] = response.data[0].id;
               return sampleIds[type];
             }
           } catch (error) {
-            console.warn(`Could not fetch ${type} ID:`, error);
+            console.warn(`Could not fetch ${type} ID from ${API_BASE}${endpoint}:`, error);
           }
           return null;
         }

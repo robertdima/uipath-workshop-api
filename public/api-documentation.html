@@ -425,7 +425,7 @@
             <div class="api-info">
                 <div class="info-card">
                     <div class="info-label">Base URL</div>
-                    <div class="info-value">https://your-railway-url.railway.app/api</div>
+                    <div class="info-value" id="api-base-url">Loading.../api</div>
                 </div>
                 <div class="info-card">
                     <div class="info-label">Total Endpoints</div>
@@ -1257,4 +1257,22 @@
 
     <a href="#navigation" class="back-to-top" title="Back to Top">↑</a>
 </body>
+<script>
+    // Set dynamic API URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const apiBaseElement = document.getElementById('api-base-url');
+        const apiBase = window.location.origin + '/api';
+        
+        if (apiBaseElement) {
+            apiBaseElement.textContent = apiBase;
+            apiBaseElement.style.fontFamily = 'monospace';
+            apiBaseElement.style.fontSize = '0.95rem';
+        }
+        
+        // Also update any placeholder URLs in the documentation
+        document.querySelectorAll('.endpoint-description, .detail-section, .business-context').forEach(element => {
+            element.innerHTML = element.innerHTML.replace(/https:\/\/your-railway-url\.railway\.app/g, window.location.origin);
+        });
+    });
+</script>
 </html>

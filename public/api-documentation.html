@@ -4,509 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UiPath Workshop API Documentation</title>
-    <style>
-        :root {
-            --primary: #ff6900;
-            --secondary: #6c5ce7;
-            --success: #00b894;
-            --info: #74b9ff;
-            --warning: #fdcb6e;
-            --danger: #e17055;
-            --dark: #2d3436;
-            --light: #f8f9fa;
-            --glass: rgba(255, 255, 255, 0.95);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .documentation-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 3rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        h1 {
-            color: var(--primary);
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-
-        .api-info {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .info-card {
-            background: rgba(255,255,255,0.1);
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .info-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.3rem;
-        }
-
-        .info-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .navigation {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            position: relative;
-            top: 1rem;
-            z-index: 100;
-        }
-
-        .nav-title {
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .nav-section {
-            background: rgba(255,255,255,0.5);
-            padding: 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            background: rgba(255,255,255,0.8);
-        }
-
-        .nav-section h3 {
-            color: var(--secondary);
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-links {
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: block;
-            padding: 0.3rem 0;
-            transition: color 0.2s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-            padding-left: 0.5rem;
-        }
-
-        .module-section {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 3rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .module-header {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .module-icon {
-            font-size: 3rem;
-        }
-
-        .module-title {
-            flex: 1;
-        }
-
-        .module-title h2 {
-            color: var(--secondary);
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .module-description {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .business-context {
-            background: #f0f3ff;
-            border-left: 4px solid var(--info);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border-radius: 8px;
-        }
-
-        .business-context h3 {
-            color: var(--info);
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-
-        .endpoint {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .endpoint:hover {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .endpoint-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .method-badge {
-            padding: 0.4rem 1rem;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: white;
-        }
-
-        .method-get { background: var(--success); }
-        .method-post { background: var(--info); }
-        .method-patch { background: var(--warning); }
-        .method-put { background: var(--secondary); }
-        .method-delete { background: var(--danger); }
-
-        .endpoint-path {
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
-            background: #f8f9fa;
-            padding: 0.3rem 0.8rem;
-            border-radius: 6px;
-        }
-
-        .endpoint-description {
-            color: #666;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-        }
-
-        .endpoint-details {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .detail-section {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-        }
-
-        .detail-title {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.8rem;
-            font-size: 1rem;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-        }
-
-        .parameters-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .parameters-table th,
-        .parameters-table td {
-            padding: 0.8rem;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .parameters-table th {
-            background: var(--light);
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .param-name {
-            font-family: 'Courier New', monospace;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .param-type {
-            background: #e9ecef;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .response-example {
-            background: #2d3436;
-            color: #dfe6e9;
-            padding: 1.5rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .response-example pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .use-case {
-            background: #fff3cd;
-            border-left: 4px solid var(--warning);
-            padding: 1rem 1.5rem;
-            margin-top: 1rem;
-            border-radius: 8px;
-        }
-
-        .use-case strong {
-            color: var(--warning);
-        }
-
-        .tag {
-            display: inline-block;
-            background: var(--light);
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            border: 1px solid #dee2e6;
-        }
-
-        .tag.filter {
-            background: #fff3cd;
-            border-color: var(--warning);
-            color: #856404;
-        }
-
-        .workshop-tip {
-            background: #d4edda;
-            border-left: 4px solid var(--success);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            border-radius: 8px;
-        }
-
-        .workshop-tip h4 {
-            color: var(--success);
-            margin-bottom: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .documentation-container {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .nav-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .endpoint-path {
-                font-size: 0.9rem;
-                word-break: break-all;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        orange: '#FA4616',
+                        teal: '#0ba2b3',
+                        deepblue: '#172125',
+                        lightblue: '#f0f9fc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
             }
         }
-
-        .back-to-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--primary);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            font-size: 1.5rem;
-        }
-
-        .back-to-top:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-    </style>
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div class="documentation-container">
-        <header>
-            <h1>🚀 UiPath Workshop API Documentation</h1>
-            <p class="subtitle">Enterprise Integration Platform for Business Process Automation</p>
-            
-            <div class="api-info">
-                <div class="info-card">
-                    <div class="info-label">Base URL</div>
-                    <div class="info-value" id="api-base-url">Loading.../api</div>
+<body class="bg-zinc-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <header class="bg-white rounded-xl border border-zinc-200 p-8 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-4xl font-bold text-deepblue">UiPath Workshop API Documentation</h1>
+                <a href="/index.html" class="inline-flex items-center gap-2 bg-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors font-semibold">
+                    <span>←</span> Back to Main
+                </a>
+            </div>
+            <p class="text-lg text-zinc-600 mb-6">Enterprise Integration Platform for Business Process Automation</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
+                    <div class="text-sm text-zinc-500 mb-1">Base URL</div>
+                    <div class="text-base font-semibold text-deepblue font-mono text-sm" id="api-base-url">Loading.../api</div>
                 </div>
-                <div class="info-card">
-                    <div class="info-label">Total Endpoints</div>
-                    <div class="info-value">87</div>
+                <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
+                    <div class="text-sm text-zinc-500 mb-1">Total Endpoints</div>
+                    <div class="text-base font-semibold text-deepblue">87</div>
                 </div>
-                <div class="info-card">
-                    <div class="info-label">Collections</div>
-                    <div class="info-value">26</div>
+                <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
+                    <div class="text-sm text-zinc-500 mb-1">Collections</div>
+                    <div class="text-base font-semibold text-deepblue">26</div>
                 </div>
-                <div class="info-card">
-                    <div class="info-label">Authentication</div>
-                    <div class="info-value">None (Demo)</div>
+                <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
+                    <div class="text-sm text-zinc-500 mb-1">Authentication</div>
+                    <div class="text-base font-semibold text-deepblue">None (Demo)</div>
                 </div>
             </div>
         </header>
 
-        <nav class="navigation" id="navigation">
-            <div class="nav-title">📚 Quick Navigation</div>
-            <div class="nav-grid">
-                <div class="nav-section">
-                    <h3>👥 HR Management</h3>
-                    <ul class="nav-links">
-                        <li><a href="#hr-workers">Workers</a></li>
-                        <li><a href="#hr-performance">Performance</a></li>
-                        <li><a href="#hr-onboarding">Onboarding</a></li>
-                        <li><a href="#hr-organizations">Organizations</a></li>
+        <!-- Navigation -->
+        <nav class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="navigation">
+            <h2 class="text-xl font-semibold text-deepblue mb-4">Quick Navigation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">👥 HR Management</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#hr-workers" class="text-sm text-zinc-600 hover:text-orange transition-colors">Workers</a></li>
+                        <li><a href="#hr-performance" class="text-sm text-zinc-600 hover:text-orange transition-colors">Performance</a></li>
+                        <li><a href="#hr-onboarding" class="text-sm text-zinc-600 hover:text-orange transition-colors">Onboarding</a></li>
+                        <li><a href="#hr-organizations" class="text-sm text-zinc-600 hover:text-orange transition-colors">Organizations</a></li>
                     </ul>
                 </div>
-                <div class="nav-section">
-                    <h3>💰 Finance</h3>
-                    <ul class="nav-links">
-                        <li><a href="#finance-invoices">Invoices</a></li>
-                        <li><a href="#finance-expenses">Expenses</a></li>
-                        <li><a href="#finance-budget">Budget</a></li>
-                        <li><a href="#finance-vendors">Vendors</a></li>
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">💰 Finance</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#finance-invoices" class="text-sm text-zinc-600 hover:text-orange transition-colors">Invoices</a></li>
+                        <li><a href="#finance-expenses" class="text-sm text-zinc-600 hover:text-orange transition-colors">Expenses</a></li>
+                        <li><a href="#finance-budget" class="text-sm text-zinc-600 hover:text-orange transition-colors">Budget</a></li>
+                        <li><a href="#finance-vendors" class="text-sm text-zinc-600 hover:text-orange transition-colors">Vendors</a></li>
                     </ul>
                 </div>
-                <div class="nav-section">
-                    <h3>🤝 CRM</h3>
-                    <ul class="nav-links">
-                        <li><a href="#crm-customers">Customers</a></li>
-                        <li><a href="#crm-opportunities">Opportunities</a></li>
-                        <li><a href="#crm-renewals">Renewals</a></li>
-                        <li><a href="#crm-support">Support</a></li>
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">🤝 CRM</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#crm-customers" class="text-sm text-zinc-600 hover:text-orange transition-colors">Customers</a></li>
+                        <li><a href="#crm-opportunities" class="text-sm text-zinc-600 hover:text-orange transition-colors">Opportunities</a></li>
+                        <li><a href="#crm-renewals" class="text-sm text-zinc-600 hover:text-orange transition-colors">Renewals</a></li>
+                        <li><a href="#crm-support" class="text-sm text-zinc-600 hover:text-orange transition-colors">Support</a></li>
                     </ul>
                 </div>
-                <div class="nav-section">
-                    <h3>🔌 IoT</h3>
-                    <ul class="nav-links">
-                        <li><a href="#iot-devices">Devices</a></li>
-                        <li><a href="#iot-telemetry">Telemetry</a></li>
-                        <li><a href="#iot-alerts">Alerts</a></li>
-                        <li><a href="#iot-maintenance">Maintenance</a></li>
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">🔌 IoT</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#iot-devices" class="text-sm text-zinc-600 hover:text-orange transition-colors">Devices</a></li>
+                        <li><a href="#iot-telemetry" class="text-sm text-zinc-600 hover:text-orange transition-colors">Telemetry</a></li>
+                        <li><a href="#iot-alerts" class="text-sm text-zinc-600 hover:text-orange transition-colors">Alerts</a></li>
+                        <li><a href="#iot-maintenance" class="text-sm text-zinc-600 hover:text-orange transition-colors">Maintenance</a></li>
                     </ul>
                 </div>
-                <div class="nav-section">
-                    <h3>📊 Analytics</h3>
-                    <ul class="nav-links">
-                        <li><a href="#reports">Reports</a></li>
-                        <li><a href="#projects">Projects</a></li>
-                        <li><a href="#workflows">Workflows</a></li>
-                        <li><a href="#notifications">Notifications</a></li>
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">📊 Analytics</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#reports" class="text-sm text-zinc-600 hover:text-orange transition-colors">Reports</a></li>
+                        <li><a href="#projects" class="text-sm text-zinc-600 hover:text-orange transition-colors">Projects</a></li>
+                        <li><a href="#workflows" class="text-sm text-zinc-600 hover:text-orange transition-colors">Workflows</a></li>
+                        <li><a href="#notifications" class="text-sm text-zinc-600 hover:text-orange transition-colors">Notifications</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
 
         <!-- HR Workers Module -->
-        <section class="module-section" id="hr-workers">
-            <div class="module-header">
-                <div class="module-icon">👥</div>
-                <div class="module-title">
-                    <h2>HR Workers Management</h2>
-                    <p class="module-description">Employee records, organizational hierarchy, and workforce analytics</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="hr-workers">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">👥</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">HR Workers Management</h2>
+                    <p class="text-zinc-600">Employee records, organizational hierarchy, and workforce analytics</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>The HR Workers endpoints enable automation of employee data management, supporting use cases like:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">The HR Workers endpoints enable automation of employee data management, supporting use cases like:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Automated employee onboarding workflows</li>
                     <li>Organizational chart generation and reporting</li>
                     <li>Manager-direct report relationship tracking</li>
@@ -514,69 +129,76 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/workers</span>
+            <!-- Endpoint: GET /hr/workers -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/workers</span>
                 </div>
-                <p class="endpoint-description">Retrieve all employee records in the system with complete profile information</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">id</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>Unique identifier for the employee</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">descriptor</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Employee's full name</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">primaryWorkEmail</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Corporate email address</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">isActive</span></td>
-                                <td><span class="param-type">Boolean</span></td>
-                                <td>Employment status (active/inactive)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">department</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Department name (R&D, Sales, Marketing, etc.)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">primaryJob</span></td>
-                                <td><span class="param-type">Object</span></td>
-                                <td>Job details including title, level, and salary</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">managerId</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>Direct manager's employee ID</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">location</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Office location or remote status</td>
-                            </tr>
-                        </table>
+                <p class="text-zinc-700 mb-4">Retrieve all employee records in the system with complete profile information</p>
+
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-zinc-100 border-b border-zinc-200">
+                                    <tr>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200">
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">id</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Unique identifier for the employee</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">descriptor</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Employee's full name</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">primaryWorkEmail</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Corporate email address</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">isActive</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Boolean</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Employment status (active/inactive)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">department</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Department name (R&D, Sales, Marketing, etc.)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">primaryJob</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Object</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Job details including title, level, and salary</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">managerId</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Direct manager's employee ID</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">location</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Office location or remote status</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <div class="detail-section">
-                        <div class="detail-title">Example Response</div>
-                        <div class="response-example">
-                            <pre>[
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Response</h4>
+                        <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                            <pre class="text-sm font-mono">[
   {
     "id": "b5f3d421-8c9a-4e2b-a1d3-7f8e9c4b2a6d",
     "descriptor": "Sarah Johnson",
@@ -598,76 +220,83 @@
                         </div>
                     </div>
 
-                    <div class="use-case">
-                        <strong>Workshop Use Case:</strong> Build an employee directory bot that retrieves specific employee information based on natural language queries like "Find all senior engineers in R&D" or "Show me employees who report to John Smith"
+                    <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                        <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build an employee directory bot that retrieves specific employee information based on natural language queries like "Find all senior engineers in R&D" or "Show me employees who report to John Smith"</p>
                     </div>
                 </div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/workers/active</span>
-                    <span class="tag filter">Requires UiPath Filtering</span>
+            <!-- Endpoint: GET /hr/workers/active -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/workers/active</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Requires UiPath Filtering</span>
                 </div>
-                <p class="endpoint-description">Get only active employees (returns all workers - filter by isActive=true in UiPath)</p>
-                
-                <div class="workshop-tip">
-                    <h4>💡 Workshop Tip</h4>
-                    <p>This endpoint demonstrates client-side filtering. In your UiPath workflow, use a Filter Data Table activity or LINQ expression to filter where isActive = true. This simulates real-world scenarios where API endpoints return more data than needed.</p>
+                <p class="text-zinc-700 mb-4">Get only active employees (returns all workers - filter by isActive=true in UiPath)</p>
+
+                <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                    <h4 class="font-semibold text-green-700 mb-2 flex items-center gap-2">💡 Workshop Tip</h4>
+                    <p class="text-sm text-zinc-700">This endpoint demonstrates client-side filtering. In your UiPath workflow, use a Filter Data Table activity or LINQ expression to filter where isActive = true. This simulates real-world scenarios where API endpoints return more data than needed.</p>
                 </div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/workers/:id</span>
+            <!-- Endpoint: GET /hr/workers/:id -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/workers/:id</span>
                 </div>
-                <p class="endpoint-description">Retrieve detailed information for a specific employee by their ID</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Path Parameters</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">id</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>Employee's unique identifier</td>
-                            </tr>
+                <p class="text-zinc-700 mb-4">Retrieve detailed information for a specific employee by their ID</p>
+
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Path Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-100 border-b border-zinc-200">
+                                <tr>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Parameter</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">id</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Employee's unique identifier</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/workers/:id/directReports</span>
-                    <span class="tag filter">Requires UiPath Filtering</span>
+            <!-- Endpoint: GET /hr/workers/:id/directReports -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/workers/:id/directReports</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Requires UiPath Filtering</span>
                 </div>
-                <p class="endpoint-description">Get all direct reports for a manager (returns all workers - filter by managerId in UiPath)</p>
+                <p class="text-zinc-700">Get all direct reports for a manager (returns all workers - filter by managerId in UiPath)</p>
             </div>
         </section>
 
         <!-- HR Performance Module -->
-        <section class="module-section" id="hr-performance">
-            <div class="module-header">
-                <div class="module-icon">📈</div>
-                <div class="module-title">
-                    <h2>HR Performance Management</h2>
-                    <p class="module-description">Performance reviews, ratings, goals tracking, and employee development</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="hr-performance">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📈</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">HR Performance Management</h2>
+                    <p class="text-zinc-600">Performance reviews, ratings, goals tracking, and employee development</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Performance management endpoints support:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Performance management endpoints support:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Automated performance review reminders and scheduling</li>
                     <li>Identification of high performers and those needing support</li>
                     <li>Goal completion tracking and progress monitoring</li>
@@ -675,52 +304,57 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/performance</span>
+            <!-- Endpoint: GET /hr/performance -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/performance</span>
                 </div>
-                <p class="endpoint-description">Retrieve all performance review records for the current period</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">workerId</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>Employee being reviewed</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">period</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Review period (e.g., "2025-Q2")</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">rating</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Performance rating (Outstanding/Exceeds/Meets/Below)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">score</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Numerical score (2.5-5.0)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">goalsCompleted</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Number of completed goals</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">nextReviewDate</span></td>
-                                <td><span class="param-type">Date</span></td>
-                                <td>Next scheduled review date</td>
-                            </tr>
+                <p class="text-zinc-700 mb-4">Retrieve all performance review records for the current period</p>
+
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-100 border-b border-zinc-200">
+                                <tr>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-200">
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">workerId</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Employee being reviewed</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">period</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Review period (e.g., "2025-Q2")</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">rating</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Performance rating (Outstanding/Exceeds/Meets/Below)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">score</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Numerical score (2.5-5.0)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">goalsCompleted</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Number of completed goals</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">nextReviewDate</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Date</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Next scheduled review date</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -728,19 +362,19 @@
         </section>
 
         <!-- HR Onboarding Module -->
-        <section class="module-section" id="hr-onboarding">
-            <div class="module-header">
-                <div class="module-icon">🎯</div>
-                <div class="module-title">
-                    <h2>HR Onboarding Management</h2>
-                    <p class="module-description">New employee onboarding tracking, equipment assignment, and progress monitoring</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="hr-onboarding">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🎯</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">HR Onboarding Management</h2>
+                    <p class="text-zinc-600">New employee onboarding tracking, equipment assignment, and progress monitoring</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Onboarding endpoints enable:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Onboarding endpoints enable:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Automated onboarding task tracking and completion</li>
                     <li>Equipment and access provisioning workflows</li>
                     <li>Buddy assignment and mentorship coordination</li>
@@ -748,82 +382,89 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/hr/onboarding</span>
+            <!-- Endpoint: GET /hr/onboarding -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/hr/onboarding</span>
                 </div>
-                <p class="endpoint-description">Retrieve all employee onboarding records with progress tracking</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">workerId</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>New employee's ID</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">status</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Onboarding status (pending/in_progress/completed)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">completedTasks</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Number of completed onboarding tasks</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">totalTasks</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Total number of onboarding tasks</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">equipmentAssigned</span></td>
-                                <td><span class="param-type">Boolean</span></td>
-                                <td>Whether equipment has been assigned</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">accessGranted</span></td>
-                                <td><span class="param-type">Boolean</span></td>
-                                <td>System access provisioning status</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">assignedBuddy</span></td>
-                                <td><span class="param-type">UUID</span></td>
-                                <td>Assigned buddy/mentor employee ID</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+                <p class="text-zinc-700 mb-4">Retrieve all employee onboarding records with progress tracking</p>
 
-                <div class="workshop-tip">
-                    <h4>💡 Workshop Tip</h4>
-                    <p>Combine this with the /hr/workers endpoint to create a comprehensive onboarding dashboard that shows employee names, departments, and progress percentages. Calculate risk scores based on days in onboarding and completion rates.</p>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-zinc-100 border-b border-zinc-200">
+                                    <tr>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200">
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">workerId</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">New employee's ID</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">status</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Onboarding status (pending/in_progress/completed)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">completedTasks</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Number of completed onboarding tasks</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">totalTasks</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Total number of onboarding tasks</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">equipmentAssigned</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Boolean</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Whether equipment has been assigned</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">accessGranted</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Boolean</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">System access provisioning status</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">assignedBuddy</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">UUID</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Assigned buddy/mentor employee ID</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-700 mb-2 flex items-center gap-2">💡 Workshop Tip</h4>
+                        <p class="text-sm text-zinc-700">Combine this with the /hr/workers endpoint to create a comprehensive onboarding dashboard that shows employee names, departments, and progress percentages. Calculate risk scores based on days in onboarding and completion rates.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Finance Invoices Module -->
-        <section class="module-section" id="finance-invoices">
-            <div class="module-header">
-                <div class="module-icon">📄</div>
-                <div class="module-title">
-                    <h2>Finance Invoice Management</h2>
-                    <p class="module-description">Invoice processing, approval workflows, vendor payments, and financial controls</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="finance-invoices">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📄</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">Finance Invoice Management</h2>
+                    <p class="text-zinc-600">Invoice processing, approval workflows, vendor payments, and financial controls</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Invoice management endpoints support:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Invoice management endpoints support:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Three-way matching automation (PO, receipt, invoice)</li>
                     <li>Approval routing based on amount thresholds</li>
                     <li>Vendor payment optimization and cash flow management</li>
@@ -831,97 +472,103 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/finance/invoices</span>
+            <!-- Endpoint: GET /finance/invoices -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/finance/invoices</span>
                 </div>
-                <p class="endpoint-description">Retrieve all invoices with vendor, amount, and approval status information</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">id</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Invoice number (INV-XXXXX format)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">vendorName</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Vendor/supplier name</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">amount</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Invoice amount</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">status</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Status (pending/approved/paid/rejected/overdue)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">dueDate</span></td>
-                                <td><span class="param-type">Date</span></td>
-                                <td>Payment due date</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">category</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Expense category</td>
-                            </tr>
+                <p class="text-zinc-700 mb-4">Retrieve all invoices with vendor, amount, and approval status information</p>
+
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-100 border-b border-zinc-200">
+                                <tr>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-200">
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">id</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Invoice number (INV-XXXXX format)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">vendorName</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Vendor/supplier name</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">amount</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Invoice amount</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">status</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Status (pending/approved/paid/rejected/overdue)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">dueDate</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Date</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Payment due date</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">category</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Expense category</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-patch">PATCH</span>
-                    <span class="endpoint-path">/finance/invoices/:id/approve</span>
+            <!-- Endpoint: PATCH /finance/invoices/:id/approve -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/finance/invoices/:id/approve</span>
                 </div>
-                <p class="endpoint-description">Approve an invoice for payment processing</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Request Body</div>
-                        <div class="response-example">
-                            <pre>{
+                <p class="text-zinc-700 mb-4">Approve an invoice for payment processing</p>
+
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Request Body</h4>
+                        <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                            <pre class="text-sm font-mono">{
   "status": "approved",
   "approvedBy": "manager-id",
   "approvalNotes": "Verified against PO-12345"
 }</pre>
                         </div>
                     </div>
-                </div>
 
-                <div class="use-case">
-                    <strong>Workshop Use Case:</strong> Create an intelligent invoice approval bot that routes invoices based on amount thresholds: Under $5,000 (auto-approve), $5,000-$25,000 (manager approval), Over $25,000 (C-level approval)
+                    <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                        <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Create an intelligent invoice approval bot that routes invoices based on amount thresholds: Under $5,000 (auto-approve), $5,000-$25,000 (manager approval), Over $25,000 (C-level approval)</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- CRM Customers Module -->
-        <section class="module-section" id="crm-customers">
-            <div class="module-header">
-                <div class="module-icon">🏢</div>
-                <div class="module-title">
-                    <h2>CRM Customer Management</h2>
-                    <p class="module-description">Customer accounts, health scores, relationship tracking, and churn prevention</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="crm-customers">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🏢</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">CRM Customer Management</h2>
+                    <p class="text-zinc-600">Customer accounts, health scores, relationship tracking, and churn prevention</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Customer management endpoints enable:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Customer management endpoints enable:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Customer health score monitoring and alerts</li>
                     <li>Churn prediction and prevention workflows</li>
                     <li>Account segmentation for targeted campaigns</li>
@@ -929,82 +576,89 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/crm/customers</span>
+            <!-- Endpoint: GET /crm/customers -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/crm/customers</span>
                 </div>
-                <p class="endpoint-description">Retrieve all customer accounts with health scores and contract information</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">id</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Customer ID (CUST-XXXXX format)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">companyName</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Customer company name</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">status</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Status (active/prospect/churned/at_risk)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">tier</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Customer tier (Enterprise/Mid-Market/SMB)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">healthScore</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Customer health score (1-100)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">contractValue</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Annual contract value</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">renewalDate</span></td>
-                                <td><span class="param-type">Date</span></td>
-                                <td>Contract renewal date</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+                <p class="text-zinc-700 mb-4">Retrieve all customer accounts with health scores and contract information</p>
 
-                <div class="workshop-tip">
-                    <h4>💡 Workshop Tip</h4>
-                    <p>Combine customer data with support tickets (/crm/support/tickets) and relationship metrics (/analytics/customer/relationships) to calculate a comprehensive customer health score that predicts churn risk.</p>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-zinc-100 border-b border-zinc-200">
+                                    <tr>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200">
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">id</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Customer ID (CUST-XXXXX format)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">companyName</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Customer company name</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">status</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Status (active/prospect/churned/at_risk)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">tier</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Customer tier (Enterprise/Mid-Market/SMB)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">healthScore</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Customer health score (1-100)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">contractValue</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Annual contract value</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">renewalDate</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Date</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Contract renewal date</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-700 mb-2 flex items-center gap-2">💡 Workshop Tip</h4>
+                        <p class="text-sm text-zinc-700">Combine customer data with support tickets (/crm/support/tickets) and relationship metrics (/analytics/customer/relationships) to calculate a comprehensive customer health score that predicts churn risk.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- IoT Devices Module -->
-        <section class="module-section" id="iot-devices">
-            <div class="module-header">
-                <div class="module-icon">📱</div>
-                <div class="module-title">
-                    <h2>IoT Device Management</h2>
-                    <p class="module-description">Device inventory, status monitoring, assignments, and remote management</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="iot-devices">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📱</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">IoT Device Management</h2>
+                    <p class="text-zinc-600">Device inventory, status monitoring, assignments, and remote management</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>IoT device endpoints support:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">IoT device endpoints support:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Real-time device health monitoring and alerts</li>
                     <li>Predictive maintenance scheduling</li>
                     <li>Battery optimization and replacement planning</li>
@@ -1012,84 +666,90 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/iot/devices</span>
+            <!-- Endpoint: GET /iot/devices -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/iot/devices</span>
                 </div>
-                <p class="endpoint-description">Retrieve all IoT devices with status, location, and maintenance information</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">id</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Device ID (DEV-XXXXXX format)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">type</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Device type (sensor/camera/detector)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">status</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Status (online/offline/maintenance)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">battery</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Battery level percentage</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">location</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Physical location</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">nextMaintenance</span></td>
-                                <td><span class="param-type">Date</span></td>
-                                <td>Next scheduled maintenance</td>
-                            </tr>
+                <p class="text-zinc-700 mb-4">Retrieve all IoT devices with status, location, and maintenance information</p>
+
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-100 border-b border-zinc-200">
+                                <tr>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-200">
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">id</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Device ID (DEV-XXXXXX format)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">type</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Device type (sensor/camera/detector)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">status</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Status (online/offline/maintenance)</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">battery</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Battery level percentage</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">location</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Physical location</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">nextMaintenance</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Date</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Next scheduled maintenance</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/iot/devices/:id/telemetry</span>
+            <!-- Endpoint: GET /iot/devices/:id/telemetry -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/iot/devices/:id/telemetry</span>
                 </div>
-                <p class="endpoint-description">Get real-time telemetry data from a specific device (dynamically generated)</p>
-                
-                <div class="use-case">
-                    <strong>Workshop Use Case:</strong> Build a predictive maintenance workflow that monitors device battery levels and telemetry data, automatically creating maintenance tickets when batteries drop below 20% or anomalies are detected
+                <p class="text-zinc-700 mb-4">Get real-time telemetry data from a specific device (dynamically generated)</p>
+
+                <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                    <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build a predictive maintenance workflow that monitors device battery levels and telemetry data, automatically creating maintenance tickets when batteries drop below 20% or anomalies are detected</p>
                 </div>
             </div>
         </section>
 
         <!-- Reports Module -->
-        <section class="module-section" id="reports">
-            <div class="module-header">
-                <div class="module-icon">📈</div>
-                <div class="module-title">
-                    <h2>Reports & Analytics</h2>
-                    <p class="module-description">Business intelligence, KPI dashboards, and executive reporting</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="reports">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📈</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">Reports & Analytics</h2>
+                    <p class="text-zinc-600">Business intelligence, KPI dashboards, and executive reporting</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Reporting endpoints provide:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Reporting endpoints provide:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Executive dashboards with cross-functional KPIs</li>
                     <li>Department-level performance analytics</li>
                     <li>Financial summaries and trend analysis</li>
@@ -1097,52 +757,57 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/reports/employee/summary</span>
+            <!-- Endpoint: GET /reports/employee/summary -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/reports/employee/summary</span>
                 </div>
-                <p class="endpoint-description">Get comprehensive employee analytics by department including headcount, tenure, and turnover</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">department</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Department name</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">headcount</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Total employees in department</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">activeEmployees</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Active employee count</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">avgTenure</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Average employee tenure in years</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">avgSalary</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Average department salary</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">turnoverRate</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Annual turnover percentage</td>
-                            </tr>
+                <p class="text-zinc-700 mb-4">Get comprehensive employee analytics by department including headcount, tenure, and turnover</p>
+
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-100 border-b border-zinc-200">
+                                <tr>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                    <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-200">
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">department</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Department name</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">headcount</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Total employees in department</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">activeEmployees</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Active employee count</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">avgTenure</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Average employee tenure in years</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">avgSalary</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Average department salary</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-3 font-mono text-orange font-semibold">turnoverRate</td>
+                                    <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                    <td class="py-2 px-3 text-zinc-700">Annual turnover percentage</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -1150,19 +815,19 @@
         </section>
 
         <!-- Workflows Module -->
-        <section class="module-section" id="workflows">
-            <div class="module-header">
-                <div class="module-icon">⚙️</div>
-                <div class="module-title">
-                    <h2>Workflow Automation</h2>
-                    <p class="module-description">Process automation triggers, workflow monitoring, and orchestration</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="workflows">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">⚙️</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">Workflow Automation</h2>
+                    <p class="text-zinc-600">Process automation triggers, workflow monitoring, and orchestration</p>
                 </div>
             </div>
 
-            <div class="business-context">
-                <h3>💼 Business Context</h3>
-                <p>Workflow endpoints enable:</p>
-                <ul>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">Workflow endpoints enable:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
                     <li>Process automation monitoring and health checks</li>
                     <li>Workflow performance optimization</li>
                     <li>Error handling and retry management</li>
@@ -1170,71 +835,78 @@
                 </ul>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method-badge method-get">GET</span>
-                    <span class="endpoint-path">/workflows/triggers</span>
+            <!-- Endpoint: GET /workflows/triggers -->
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/workflows/triggers</span>
                 </div>
-                <p class="endpoint-description">Get all workflow automation triggers with execution metrics</p>
-                
-                <div class="endpoint-details">
-                    <div class="detail-section">
-                        <div class="detail-title">Response Fields</div>
-                        <table class="parameters-table">
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">workflowName</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Workflow process name</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">triggerType</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Type (manual/scheduled/event-driven)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">status</span></td>
-                                <td><span class="param-type">String</span></td>
-                                <td>Status (active/paused/error)</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">successRate</span></td>
-                                <td><span class="param-type">Float</span></td>
-                                <td>Success percentage</td>
-                            </tr>
-                            <tr>
-                                <td><span class="param-name">avgExecutionTime</span></td>
-                                <td><span class="param-type">Integer</span></td>
-                                <td>Average runtime in seconds</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+                <p class="text-zinc-700 mb-4">Get all workflow automation triggers with execution metrics</p>
 
-                <div class="workshop-tip">
-                    <h4>💡 Workshop Tip</h4>
-                    <p>Use this endpoint to create a workflow health monitoring dashboard that alerts when success rates drop below 90% or execution times exceed thresholds, enabling proactive automation maintenance.</p>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                        <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Response Fields</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-zinc-100 border-b border-zinc-200">
+                                    <tr>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Field</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Type</th>
+                                        <th class="text-left py-2 px-3 font-semibold text-deepblue">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200">
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">workflowName</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Workflow process name</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">triggerType</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Type (manual/scheduled/event-driven)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">status</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">String</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Status (active/paused/error)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">successRate</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Float</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Success percentage</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-3 font-mono text-orange font-semibold">avgExecutionTime</td>
+                                        <td class="py-2 px-3"><span class="bg-zinc-200 px-2 py-1 rounded text-xs font-semibold">Integer</span></td>
+                                        <td class="py-2 px-3 text-zinc-700">Average runtime in seconds</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-700 mb-2 flex items-center gap-2">💡 Workshop Tip</h4>
+                        <p class="text-sm text-zinc-700">Use this endpoint to create a workflow health monitoring dashboard that alerts when success rates drop below 90% or execution times exceed thresholds, enabling proactive automation maintenance.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Quick Reference -->
-        <section class="module-section">
-            <div class="module-header">
-                <div class="module-icon">📌</div>
-                <div class="module-title">
-                    <h2>Quick Reference</h2>
-                    <p class="module-description">Common patterns and integration tips</p>
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📌</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">Quick Reference</h2>
+                    <p class="text-zinc-600">Common patterns and integration tips</p>
                 </div>
             </div>
 
-            <div class="workshop-tip">
-                <h4>🔄 Common Integration Patterns</h4>
-                <ul>
+            <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6">
+                <h4 class="font-semibold text-green-700 mb-3 flex items-center gap-2">🔄 Common Integration Patterns</h4>
+                <ul class="text-sm text-zinc-700 space-y-2 ml-4 list-disc">
                     <li><strong>Data Enrichment:</strong> Combine multiple endpoints (e.g., workers + performance + onboarding) to create comprehensive views</li>
                     <li><strong>Filtering Pattern:</strong> Endpoints marked with "Requires UiPath Filtering" return all data - use Filter Data Table or LINQ in UiPath</li>
                     <li><strong>Approval Workflows:</strong> Use PATCH endpoints to update statuses after business logic evaluation</li>
@@ -1242,9 +914,9 @@
                 </ul>
             </div>
 
-            <div class="business-context">
-                <h3>🎯 Workshop Scenarios</h3>
-                <ol>
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4">
+                <h3 class="font-semibold text-teal mb-3">🎯 Workshop Scenarios</h3>
+                <ol class="text-sm text-zinc-700 space-y-2 ml-4 list-decimal">
                     <li><strong>Employee Onboarding Dashboard:</strong> Combine HR endpoints to track new employee progress and identify bottlenecks</li>
                     <li><strong>Invoice Approval Automation:</strong> Route invoices based on amounts and vendor risk scores</li>
                     <li><strong>Customer Health Monitoring:</strong> Calculate risk scores using support tickets, engagement metrics, and renewal dates</li>
@@ -1255,24 +927,30 @@
         </section>
     </div>
 
-    <a href="#navigation" class="back-to-top" title="Back to Top">↑</a>
-</body>
-<script>
-    // Set dynamic API URL
-    document.addEventListener('DOMContentLoaded', function() {
-        const apiBaseElement = document.getElementById('api-base-url');
-        const apiBase = window.location.origin + '/api';
-        
-        if (apiBaseElement) {
-            apiBaseElement.textContent = apiBase;
-            apiBaseElement.style.fontFamily = 'monospace';
-            apiBaseElement.style.fontSize = '0.95rem';
-        }
-        
-        // Also update any placeholder URLs in the documentation
-        document.querySelectorAll('.endpoint-description, .detail-section, .business-context').forEach(element => {
-            element.innerHTML = element.innerHTML.replace(/https:\/\/your-railway-url\.railway\.app/g, window.location.origin);
+    <!-- Back to Top Button -->
+    <a href="#navigation" class="fixed bottom-8 right-8 bg-orange text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-orange-600 transition-colors text-2xl">↑</a>
+
+    <script>
+        // Set dynamic API URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiBaseElement = document.getElementById('api-base-url');
+            const apiBase = window.location.origin + '/api';
+
+            if (apiBaseElement) {
+                apiBaseElement.textContent = apiBase;
+            }
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
+</body>
 </html>

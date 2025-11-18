@@ -482,6 +482,7 @@ server.patch('/api/hr/onboarding/:workerId/status', (req, res) => {
   const previousStatus = worker.status;
   worker.status = status || worker.status;
   worker.lastUpdated = new Date().toISOString();
+  worker.updatedBy = updatedBy || 'automation';
 
   res.json({
     success: true,
@@ -491,8 +492,8 @@ server.patch('/api/hr/onboarding/:workerId/status', (req, res) => {
     newStatus: worker.status,
     completedTasks: worker.completedTasks || 10,
     totalTasks: worker.totalTasks || 10,
-    updatedBy: updatedBy || 'automation',
-    updatedAt: new Date().toISOString()
+    updatedBy: worker.updatedBy,
+    updatedAt: worker.lastUpdated
   });
 });
 
@@ -514,14 +515,18 @@ server.post('/api/hr/onboarding/:workerId/equipment', (req, res) => {
   const deliveryDate = new Date();
   deliveryDate.setDate(deliveryDate.getDate() + 3);
 
+  worker.equipmentAssigned = true;
+  worker.lastUpdated = new Date().toISOString();
+  worker.updatedBy = assignedBy || 'automation';
+
   res.json({
     success: true,
     workerId: worker.workerId,
     workerName: worker.workerName,
     equipmentAssigned: true,
     assignedItems: equipmentList,
-    assignedBy: assignedBy || 'automation',
-    assignedAt: new Date().toISOString(),
+    assignedBy: worker.updatedBy,
+    assignedAt: worker.lastUpdated,
     deliveryExpected: deliveryDate.toISOString()
   });
 });
@@ -540,6 +545,10 @@ server.post('/api/hr/onboarding/:workerId/access', (req, res) => {
     });
   }
 
+  worker.accessGranted = true;
+  worker.lastUpdated = new Date().toISOString();
+  worker.updatedBy = grantedBy || 'automation';
+
   res.json({
     success: true,
     workerId: worker.workerId,
@@ -547,9 +556,54 @@ server.post('/api/hr/onboarding/:workerId/access', (req, res) => {
     workerEmail: worker.email,
     accessGranted: true,
     systems: systems || ['email', 'intranet', 'hr_portal'],
-    grantedBy: grantedBy || 'automation',
-    grantedAt: new Date().toISOString(),
-    activationDate: new Date().toISOString()
+    grantedBy: worker.updatedBy,
+    grantedAt: worker.lastUpdated,
+    activationDate: worker.lastUpdated
+  });
+});
+
+// HR Onboarding - Create New Onboarding Record
+server.post('/api/hr/onboarding', (req, res) => {
+  const { workerId, workerName, department, status, createdBy } = req.body;
+
+  if (!workerId || !workerName) {
+    return res.status(400).json({
+      success: false,
+      error: 'workerId and workerName are required'
+    });
+  }
+
+  // Check if worker already has onboarding record
+  const existingWorker = db.hr_onboardings.find(w => w.workerId === workerId);
+  if (existingWorker) {
+    return res.status(409).json({
+      success: false,
+      error: `Worker with ID ${workerId} already has an onboarding record`
+    });
+  }
+
+  const newOnboarding = {
+    id: `onb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    workerId,
+    workerName,
+    department: department || 'Not Assigned',
+    status: status || 'pending',
+    startDate: new Date().toISOString().split('T')[0],
+    expectedCompletionDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    completedTasks: 0,
+    totalTasks: 10,
+    equipmentAssigned: false,
+    accessGranted: false,
+    lastUpdated: new Date().toISOString(),
+    updatedBy: createdBy || 'automation'
+  };
+
+  db.hr_onboardings.push(newOnboarding);
+
+  res.status(201).json({
+    success: true,
+    message: 'Onboarding record created successfully',
+    onboarding: newOnboarding
   });
 });
 

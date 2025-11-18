@@ -602,7 +602,6 @@ MIT License - Feel free to use for workshops, training, and educational purposes
 2. **Open UiPath Studio Web:** https://studio.uipath.com
 3. **Create Your First Workflow:** Start with Scenario 1 (Employee Onboarding)
 4. **Build an Agent:** Add your workflow as a tool
-5. **Share Your Success:** Tag us with #UiPathWorkshop
 
 ### Learning Path
 

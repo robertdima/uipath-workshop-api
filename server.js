@@ -432,7 +432,7 @@ server.use((req, res, next) => {
 });
 
 server.use(middlewares);
-server.use(jsonServer.rewriter(rewrites));
+server.use(jsonServer.bodyParser);
 
 /* ---------- Custom Endpoints ---------- */
 
@@ -446,7 +446,7 @@ server.get('/health', (req, res) => {
     api: {
       endpoints: Object.keys(rewrites).length,
       collections: Object.keys(db).length,
-      totalRecords: Object.values(db).reduce((total, collection) => 
+      totalRecords: Object.values(db).reduce((total, collection) =>
         total + (Array.isArray(collection) ? collection.length : 1), 0)
     }
   });
@@ -462,6 +462,94 @@ server.get('/api/iot/devices/:id/telemetry', (req, res) => {
       temperature: faker.number.float({ min: 15, max: 35, precision: 0.1 }),
       humidity: faker.number.int({ min: 20, max: 80 })
     }
+  });
+});
+
+// HR Onboarding - Update Status
+server.patch('/api/hr/onboarding/:workerId/status', (req, res) => {
+  const { workerId } = req.params;
+  const { status, updatedBy } = req.body;
+
+  const worker = db.hr_onboardings.find(w => w.workerId === workerId);
+
+  if (!worker) {
+    return res.status(404).json({
+      success: false,
+      error: `Worker with ID ${workerId} not found`
+    });
+  }
+
+  const previousStatus = worker.status;
+  worker.status = status || worker.status;
+  worker.lastUpdated = new Date().toISOString();
+
+  res.json({
+    success: true,
+    workerId: worker.workerId,
+    workerName: worker.workerName,
+    previousStatus,
+    newStatus: worker.status,
+    completedTasks: worker.completedTasks || 10,
+    totalTasks: worker.totalTasks || 10,
+    updatedBy: updatedBy || 'automation',
+    updatedAt: new Date().toISOString()
+  });
+});
+
+// HR Onboarding - Assign Equipment
+server.post('/api/hr/onboarding/:workerId/equipment', (req, res) => {
+  const { workerId } = req.params;
+  const { equipmentType, assignedBy } = req.body;
+
+  const worker = db.hr_onboardings.find(w => w.workerId === workerId);
+
+  if (!worker) {
+    return res.status(404).json({
+      success: false,
+      error: `Worker with ID ${workerId} not found`
+    });
+  }
+
+  const equipmentList = ['Laptop', 'Monitor', 'Keyboard', 'Mouse', 'Headset'];
+  const deliveryDate = new Date();
+  deliveryDate.setDate(deliveryDate.getDate() + 3);
+
+  res.json({
+    success: true,
+    workerId: worker.workerId,
+    workerName: worker.workerName,
+    equipmentAssigned: true,
+    assignedItems: equipmentList,
+    assignedBy: assignedBy || 'automation',
+    assignedAt: new Date().toISOString(),
+    deliveryExpected: deliveryDate.toISOString()
+  });
+});
+
+// HR Onboarding - Grant System Access
+server.post('/api/hr/onboarding/:workerId/access', (req, res) => {
+  const { workerId } = req.params;
+  const { systems, grantedBy } = req.body;
+
+  const worker = db.hr_onboardings.find(w => w.workerId === workerId);
+
+  if (!worker) {
+    return res.status(404).json({
+      success: false,
+      error: `Worker with ID ${workerId} not found`
+    });
+  }
+
+  res.json({
+    success: true,
+    workerId: worker.workerId,
+    workerName: worker.workerName,
+    workerEmail: worker.email,
+    accessGranted: true,
+    systems: systems || ['email', 'intranet', 'hr_portal'],
+    grantedBy: grantedBy || 'automation',
+    grantedAt: new Date().toISOString(),
+    activationDate: new Date().toISOString()
   });
 });
 
@@ -481,6 +569,8 @@ server.get('/', (req, res) => {
     documentation: 'Enterprise API for UiPath workshop demonstrations'
   });
 });
+
+server.use(jsonServer.rewriter(rewrites));
 
 server.use(router);
 

@@ -4,1727 +4,948 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UiPath Workshop API Interface</title>
+
+    <!-- External Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        orange: '#FA4616',
+                        teal: '#0ba2b3',
+                        deepblue: '#172125',
+                        lightblue: '#f0f9fc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-          /* UiPath Official Design System Colors */
-          --deep-navy: #172125;
-          --robotic-orange: #FA4616;
-          --white: #FFFFFF;
-          --light-blue: #f0f9fc;
-          --light-gray: #e4f0f5;
-          --medium-gray: #6a6a6a;
-          --teal: #0ba2b3;
-          --bright-blue: #0079bf;
-          --success-green: #31d263;
-          --error-red: #f5222d;
-          --dark-gray: #293940;
-          --border-color: #e4f0f5;
-          --text-primary: #172125;
-          --text-secondary: #6a6a6a;
-        }
-
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: var(--white);
-          min-height: 100vh;
-          color: var(--text-primary);
-          line-height: 1.5;
-        }
-
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        /* Header - Clean and minimal */
-        .header {
-          background: var(--white);
-          border-bottom: 1px solid var(--border-color);
-          padding: 32px 24px;
-          margin-bottom: 32px;
-        }
-
-        .header h1 {
-          font-size: 48px;
-          font-weight: 700;
-          color: var(--deep-navy);
-          margin-bottom: 8px;
-          letter-spacing: -1.5px;
-        }
-
-        .header h1 .logo-icon {
-          color: var(--robotic-orange);
-        }
-
-        .header p {
-          font-size: 16px;
-          color: var(--text-secondary);
-          font-weight: 400;
-        }
-
-        .header a {
-          color: var(--robotic-orange);
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 16px;
-          transition: color 0.2s ease;
-        }
-
-        .header a:hover {
-          color: var(--deep-navy);
-        }
-
-        /* API Status Bar - Clean design */
-        .api-status {
-          display: flex;
-          justify-content: center;
-          gap: 48px;
-          margin-top: 24px;
-          padding: 24px;
-          background: var(--light-blue);
-          border-radius: 4px;
-          border: 1px solid var(--border-color);
-        }
-
-        .status-item {
-          text-align: center;
-        }
-
-        .status-value {
-          font-weight: 700;
-          font-family: 'Inter', monospace;
-          font-size: 18px;
-          color: var(--deep-navy);
-        }
-
-        .status-label {
-          font-size: 12px;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-top: 4px;
-        }
-
-        /* Main Grid Layout */
-        .main-grid {
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          gap: 32px;
-          padding-bottom: 64px;
-        }
-
-        /* Sidebar - White with borders */
-        .sidebar {
-          background: var(--white);
-          border-right: 1px solid var(--border-color);
-          padding: 24px 0;
-          height: fit-content;
-          position: sticky;
-          top: 24px;
-        }
-
-        .nav-section {
-          margin-bottom: 32px;
-        }
-
-        .nav-heading {
-          color: var(--text-secondary);
-          font-weight: 700;
-          margin-bottom: 12px;
-          text-transform: uppercase;
-          font-size: 11px;
-          letter-spacing: 1px;
-          padding: 0 16px;
-        }
-
-        .nav-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 16px;
-          color: var(--deep-navy);
-          text-decoration: none;
-          border-radius: 4px;
-          margin: 0 8px 4px 8px;
-          transition: all 0.2s ease;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 400;
-        }
-
-        .nav-item:hover {
-          background: var(--light-blue);
-          color: var(--deep-navy);
-        }
-
-        .nav-item.active {
-          background: var(--robotic-orange);
-          color: var(--white);
-          font-weight: 600;
-        }
-
-        /* Content Area - White background */
-        .content-area {
-          background: var(--white);
-          padding: 0;
-          min-height: 600px;
-        }
-
-        /* Module Header */
-        .module-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 32px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid var(--border-color);
-        }
-
-        .module-icon {
-          font-size: 40px;
-        }
-
-        .module-title h2 {
-          font-size: 32px;
-          font-weight: 700;
-          color: var(--deep-navy);
-          margin-bottom: 4px;
-          letter-spacing: -1px;
-        }
-
-        .module-description {
-          color: var(--text-secondary);
-          font-size: 14px;
-        }
-
-        /* Endpoints Grid */
-        .endpoints-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-          gap: 24px;
-        }
-
-        /* Endpoint Cards - Clean white cards */
-        .endpoint-card {
-          background: var(--white);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          padding: 24px;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 60px rgba(0,0,0,0.04);
-        }
-
-        .endpoint-card:hover {
-          box-shadow: 0 8px 80px rgba(0,0,0,0.08);
-          border-color: var(--light-gray);
-        }
-
-        .endpoint-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 12px;
-          flex-wrap: wrap;
-        }
-
-        /* Method Badges - Flat design */
-        .method-badge {
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .method-get {
-          background: var(--teal);
-          color: var(--white);
-        }
-
-        .method-post {
-          background: var(--success-green);
-          color: var(--white);
-        }
-
-        .method-patch {
-          background: var(--robotic-orange);
-          color: var(--white);
-        }
-
-        .endpoint-path {
-          font-family: 'Inter', monospace;
-          font-weight: 600;
-          font-size: 14px;
-          color: var(--deep-navy);
-        }
-
-        .endpoint-description {
-          color: var(--text-secondary);
-          margin-bottom: 20px;
-          line-height: 1.6;
-          font-size: 14px;
-        }
-
-        /* Input Groups */
-        .input-group {
-          margin-bottom: 16px;
-        }
-
-        .input-group label {
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          font-size: 14px;
-          color: var(--deep-navy);
-        }
-
-        .input-group input,
-        .input-group textarea {
-          width: 100%;
-          padding: 12px 16px;
-          background: var(--white);
-          border: 1px solid var(--medium-gray);
-          border-radius: 4px;
-          color: var(--deep-navy);
-          font-size: 14px;
-          font-family: 'Inter', sans-serif;
-          height: 48px;
-          transition: all 0.2s ease;
-        }
-
-        .input-group input:focus,
-        .input-group textarea:focus {
-          outline: none;
-          border-color: var(--bright-blue);
-          box-shadow: 0 0 0 3px rgba(0, 121, 191, 0.1);
-        }
-
-        .input-group textarea {
-          height: 120px;
-          font-family: 'Inter', monospace;
-          resize: vertical;
-        }
-
-        /* Buttons - Flat orange design */
-        .test-button {
-          width: 100%;
-          background: var(--robotic-orange);
-          color: var(--white);
-          border: none;
-          padding: 14px 24px;
-          border-radius: 4px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 14px;
-          height: 48px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .test-button:hover {
-          background: #e03d12;
-        }
-
-        .test-button:disabled {
-          background: var(--light-gray);
-          color: var(--medium-gray);
-          cursor: not-allowed;
-        }
-
-        /* Response Area */
-        .response-area {
-          margin-top: 16px;
-          display: none;
-        }
-
-        .response-content {
-          background: var(--light-blue);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          padding: 16px;
-          font-family: 'Inter', monospace;
-          font-size: 12px;
-          max-height: 400px;
-          overflow-y: auto;
-          white-space: pre-wrap;
-          color: var(--deep-navy);
-        }
-
-        /* Welcome Screen */
-        .welcome-screen {
-          text-align: center;
-          padding: 64px 32px;
-        }
-
-        .welcome-icon {
-          font-size: 64px;
-          margin-bottom: 24px;
-        }
-
-        .welcome-screen h2 {
-          font-size: 48px;
-          font-weight: 700;
-          color: var(--deep-navy);
-          margin-bottom: 16px;
-          letter-spacing: -2px;
-        }
-
-        .welcome-screen p {
-          font-size: 16px;
-          color: var(--text-secondary);
-          margin-bottom: 16px;
-        }
-
-        .welcome-screen code {
-          background: var(--light-blue);
-          padding: 8px 16px;
-          border-radius: 4px;
-          font-family: 'Inter', monospace;
-          font-size: 14px;
-          color: var(--deep-navy);
-        }
-
-        /* Scenario Cards */
-        .scenario-cards {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 24px;
-          margin-top: 48px;
-        }
-
-        .scenario-card {
-          background: var(--white);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          padding: 32px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-align: left;
-          box-shadow: 0 4px 60px rgba(0,0,0,0.04);
-        }
-
-        .scenario-card:hover {
-          box-shadow: 0 8px 80px rgba(0,0,0,0.08);
-          border-color: var(--robotic-orange);
-        }
-
-        .scenario-card h4 {
-          color: var(--robotic-orange);
-          margin-bottom: 12px;
-          font-size: 18px;
-          font-weight: 700;
-        }
-
-        .scenario-card p {
-          color: var(--text-secondary);
-          font-size: 14px;
-          line-height: 1.6;
-        }
-
-        /* Stats Bar */
-        .stats-bar {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
-          margin-bottom: 32px;
-        }
-
-        .stat-item {
-          background: var(--white);
-          border: 1px solid var(--border-color);
-          padding: 32px;
-          text-align: center;
-          border-radius: 4px;
-          box-shadow: 0 4px 60px rgba(0,0,0,0.04);
-        }
-
-        .stat-number {
-          font-size: 48px;
-          font-weight: 700;
-          color: var(--robotic-orange);
-          display: block;
-          margin-bottom: 8px;
-        }
-
-        .stat-label {
-          font-size: 12px;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        /* Loading Spinner */
-        .loading {
-          display: inline-block;
-          width: 20px;
-          height: 20px;
-          border: 3px solid var(--light-gray);
-          border-radius: 50%;
-          border-top-color: var(--robotic-orange);
-          animation: spin 1s linear infinite;
-        }
-
         @keyframes spin {
-          to { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Live HR Onboarding Data Viewer */
-        .live-data-section {
-          margin-top: 48px;
-          padding-top: 32px;
-          border-top: 1px solid var(--border-color);
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e4e4e7;
+            border-radius: 50%;
+            border-top-color: #FA4616;
+            animation: spin 1s linear infinite;
         }
 
-        .live-data-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
+        .row-updated {
+            animation: highlight 0.3s ease;
         }
 
-        .live-data-header h3 {
-          color: var(--deep-navy);
-          font-size: 24px;
-          font-weight: 700;
+        @keyframes highlight {
+            0% { background-color: rgba(250, 70, 22, 0.2); }
+            100% { background-color: rgba(250, 70, 22, 0.05); }
         }
 
-        .refresh-button {
-          background: var(--teal);
-          color: var(--white);
-          border: none;
-          padding: 12px 24px;
-          border-radius: 4px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 14px;
-          height: 48px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .refresh-button:hover {
-          background: #098d9c;
-        }
-
-        .refresh-button:disabled {
-          background: var(--light-gray);
-          color: var(--medium-gray);
-          cursor: not-allowed;
-        }
-
-        /* Onboarding Stats */
-        .onboarding-stats {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 24px;
-          margin-bottom: 24px;
-        }
-
-        .onboarding-stat-card {
-          background: var(--white);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          padding: 24px;
-          text-align: center;
-          transition: all 0.2s ease;
-          box-shadow: 0 4px 60px rgba(0,0,0,0.04);
-        }
-
-        .onboarding-stat-card:hover {
-          box-shadow: 0 8px 80px rgba(0,0,0,0.08);
-        }
-
-        .onboarding-stat-number {
-          font-size: 40px;
-          font-weight: 700;
-          margin-bottom: 8px;
-        }
-
-        .onboarding-stat-number.total { color: var(--bright-blue); }
-        .onboarding-stat-number.pending { color: var(--medium-gray); }
-        .onboarding-stat-number.in-progress { color: var(--teal); }
-        .onboarding-stat-number.completed { color: var(--success-green); }
-
-        .onboarding-stat-label {
-          font-size: 12px;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        /* Data Table - Clean with zebra striping */
-        .data-table-container {
-          background: var(--white);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          overflow: hidden;
-          box-shadow: 0 4px 60px rgba(0,0,0,0.04);
-        }
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-
-        .data-table thead {
-          background: var(--light-blue);
-        }
-
-        .data-table th {
-          padding: 16px;
-          text-align: left;
-          font-weight: 700;
-          font-size: 12px;
-          color: var(--deep-navy);
-          border-bottom: 2px solid var(--border-color);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .data-table td {
-          padding: 16px;
-          border-bottom: 1px solid var(--border-color);
-          font-size: 14px;
-          color: var(--deep-navy);
-        }
-
-        .data-table tbody tr:nth-child(even) {
-          background: var(--light-blue);
-        }
-
-        .data-table tbody tr:hover {
-          background: #e1f4f8;
-        }
-
-        /* Status Badges - Flat design */
-        .status-badge {
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .status-pending {
-          background: var(--light-gray);
-          color: var(--deep-navy);
-        }
-
-        .status-in-progress {
-          background: var(--teal);
-          color: var(--white);
-        }
-
-        .status-completed {
-          background: var(--success-green);
-          color: var(--white);
-        }
-
-        .status-blocked,
-        .status-error {
-          background: var(--error-red);
-          color: var(--white);
-        }
-
-        .worker-id {
-          font-family: 'Inter', monospace;
-          font-size: 12px;
-          color: var(--bright-blue);
-          font-weight: 600;
-        }
-
-        /* Search/Filter Box */
-        .search-container {
-          margin-bottom: 24px;
-        }
-
-        .search-box {
-          position: relative;
-          margin-bottom: 12px;
-        }
-
-        .search-box input {
-          width: 100%;
-          padding: 12px 16px 12px 48px;
-          background: var(--white);
-          border: 1px solid var(--medium-gray);
-          border-radius: 4px;
-          color: var(--deep-navy);
-          font-size: 14px;
-          font-family: 'Inter', sans-serif;
-          height: 48px;
-          transition: all 0.2s ease;
-        }
-
-        .search-box input:focus {
-          outline: none;
-          border-color: var(--bright-blue);
-          box-shadow: 0 0 0 3px rgba(0, 121, 191, 0.1);
-        }
-
-        .search-icon {
-          position: absolute;
-          left: 16px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 18px;
-          color: var(--medium-gray);
-          pointer-events: none;
-        }
-
-        .clear-search {
-          position: absolute;
-          right: 16px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          color: var(--medium-gray);
-          font-size: 20px;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 4px;
-          display: none;
-          transition: all 0.2s ease;
-        }
-
-        .clear-search:hover {
-          color: var(--robotic-orange);
-          background: var(--light-blue);
-        }
-
-        .clear-search.show {
-          display: block;
-        }
-
-        .search-results-info {
-          font-size: 13px;
-          color: var(--text-secondary);
-          font-weight: 500;
-        }
-
-        /* Row Highlighting for Recent Updates */
-        .data-table tbody tr.row-updated {
-          border-left: 4px solid var(--robotic-orange);
-          background: rgba(250, 70, 22, 0.08) !important;
-          transition: all 0.3s ease;
-        }
-
-        .data-table tbody tr.row-updated-fading {
-          border-left: 4px solid transparent;
-          background: transparent;
-          transition: all 5s ease;
-        }
-
-        /* No Results Message */
-        .no-results-message {
-          text-align: center;
-          padding: 48px;
-          color: var(--text-secondary);
-        }
-
-        .no-results-icon {
-          font-size: 48px;
-          margin-bottom: 16px;
-          opacity: 0.5;
-        }
-
-        /* Notification Toast */
-        .notification-toast {
-          position: fixed;
-          top: 24px;
-          right: 24px;
-          background: var(--teal);
-          color: var(--white);
-          padding: 16px 24px;
-          border-radius: 4px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.16);
-          z-index: 1000;
-          animation: slideInRight 0.3s ease;
-          display: none;
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        .notification-toast.show {
-          display: block;
-        }
-
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-
-        /* Empty State */
-        .empty-state {
-          text-align: center;
-          padding: 48px;
-          color: var(--text-secondary);
-        }
-
-        .empty-state-icon {
-          font-size: 48px;
-          margin-bottom: 16px;
-          opacity: 0.5;
-        }
-
-        /* Filter Badge */
-        .filter-badge {
-          background: var(--robotic-orange);
-          color: var(--white);
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 10px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-          .main-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .sidebar {
-            border-right: none;
-            border-bottom: 1px solid var(--border-color);
-            position: static;
-          }
-
-          .header h1 {
-            font-size: 32px;
-          }
-
-          .api-status {
-            flex-direction: column;
-            gap: 16px;
-          }
-
-          .scenario-cards, .endpoints-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .onboarding-stats, .stats-bar {
-            grid-template-columns: repeat(2, 1fr);
-          }
-
-          .data-table {
-            font-size: 12px;
-          }
-
-          .data-table th, .data-table td {
-            padding: 12px;
-          }
+        .row-updated-fading {
+            transition: all 5s ease;
+            background-color: transparent !important;
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <div class="container">
-            <h1><span class="logo-icon">🤖</span> UiPath Workshop API</h1>
-            <p>Enterprise-grade API testing environment with all 87 endpoints</p>
-            <p style="margin-top: 16px;">
-                <a href="api-documentation.html" target="_blank">
-                    View Complete API Documentation →
-                </a>
-            </p>
 
-            <div class="api-status">
-                <div class="status-item">
-                    <div class="status-value" id="connection-status">●</div>
-                    <div class="status-label">Connection</div>
+<body class="bg-zinc-50 min-h-screen">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Header -->
+        <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
+            <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
+            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 87 endpoints</p>
+            <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
+                View Complete API Documentation →
+            </a>
+
+            <!-- Status Indicators -->
+            <div class="mt-6 grid grid-cols-3 gap-4">
+                <div class="bg-lightblue rounded-lg p-4 text-center">
+                    <div id="connection-status" class="text-2xl font-bold text-deepblue">●</div>
+                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Connection</div>
                 </div>
-                <div class="status-item">
-                    <div class="status-value" id="api-url-display">Loading...</div>
-                    <div class="status-label">API URL</div>
+                <div class="bg-lightblue rounded-lg p-4 text-center">
+                    <div id="api-url-display" class="text-sm font-mono font-bold text-deepblue truncate">Loading...</div>
+                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">API URL</div>
                 </div>
-                <div class="status-item">
-                    <div class="status-value" id="response-time">--ms</div>
-                    <div class="status-label">Response Time</div>
+                <div class="bg-lightblue rounded-lg p-4 text-center">
+                    <div id="response-time" class="text-2xl font-bold text-deepblue">--ms</div>
+                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Response Time</div>
                 </div>
             </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Sidebar -->
+            <aside class="col-span-3 space-y-2 sticky top-6 self-start">
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Overview</h3>
+                    <a href="#" class="nav-item active block rounded-lg px-3 py-2 text-sm font-medium transition-colors" data-module="welcome">👋 Welcome</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="stats">📊 Statistics</a>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">HR Module</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-workers">👤 Workers</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-performance">📈 Performance</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-onboarding">🎯 Onboarding</a>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Finance</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-invoices">📄 Invoices</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-expenses">💳 Expenses</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-analytics">📊 Analytics</a>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">CRM</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-customers">🏢 Customers</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-sales">💼 Sales</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-support">🎧 Support</a>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">IoT</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-devices">📱 Devices</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-monitoring">📡 Monitoring</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-maintenance">🔧 Maintenance</a>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Analytics</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="reports">📈 Reports</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="projects">📋 Projects</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="workflows">⚙️ Workflows</a>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-span-9" id="content-area">
+                <!-- Dynamic content will be injected here -->
+            </main>
         </div>
     </div>
 
-    <div class="container">
-        <main class="main-grid">
-            <nav class="sidebar">
-                <div class="nav-section">
-                    <h3 class="nav-heading">Overview</h3>
-                    <a href="#" class="nav-item active" data-module="welcome">👋 Welcome</a>
-                    <a href="#" class="nav-item" data-module="stats">📊 Statistics</a>
-                </div>
-
-                <div class="nav-section">
-                    <h3 class="nav-heading">HR Module</h3>
-                    <a href="#" class="nav-item" data-module="hr-workers">👤 Workers</a>
-                    <a href="#" class="nav-item" data-module="hr-performance">📈 Performance</a>
-                    <a href="#" class="nav-item" data-module="hr-onboarding">🎯 Onboarding</a>
-                </div>
-
-                <div class="nav-section">
-                    <h3 class="nav-heading">Finance</h3>
-                    <a href="#" class="nav-item" data-module="finance-invoices">📄 Invoices</a>
-                    <a href="#" class="nav-item" data-module="finance-expenses">💳 Expenses</a>
-                    <a href="#" class="nav-item" data-module="finance-analytics">📊 Analytics</a>
-                </div>
-
-                <div class="nav-section">
-                    <h3 class="nav-heading">CRM</h3>
-                    <a href="#" class="nav-item" data-module="crm-customers">🏢 Customers</a>
-                    <a href="#" class="nav-item" data-module="crm-sales">💼 Sales</a>
-                    <a href="#" class="nav-item" data-module="crm-support">🎧 Support</a>
-                </div>
-
-                <div class="nav-section">
-                    <h3 class="nav-heading">IoT</h3>
-                    <a href="#" class="nav-item" data-module="iot-devices">📱 Devices</a>
-                    <a href="#" class="nav-item" data-module="iot-monitoring">📡 Monitoring</a>
-                    <a href="#" class="nav-item" data-module="iot-maintenance">🔧 Maintenance</a>
-                </div>
-
-                <div class="nav-section">
-                    <h3 class="nav-heading">Analytics</h3>
-                    <a href="#" class="nav-item" data-module="reports">📈 Reports</a>
-                    <a href="#" class="nav-item" data-module="projects">📋 Projects</a>
-                    <a href="#" class="nav-item" data-module="workflows">⚙️ Workflows</a>
-                </div>
-            </nav>
-
-            <div class="content-area" id="content-area">
-                <!-- Dynamic content -->
-            </div>
-        </main>
-    </div>
-
     <!-- Notification Toast -->
-    <div class="notification-toast" id="notification-toast"></div>
+    <div id="notification-toast" class="fixed top-6 right-6 bg-teal text-white px-6 py-4 rounded-lg shadow-lg hidden transform transition-all duration-300">
+        <!-- Notification message -->
+    </div>
 
     <script>
         const API_BASE = window.location.origin + '/api';
         let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null };
         let apiHealth = { isOnline: false, responseTime: 0 };
-        let onboardingData = []; // Store full onboarding data for filtering
-        let updatedByMap = {}; // Track updatedBy field from PATCH operations
+        let onboardingData = [];
+        let updatedByMap = {};
 
-        // ALL YOUR ENDPOINTS - Complete Module Definitions
+        // ALL ENDPOINTS - Complete Module Definitions
         const modules = {
-          welcome: {
-            content: `
-              <div class="welcome-screen">
-                <div class="welcome-icon">🚀</div>
-                <h2>UiPath Workshop API</h2>
-                <p>Complete enterprise API with 87 endpoints across all business modules!</p>
-                <p><strong>Live API:</strong> <code>${API_BASE}</code></p>
+            welcome: {
+                content: `
+                    <div class="text-center py-16 px-8">
+                        <div class="text-6xl mb-6">🚀</div>
+                        <h2 class="text-4xl font-bold text-deepblue mb-4">UiPath Workshop API</h2>
+                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 87 endpoints across all business modules!</p>
+                        <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
 
-                <div class="scenario-cards">
-                  <div class="scenario-card" onclick="setActiveModule('hr-onboarding')">
-                    <h4>👥 Employee Onboarding</h4>
-                    <p>Track employee progress and onboarding status</p>
-                  </div>
-                  <div class="scenario-card" onclick="setActiveModule('finance-invoices')">
-                    <h4>💰 Invoice Approval</h4>
-                    <p>Automate invoice routing and approval workflows</p>
-                  </div>
-                  <div class="scenario-card" onclick="setActiveModule('crm-customers')">
-                    <h4>🎯 Customer Health</h4>
-                    <p>Analyze customer risk and relationship metrics</p>
-                  </div>
-                  <div class="scenario-card" onclick="setActiveModule('iot-maintenance')">
-                    <h4>🔧 IoT Maintenance</h4>
-                    <p>Optimize device maintenance and prevent failures</p>
-                  </div>
-                  <div class="scenario-card" onclick="setActiveModule('crm-sales')">
-                    <h4>📊 Sales Intelligence</h4>
-                    <p>Forecast pipeline and prioritize deals</p>
-                  </div>
-                </div>
-              </div>
-            `
-          },
-          stats: {
-            content: `
-              <div class="stats-bar">
-                <div class="stat-item">
-                  <span class="stat-number">87</span>
-                  <span class="stat-label">API Endpoints</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">26</span>
-                  <span class="stat-label">Collections</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">728</span>
-                  <span class="stat-label">Records</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-number">🟢</span>
-                  <span class="stat-label">Status</span>
-                </div>
-              </div>
-              <div style="text-align: center; margin-top: 48px;">
-                <h3 style="font-size: 32px; font-weight: 700; color: var(--deep-navy); margin-bottom: 16px;">Production API Status</h3>
-                <p style="font-size: 16px; color: var(--text-secondary);">All business modules deployed with enterprise capabilities</p>
-              </div>
-            `
-          },
-          'hr-workers': {
-            title: 'HR Workers Management',
-            icon: '👥',
-            description: 'Employee records, departments, and organizational hierarchy',
-            endpoints: [
-              { method: 'GET', path: '/hr/workers', description: 'Get all workers in the system' },
-              { method: 'GET', path: '/hr/workers/active', description: 'Get active employees only (filtered in UiPath)' },
-              { method: 'GET', path: '/hr/workers/search', description: 'Search employees with criteria' },
-              { method: 'GET', path: '/hr/workers/:id', description: 'Get specific employee details', needsId: 'worker' },
-              { method: 'GET', path: '/hr/workers/:id/directReports', description: 'Get employee direct reports', needsId: 'worker' },
-              { method: 'GET', path: '/hr/workers/:id/performance', description: 'Get employee performance data', needsId: 'worker' }
-            ]
-          },
-          'hr-performance': {
-            title: 'HR Performance & Reviews',
-            icon: '📈',
-            description: 'Performance reviews, ratings, and goal tracking',
-            endpoints: [
-              { method: 'GET', path: '/hr/performance', description: 'Get all performance review records' },
-              { method: 'GET', path: '/hr/performance/lowPerformers', description: 'Get underperforming employees (filtered in UiPath)' },
-              { method: 'GET', path: '/hr/performance/reviews/due', description: 'Get upcoming performance reviews (filtered in UiPath)' },
-              { method: 'GET', path: '/hr/supervisoryOrganizations', description: 'Get organizational structure' }
-            ]
-          },
-          'hr-onboarding': {
-            title: 'HR Onboarding Management',
-            icon: '🎯',
-            description: 'New employee onboarding process tracking',
-            endpoints: [
-              { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
-              { method: 'GET', path: '/hr/onboarding/inProgress', description: 'Get active onboarding processes (filtered in UiPath)' },
-              { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding setups (filtered in UiPath)' },
-              { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding', body: {status: 'in-progress'} },
-              { method: 'POST', path: '/hr/onboarding', description: 'Create new onboarding record', body: {workerId: '', status: 'pending', startDate: '2025-01-15'} },
-              { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' }
-            ],
-            hasLiveData: true
-          },
-          'finance-invoices': {
-            title: 'Finance Invoice Management',
-            icon: '📄',
-            description: 'Invoice processing, approval workflows, and vendor management',
-            endpoints: [
-              { method: 'GET', path: '/finance/invoices', description: 'Get all invoices in the system' },
-              { method: 'GET', path: '/finance/invoices/pending', description: 'Get pending invoice approvals (filtered in UiPath)' },
-              { method: 'GET', path: '/finance/invoices/overdue', description: 'Get overdue invoices (filtered in UiPath)' },
-              { method: 'GET', path: '/finance/invoices/approval/queue', description: 'Get approval queue for managers' },
-              { method: 'GET', path: '/finance/invoices/:id', description: 'Get specific invoice details', needsId: 'invoice' },
-              { method: 'PATCH', path: '/finance/invoices/:id/approve', description: 'Approve invoice for payment', needsId: 'invoice', body: {status: 'approved'} },
-              { method: 'GET', path: '/finance/vendors/performance', description: 'Get vendor performance metrics' }
-            ]
-          },
-          'finance-expenses': {
-            title: 'Finance Expense Management',
-            icon: '💳',
-            description: 'Employee expense reports and reimbursement tracking',
-            endpoints: [
-              { method: 'GET', path: '/finance/expenses', description: 'Get all employee expense reports' },
-              { method: 'GET', path: '/finance/expenses/pending', description: 'Get pending expense approvals (filtered in UiPath)' },
-              { method: 'POST', path: '/finance/expenses', description: 'Create new expense report',
-                body: {workerId: '', description: 'Conference travel', amount: 450.00, currency: 'USD', category: 'Travel'} }
-            ]
-          },
-          'finance-analytics': {
-            title: 'Finance Analytics & Reporting',
-            icon: '📊',
-            description: 'Financial summaries, budget variance, and cash flow analysis',
-            endpoints: [
-              { method: 'GET', path: '/finance/budget/variance', description: 'Get budget vs actual spending by department' },
-              { method: 'GET', path: '/finance/summaries', description: 'Get monthly financial summary reports' },
-              { method: 'GET', path: '/reports/financial/monthly', description: 'Get detailed monthly financial analytics' }
-            ]
-          },
-          'crm-customers': {
-            title: 'CRM Customer Management',
-            icon: '🏢',
-            description: 'Customer records, relationship management, and account health',
-            endpoints: [
-              { method: 'GET', path: '/crm/customers', description: 'Get all customer records' },
-              { method: 'GET', path: '/crm/customers/enterprise', description: 'Get enterprise-tier customers (filtered in UiPath)' },
-              { method: 'GET', path: '/crm/customers/atrisk', description: 'Get at-risk customers (filtered in UiPath)' },
-              { method: 'GET', path: '/crm/customers/:id', description: 'Get specific customer details', needsId: 'customer' },
-              { method: 'GET', path: '/crm/customers/:id/360', description: 'Get customer 360-degree view', needsId: 'customer' },
-              { method: 'GET', path: '/analytics/customer/relationships', description: 'Get customer relationship analytics' }
-            ]
-          },
-          'crm-sales': {
-            title: 'CRM Sales & Opportunities',
-            icon: '💼',
-            description: 'Sales pipeline, opportunities, and revenue forecasting',
-            endpoints: [
-              { method: 'GET', path: '/crm/opportunities', description: 'Get all sales opportunities' },
-              { method: 'GET', path: '/crm/opportunities/highValue', description: 'Get high-value opportunities (filtered in UiPath)' },
-              { method: 'PATCH', path: '/crm/opportunities/:id/score', description: 'Update opportunity score', needsId: 'opportunity', body: {score: 85} },
-              { method: 'GET', path: '/crm/pipeline/forecast', description: 'Get sales pipeline forecast data' },
-              { method: 'GET', path: '/crm/renewals/upcoming', description: 'Get upcoming contract renewals (filtered in UiPath)' },
-              { method: 'GET', path: '/reports/sales/pipeline', description: 'Get detailed sales pipeline reports' }
-            ]
-          },
-          'crm-support': {
-            title: 'CRM Support & Service',
-            icon: '🎧',
-            description: 'Support tickets, customer service, and issue tracking',
-            endpoints: [
-              { method: 'GET', path: '/crm/support/tickets', description: 'Get all customer support tickets' },
-              { method: 'GET', path: '/crm/support/tickets/open', description: 'Get open support tickets (filtered in UiPath)' },
-              { method: 'GET', path: '/crm/renewals', description: 'Get contract renewal information' },
-              { method: 'GET', path: '/crm/renewals/atrisk', description: 'Get at-risk renewals (filtered in UiPath)' }
-            ]
-          },
-          'iot-devices': {
-            title: 'IoT Device Management',
-            icon: '📱',
-            description: 'Device inventory, status monitoring, and assignments',
-            endpoints: [
-              { method: 'GET', path: '/iot/devices', description: 'Get all IoT devices in the system' },
-              { method: 'GET', path: '/iot/devices/online', description: 'Get online devices (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/devices/offline', description: 'Get offline devices (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/devices/:id', description: 'Get specific device details', needsId: 'device' },
-              { method: 'PATCH', path: '/iot/devices/:id/assign', description: 'Assign device to technician', needsId: 'device', body: {assignedTo: ''} }
-            ]
-          },
-          'iot-monitoring': {
-            title: 'IoT Monitoring & Telemetry',
-            icon: '📡',
-            description: 'Real-time data, telemetry, and device performance',
-            endpoints: [
-              { method: 'GET', path: '/iot/telemetry', description: 'Get all telemetry data from devices' },
-              { method: 'GET', path: '/iot/telemetry/recent', description: 'Get recent telemetry data (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/devices/:id/telemetry', description: 'Get real-time device telemetry', needsId: 'device' }
-            ]
-          },
-          'iot-maintenance': {
-            title: 'IoT Maintenance & Alerts',
-            icon: '🔧',
-            description: 'Maintenance scheduling, alerts, and predictive analytics',
-            endpoints: [
-              { method: 'GET', path: '/iot/alerts', description: 'Get all IoT device alerts' },
-              { method: 'GET', path: '/iot/alerts/critical', description: 'Get critical alerts (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/alerts/unacknowledged', description: 'Get unacknowledged alerts (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/maintenance', description: 'Get device maintenance schedule' },
-              { method: 'GET', path: '/iot/maintenance/due', description: 'Get due maintenance tasks (filtered in UiPath)' },
-              { method: 'GET', path: '/iot/maintenance/overdue', description: 'Get overdue maintenance (filtered in UiPath)' }
-            ]
-          },
-          'reports': {
-            title: 'Reports & Analytics',
-            icon: '📈',
-            description: 'Business intelligence, KPIs, and executive dashboards',
-            endpoints: [
-              { method: 'GET', path: '/reports/employee/summary', description: 'Get employee analytics by department' },
-              { method: 'GET', path: '/analytics/employee/profiles', description: 'Get detailed employee profiles' },
-              { method: 'GET', path: '/notifications', description: 'Get system notifications' },
-              { method: 'GET', path: '/notifications/unread', description: 'Get unread notifications (filtered in UiPath)' }
-            ]
-          },
-          'projects': {
-            title: 'Project Management',
-            icon: '📋',
-            description: 'Project tracking, resource allocation, and deliverables',
-            endpoints: [
-              { method: 'GET', path: '/projects', description: 'Get all projects in the system' },
-              { method: 'GET', path: '/projects/active', description: 'Get active projects (filtered in UiPath)' },
-              { method: 'GET', path: '/projects/atrisk', description: 'Get at-risk projects (filtered in UiPath)' }
-            ]
-          },
-          'workflows': {
-            title: 'Workflow Management',
-            icon: '⚙️',
-            description: 'Automation workflows, triggers, and process monitoring',
-            endpoints: [
-              { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
-              { method: 'GET', path: '/workflows/triggers/active', description: 'Get active workflow triggers (filtered in UiPath)' },
-              { method: 'GET', path: '/workflows/triggers/errors', description: 'Get failed workflow triggers (filtered in UiPath)' }
-            ]
-          }
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('hr-onboarding')">
+                                <h4 class="text-orange text-lg font-bold mb-3">👥 Employee Onboarding</h4>
+                                <p class="text-sm text-zinc-600">Track employee progress and onboarding status</p>
+                            </div>
+                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('finance-invoices')">
+                                <h4 class="text-orange text-lg font-bold mb-3">💰 Invoice Approval</h4>
+                                <p class="text-sm text-zinc-600">Automate invoice routing and approval workflows</p>
+                            </div>
+                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-customers')">
+                                <h4 class="text-orange text-lg font-bold mb-3">🎯 Customer Health</h4>
+                                <p class="text-sm text-zinc-600">Analyze customer risk and relationship metrics</p>
+                            </div>
+                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('iot-maintenance')">
+                                <h4 class="text-orange text-lg font-bold mb-3">🔧 IoT Maintenance</h4>
+                                <p class="text-sm text-zinc-600">Optimize device maintenance and prevent failures</p>
+                            </div>
+                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-sales')">
+                                <h4 class="text-orange text-lg font-bold mb-3">📊 Sales Intelligence</h4>
+                                <p class="text-sm text-zinc-600">Forecast pipeline and prioritize deals</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            stats: {
+                content: `
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
+                            <div class="text-5xl font-bold mb-2">87</div>
+                            <div class="text-xs uppercase tracking-wide">API Endpoints</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
+                            <div class="text-5xl font-bold mb-2">26</div>
+                            <div class="text-xs uppercase tracking-wide">Collections</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-deepblue to-zinc-700 text-white p-6 text-center shadow-sm">
+                            <div class="text-5xl font-bold mb-2">728</div>
+                            <div class="text-xs uppercase tracking-wide">Records</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-6 text-center shadow-sm">
+                            <div class="text-5xl font-bold mb-2">🟢</div>
+                            <div class="text-xs uppercase tracking-wide">Status</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-12">
+                        <h3 class="text-3xl font-bold text-deepblue mb-4">Production API Status</h3>
+                        <p class="text-lg text-zinc-600">All business modules deployed with enterprise capabilities</p>
+                    </div>
+                `
+            },
+            'hr-workers': {
+                title: 'HR Workers Management',
+                icon: '👥',
+                description: 'Employee records, departments, and organizational hierarchy',
+                endpoints: [
+                    { method: 'GET', path: '/hr/workers', description: 'Get all workers in the system' },
+                    { method: 'GET', path: '/hr/workers/active', description: 'Get active employees only (filtered in UiPath)' },
+                    { method: 'GET', path: '/hr/workers/search', description: 'Search employees with criteria' },
+                    { method: 'GET', path: '/hr/workers/:id', description: 'Get specific employee details', needsId: 'worker' },
+                    { method: 'GET', path: '/hr/workers/:id/directReports', description: 'Get employee direct reports', needsId: 'worker' },
+                    { method: 'GET', path: '/hr/workers/:id/performance', description: 'Get employee performance data', needsId: 'worker' }
+                ]
+            },
+            'hr-performance': {
+                title: 'HR Performance & Reviews',
+                icon: '📈',
+                description: 'Performance reviews, ratings, and goal tracking',
+                endpoints: [
+                    { method: 'GET', path: '/hr/performance', description: 'Get all performance review records' },
+                    { method: 'GET', path: '/hr/performance/lowPerformers', description: 'Get underperforming employees (filtered in UiPath)' },
+                    { method: 'GET', path: '/hr/performance/reviews/due', description: 'Get upcoming performance reviews (filtered in UiPath)' },
+                    { method: 'GET', path: '/hr/supervisoryOrganizations', description: 'Get organizational structure' }
+                ]
+            },
+            'hr-onboarding': {
+                title: 'HR Onboarding Management',
+                icon: '🎯',
+                description: 'New employee onboarding process tracking',
+                endpoints: [
+                    { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
+                    { method: 'GET', path: '/hr/onboarding/inProgress', description: 'Get active onboarding processes (filtered in UiPath)' },
+                    { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding setups (filtered in UiPath)' },
+                    { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding', body: {status: 'in-progress'} },
+                    { method: 'POST', path: '/hr/onboarding', description: 'Create new onboarding record', body: {workerId: '', status: 'pending', startDate: '2025-01-15'} },
+                    { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' }
+                ],
+                hasLiveData: true
+            },
+            'finance-invoices': {
+                title: 'Finance Invoice Management',
+                icon: '📄',
+                description: 'Invoice processing, approval workflows, and vendor management',
+                endpoints: [
+                    { method: 'GET', path: '/finance/invoices', description: 'Get all invoices in the system' },
+                    { method: 'GET', path: '/finance/invoices/pending', description: 'Get pending invoice approvals (filtered in UiPath)' },
+                    { method: 'GET', path: '/finance/invoices/overdue', description: 'Get overdue invoices (filtered in UiPath)' },
+                    { method: 'GET', path: '/finance/invoices/approval/queue', description: 'Get approval queue for managers' },
+                    { method: 'GET', path: '/finance/invoices/:id', description: 'Get specific invoice details', needsId: 'invoice' },
+                    { method: 'PATCH', path: '/finance/invoices/:id/approve', description: 'Approve invoice for payment', needsId: 'invoice', body: {status: 'approved'} },
+                    { method: 'GET', path: '/finance/vendors/performance', description: 'Get vendor performance metrics' }
+                ]
+            },
+            'finance-expenses': {
+                title: 'Finance Expense Management',
+                icon: '💳',
+                description: 'Employee expense reports and reimbursement tracking',
+                endpoints: [
+                    { method: 'GET', path: '/finance/expenses', description: 'Get all employee expense reports' },
+                    { method: 'GET', path: '/finance/expenses/pending', description: 'Get pending expense approvals (filtered in UiPath)' },
+                    { method: 'POST', path: '/finance/expenses', description: 'Create new expense report',
+                        body: {workerId: '', description: 'Conference travel', amount: 450.00, currency: 'USD', category: 'Travel'} }
+                ]
+            },
+            'finance-analytics': {
+                title: 'Finance Analytics & Reporting',
+                icon: '📊',
+                description: 'Financial summaries, budget variance, and cash flow analysis',
+                endpoints: [
+                    { method: 'GET', path: '/finance/budget/variance', description: 'Get budget vs actual spending by department' },
+                    { method: 'GET', path: '/finance/summaries', description: 'Get monthly financial summary reports' },
+                    { method: 'GET', path: '/reports/financial/monthly', description: 'Get detailed monthly financial analytics' }
+                ]
+            },
+            'crm-customers': {
+                title: 'CRM Customer Management',
+                icon: '🏢',
+                description: 'Customer records, relationship management, and account health',
+                endpoints: [
+                    { method: 'GET', path: '/crm/customers', description: 'Get all customer records' },
+                    { method: 'GET', path: '/crm/customers/enterprise', description: 'Get enterprise-tier customers (filtered in UiPath)' },
+                    { method: 'GET', path: '/crm/customers/atrisk', description: 'Get at-risk customers (filtered in UiPath)' },
+                    { method: 'GET', path: '/crm/customers/:id', description: 'Get specific customer details', needsId: 'customer' },
+                    { method: 'GET', path: '/crm/customers/:id/360', description: 'Get customer 360-degree view', needsId: 'customer' },
+                    { method: 'GET', path: '/analytics/customer/relationships', description: 'Get customer relationship analytics' }
+                ]
+            },
+            'crm-sales': {
+                title: 'CRM Sales & Opportunities',
+                icon: '💼',
+                description: 'Sales pipeline, opportunities, and revenue forecasting',
+                endpoints: [
+                    { method: 'GET', path: '/crm/opportunities', description: 'Get all sales opportunities' },
+                    { method: 'GET', path: '/crm/opportunities/highValue', description: 'Get high-value opportunities (filtered in UiPath)' },
+                    { method: 'PATCH', path: '/crm/opportunities/:id/score', description: 'Update opportunity score', needsId: 'opportunity', body: {score: 85} },
+                    { method: 'GET', path: '/crm/pipeline/forecast', description: 'Get sales pipeline forecast data' },
+                    { method: 'GET', path: '/crm/renewals/upcoming', description: 'Get upcoming contract renewals (filtered in UiPath)' },
+                    { method: 'GET', path: '/reports/sales/pipeline', description: 'Get detailed sales pipeline reports' }
+                ]
+            },
+            'crm-support': {
+                title: 'CRM Support & Service',
+                icon: '🎧',
+                description: 'Support tickets, customer service, and issue tracking',
+                endpoints: [
+                    { method: 'GET', path: '/crm/support/tickets', description: 'Get all customer support tickets' },
+                    { method: 'GET', path: '/crm/support/tickets/open', description: 'Get open support tickets (filtered in UiPath)' },
+                    { method: 'GET', path: '/crm/renewals', description: 'Get contract renewal information' },
+                    { method: 'GET', path: '/crm/renewals/atrisk', description: 'Get at-risk renewals (filtered in UiPath)' }
+                ]
+            },
+            'iot-devices': {
+                title: 'IoT Device Management',
+                icon: '📱',
+                description: 'Device inventory, status monitoring, and assignments',
+                endpoints: [
+                    { method: 'GET', path: '/iot/devices', description: 'Get all IoT devices in the system' },
+                    { method: 'GET', path: '/iot/devices/online', description: 'Get online devices (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/devices/offline', description: 'Get offline devices (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/devices/:id', description: 'Get specific device details', needsId: 'device' },
+                    { method: 'PATCH', path: '/iot/devices/:id/assign', description: 'Assign device to technician', needsId: 'device', body: {assignedTo: ''} }
+                ]
+            },
+            'iot-monitoring': {
+                title: 'IoT Monitoring & Telemetry',
+                icon: '📡',
+                description: 'Real-time data, telemetry, and device performance',
+                endpoints: [
+                    { method: 'GET', path: '/iot/telemetry', description: 'Get all telemetry data from devices' },
+                    { method: 'GET', path: '/iot/telemetry/recent', description: 'Get recent telemetry data (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/devices/:id/telemetry', description: 'Get real-time device telemetry', needsId: 'device' }
+                ]
+            },
+            'iot-maintenance': {
+                title: 'IoT Maintenance & Alerts',
+                icon: '🔧',
+                description: 'Maintenance scheduling, alerts, and predictive analytics',
+                endpoints: [
+                    { method: 'GET', path: '/iot/alerts', description: 'Get all IoT device alerts' },
+                    { method: 'GET', path: '/iot/alerts/critical', description: 'Get critical alerts (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/alerts/unacknowledged', description: 'Get unacknowledged alerts (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/maintenance', description: 'Get device maintenance schedule' },
+                    { method: 'GET', path: '/iot/maintenance/due', description: 'Get due maintenance tasks (filtered in UiPath)' },
+                    { method: 'GET', path: '/iot/maintenance/overdue', description: 'Get overdue maintenance (filtered in UiPath)' }
+                ]
+            },
+            'reports': {
+                title: 'Reports & Analytics',
+                icon: '📈',
+                description: 'Business intelligence, KPIs, and executive dashboards',
+                endpoints: [
+                    { method: 'GET', path: '/reports/employee/summary', description: 'Get employee analytics by department' },
+                    { method: 'GET', path: '/analytics/employee/profiles', description: 'Get detailed employee profiles' },
+                    { method: 'GET', path: '/notifications', description: 'Get system notifications' },
+                    { method: 'GET', path: '/notifications/unread', description: 'Get unread notifications (filtered in UiPath)' }
+                ]
+            },
+            'projects': {
+                title: 'Project Management',
+                icon: '📋',
+                description: 'Project tracking, resource allocation, and deliverables',
+                endpoints: [
+                    { method: 'GET', path: '/projects', description: 'Get all projects in the system' },
+                    { method: 'GET', path: '/projects/active', description: 'Get active projects (filtered in UiPath)' },
+                    { method: 'GET', path: '/projects/atrisk', description: 'Get at-risk projects (filtered in UiPath)' }
+                ]
+            },
+            'workflows': {
+                title: 'Workflow Management',
+                icon: '⚙️',
+                description: 'Automation workflows, triggers, and process monitoring',
+                endpoints: [
+                    { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
+                    { method: 'GET', path: '/workflows/triggers/active', description: 'Get active workflow triggers (filtered in UiPath)' },
+                    { method: 'GET', path: '/workflows/triggers/errors', description: 'Get failed workflow triggers (filtered in UiPath)' }
+                ]
+            }
         };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
-          document.getElementById('api-url-display').textContent = API_BASE;
-          // Load updatedBy map from localStorage
-          const stored = localStorage.getItem('onboarding_updatedBy');
-          if (stored) {
-            try {
-              updatedByMap = JSON.parse(stored);
-            } catch (e) {
-              console.warn('Failed to parse updatedBy map from localStorage');
+            document.getElementById('api-url-display').textContent = API_BASE;
+
+            // Load updatedBy map from localStorage
+            const stored = localStorage.getItem('onboarding_updatedBy');
+            if (stored) {
+                try {
+                    updatedByMap = JSON.parse(stored);
+                } catch (e) {
+                    console.warn('Failed to parse updatedBy map from localStorage');
+                }
             }
-          }
-          setupNavigation();
-          await checkApiHealth();
-          await loadSampleIds();
-          renderModule('welcome');
-          setInterval(checkApiHealth, 30000);
+
+            setupNavigation();
+            await checkApiHealth();
+            await loadSampleIds();
+            renderModule('welcome');
+            setInterval(checkApiHealth, 30000);
         });
 
         function setupNavigation() {
-          document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-              e.preventDefault();
-              const moduleKey = this.getAttribute('data-module');
-              if (moduleKey) setActiveModule(moduleKey);
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const moduleKey = this.getAttribute('data-module');
+                    if (moduleKey) setActiveModule(moduleKey);
+                });
             });
-          });
         }
 
         function setActiveModule(moduleKey) {
-          document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-          });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active', 'bg-orange', 'text-white');
+                item.classList.add('text-deepblue', 'hover:bg-zinc-100');
+            });
 
-          const activeItem = document.querySelector(`[data-module="${moduleKey}"]`);
-          if (activeItem) activeItem.classList.add('active');
+            const activeItem = document.querySelector(`[data-module="${moduleKey}"]`);
+            if (activeItem) {
+                activeItem.classList.remove('text-deepblue', 'hover:bg-zinc-100');
+                activeItem.classList.add('active', 'bg-orange', 'text-white');
+            }
 
-          renderModule(moduleKey);
+            renderModule(moduleKey);
         }
 
         function renderModule(moduleKey) {
-          const module = modules[moduleKey];
-          const contentArea = document.getElementById('content-area');
+            const module = modules[moduleKey];
+            const contentArea = document.getElementById('content-area');
 
-          if (!module) return;
+            if (!module) return;
 
-          if (module.content) {
-            contentArea.innerHTML = module.content;
-          } else if (module.endpoints) {
-            contentArea.innerHTML = `
-              <div class="module-header">
-                <div class="module-icon">${module.icon}</div>
-                <div>
-                  <h2>${module.title}</h2>
-                  <div class="module-description">${module.description}</div>
-                </div>
-              </div>
+            if (module.content) {
+                contentArea.innerHTML = module.content;
+            } else if (module.endpoints) {
+                contentArea.innerHTML = `
+                    <div class="flex items-start gap-4 mb-8 pb-6 border-b border-zinc-200">
+                        <div class="text-5xl">${module.icon}</div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-deepblue mb-2">${module.title}</h2>
+                            <p class="text-sm text-zinc-600">${module.description}</p>
+                        </div>
+                    </div>
 
-              <div class="endpoints-grid">
-                ${module.endpoints.map((endpoint, index) =>
-                  createEndpointCard(endpoint, `${moduleKey}-${index}`)
-                ).join('')}
-              </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        ${module.endpoints.map((endpoint, index) =>
+                            createEndpointCard(endpoint, `${moduleKey}-${index}`)
+                        ).join('')}
+                    </div>
 
-              ${module.hasLiveData ? createLiveDataSection() : ''}
-            `;
+                    ${module.hasLiveData ? createLiveDataSection() : ''}
+                `;
 
-            // Load live data if applicable
-            if (module.hasLiveData) {
-              loadLiveOnboardingData();
+                // Load live data if applicable
+                if (module.hasLiveData) {
+                    loadLiveOnboardingData();
+                }
             }
-          }
         }
 
         function createEndpointCard(endpoint, cardId) {
-          const methodClass = `method-${endpoint.method.toLowerCase()}`;
-          const hasBody = endpoint.body;
-          const needsParam = endpoint.needsId;
-          const isFiltered = endpoint.description.includes('filtered in UiPath');
+            const methodColors = {
+                'GET': 'bg-teal-100 text-teal-700 border-teal-200',
+                'POST': 'bg-green-100 text-green-700 border-green-200',
+                'PATCH': 'bg-orange-100 text-orange-700 border-orange-200'
+            };
+            const methodClass = methodColors[endpoint.method] || 'bg-zinc-100 text-zinc-700 border-zinc-200';
+            const hasBody = endpoint.body;
+            const needsParam = endpoint.needsId;
+            const isFiltered = endpoint.description.includes('filtered in UiPath');
 
-          return `
-            <div class="endpoint-card">
-              <div class="endpoint-header">
-                <span class="method-badge ${methodClass}">${endpoint.method}</span>
-                <span class="endpoint-path">${endpoint.path}</span>
-                ${isFiltered ? '<span class="filter-badge">UiPath Filter</span>' : ''}
-              </div>
-              <div class="endpoint-description">${endpoint.description}</div>
+            return `
+                <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-6">
+                    <div class="flex items-center gap-3 mb-4 flex-wrap">
+                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${methodClass}">${endpoint.method}</span>
+                        <span class="font-mono text-sm font-semibold text-deepblue">${endpoint.path}</span>
+                        ${isFiltered ? '<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-orange text-white">UiPath Filter</span>' : ''}
+                    </div>
+                    <p class="text-sm text-zinc-600 mb-4">${endpoint.description}</p>
 
-              ${needsParam ? `
-                <div class="input-group">
-                  <label>${endpoint.needsId.toUpperCase()} ID:</label>
-                  <input type="text" id="param-${cardId}" placeholder="Auto-filled from API">
+                    ${needsParam ? `
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-deepblue mb-2">${endpoint.needsId.toUpperCase()} ID:</label>
+                            <input type="text" id="param-${cardId}" placeholder="Auto-filled from API"
+                                class="w-full h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
+                        </div>
+                    ` : ''}
+
+                    ${hasBody ? `
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-deepblue mb-2">Request Body (JSON):</label>
+                            <textarea id="body-${cardId}" rows="5"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">${JSON.stringify(endpoint.body, null, 2)}</textarea>
+                        </div>
+                    ` : ''}
+
+                    <button id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${!!needsParam}, ${!!hasBody})"
+                        class="w-full rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed">
+                        ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Test Endpoint'} 🚀
+                    </button>
+
+                    <div id="response-${cardId}" class="mt-4 hidden">
+                        <div id="response-content-${cardId}" class="bg-lightblue rounded-lg border border-zinc-200 p-4 text-xs font-mono max-h-96 overflow-y-auto whitespace-pre-wrap"></div>
+                    </div>
                 </div>
-              ` : ''}
-
-              ${hasBody ? `
-                <div class="input-group">
-                  <label>Request Body (JSON):</label>
-                  <textarea id="body-${cardId}">${JSON.stringify(endpoint.body, null, 2)}</textarea>
-                </div>
-              ` : ''}
-
-              <button class="test-button" id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${!!needsParam}, ${!!hasBody})">
-                ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Test Endpoint'} 🚀
-              </button>
-
-              <div class="response-area" id="response-${cardId}">
-                <div class="response-content" id="response-content-${cardId}"></div>
-              </div>
-            </div>
-          `;
+            `;
         }
 
         function createLiveDataSection() {
-          return `
-            <div class="live-data-section">
-              <div class="live-data-header">
-                <h3>📊 Live Onboarding Data</h3>
-                <button class="refresh-button" onclick="loadLiveOnboardingData()">🔄 Refresh Data</button>
-              </div>
+            return `
+                <div class="mt-12 pt-8 border-t border-zinc-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-deepblue">📊 Live Onboarding Data</h3>
+                        <button onclick="loadLiveOnboardingData()"
+                            class="rounded-lg px-4 py-2 font-semibold transition-colors bg-teal text-white hover:bg-teal-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal">
+                            🔄 Refresh Data
+                        </button>
+                    </div>
 
-              <div class="onboarding-stats" id="onboarding-stats">
-                <div class="onboarding-stat-card">
-                  <div class="onboarding-stat-number total" id="stat-total">-</div>
-                  <div class="onboarding-stat-label">Total Workers</div>
-                </div>
-                <div class="onboarding-stat-card">
-                  <div class="onboarding-stat-number pending" id="stat-pending">-</div>
-                  <div class="onboarding-stat-label">Pending</div>
-                </div>
-                <div class="onboarding-stat-card">
-                  <div class="onboarding-stat-number in-progress" id="stat-in-progress">-</div>
-                  <div class="onboarding-stat-label">In Progress</div>
-                </div>
-                <div class="onboarding-stat-card">
-                  <div class="onboarding-stat-number completed" id="stat-completed">-</div>
-                  <div class="onboarding-stat-label">Completed</div>
-                </div>
-              </div>
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 text-center shadow-sm">
+                            <div id="stat-total" class="text-4xl font-bold mb-2">-</div>
+                            <div class="text-xs uppercase tracking-wide">Total Workers</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-zinc-400 to-zinc-500 text-white p-4 text-center shadow-sm">
+                            <div id="stat-pending" class="text-4xl font-bold mb-2">-</div>
+                            <div class="text-xs uppercase tracking-wide">Pending</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-4 text-center shadow-sm">
+                            <div id="stat-in-progress" class="text-4xl font-bold mb-2">-</div>
+                            <div class="text-xs uppercase tracking-wide">In Progress</div>
+                        </div>
+                        <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-4 text-center shadow-sm">
+                            <div id="stat-completed" class="text-4xl font-bold mb-2">-</div>
+                            <div class="text-xs uppercase tracking-wide">Completed</div>
+                        </div>
+                    </div>
 
-              <div class="search-container">
-                <div class="search-box">
-                  <span class="search-icon">🔍</span>
-                  <input
-                    type="text"
-                    id="onboarding-search"
-                    placeholder="Search by name, ID, department, or updated by..."
-                    oninput="filterOnboardingTable()"
-                  />
-                  <button class="clear-search" id="clear-search-btn" onclick="clearSearch()">✕</button>
-                </div>
-                <div class="search-results-info" id="search-results-info"></div>
-              </div>
+                    <div class="mb-4">
+                        <div class="relative mb-2">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔍</span>
+                            <input type="text" id="onboarding-search" placeholder="Search by name, ID, department, or updated by..."
+                                oninput="filterOnboardingTable()"
+                                class="w-full h-12 rounded-lg border border-zinc-300 bg-white pl-12 pr-12 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
+                            <button id="clear-search-btn" onclick="clearSearch()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-orange transition-colors hidden">✕</button>
+                        </div>
+                        <div id="search-results-info" class="text-xs text-zinc-600"></div>
+                    </div>
 
-              <div class="data-table-container">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Worker ID</th>
-                      <th>Worker Name</th>
-                      <th>Status</th>
-                      <th>Department</th>
-                      <th>Start Date</th>
-                      <th>Last Updated</th>
-                      <th>Updated By</th>
-                    </tr>
-                  </thead>
-                  <tbody id="onboarding-table-body">
-                    <tr>
-                      <td colspan="7" style="text-align: center; padding: 2rem;">
-                        <span class="loading"></span> Loading data...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          `;
+                    <div class="rounded-xl overflow-hidden border border-zinc-200 shadow-sm">
+                        <table class="w-full">
+                            <thead class="bg-zinc-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Worker ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Worker Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Department</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Start Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Last Updated</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Updated By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="onboarding-table-body" class="divide-y divide-zinc-200">
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center text-zinc-600">
+                                        <span class="loading"></span> Loading data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
         }
 
         async function loadLiveOnboardingData(highlightId = null) {
-          try {
-            // Fetch onboarding and workers data
-            const [onboardingRes, workersRes] = await Promise.all([
-              axios.get(`${API_BASE}/hr/onboarding`),
-              axios.get(`${API_BASE}/hr/workers`)
-            ]);
+            try {
+                const [onboardingRes, workersRes] = await Promise.all([
+                    axios.get(`${API_BASE}/hr/onboarding`),
+                    axios.get(`${API_BASE}/hr/workers`)
+                ]);
 
-            const onboardings = onboardingRes.data;
-            const workers = workersRes.data;
+                const onboardings = onboardingRes.data;
+                const workers = workersRes.data;
 
-            // Create worker lookup map
-            const workerMap = {};
-            workers.forEach(worker => {
-              workerMap[worker.id] = worker;
-            });
+                const workerMap = {};
+                workers.forEach(worker => {
+                    workerMap[worker.id] = worker;
+                });
 
-            // Join data and include updatedBy
-            onboardingData = onboardings.map(onboarding => {
-              const worker = workerMap[onboarding.workerId];
-              return {
-                id: onboarding.id,
-                workerId: onboarding.workerId,
-                workerName: worker ? worker.descriptor : 'Unknown',
-                status: onboarding.status,
-                department: worker?.primaryJob?.department || 'N/A',
-                startDate: onboarding.startDate,
-                lastUpdated: onboarding.lastUpdated,
-                updatedBy: onboarding.updatedBy || updatedByMap[onboarding.id] || 'System'
-              };
-            });
+                onboardingData = onboardings.map(onboarding => {
+                    const worker = workerMap[onboarding.workerId];
+                    return {
+                        id: onboarding.id,
+                        workerId: onboarding.workerId,
+                        workerName: onboarding.workerName || (worker ? worker.descriptor : 'Unknown'),
+                        status: onboarding.status,
+                        department: onboarding.department || worker?.primaryJob?.department || 'N/A',
+                        startDate: onboarding.startDate,
+                        lastUpdated: onboarding.lastUpdated,
+                        updatedBy: onboarding.updatedBy || updatedByMap[onboarding.workerId] || 'System'
+                    };
+                });
 
-            // Calculate statistics
-            const stats = {
-              total: onboardingData.length,
-              pending: onboardingData.filter(d => d.status === 'pending').length,
-              inProgress: onboardingData.filter(d => d.status === 'in-progress').length,
-              completed: onboardingData.filter(d => d.status === 'completed').length
-            };
+                const stats = {
+                    total: onboardingData.length,
+                    pending: onboardingData.filter(d => d.status === 'pending').length,
+                    inProgress: onboardingData.filter(d => d.status === 'in-progress').length,
+                    completed: onboardingData.filter(d => d.status === 'completed').length
+                };
 
-            // Update stats display
-            document.getElementById('stat-total').textContent = stats.total;
-            document.getElementById('stat-pending').textContent = stats.pending;
-            document.getElementById('stat-in-progress').textContent = stats.inProgress;
-            document.getElementById('stat-completed').textContent = stats.completed;
+                document.getElementById('stat-total').textContent = stats.total;
+                document.getElementById('stat-pending').textContent = stats.pending;
+                document.getElementById('stat-in-progress').textContent = stats.inProgress;
+                document.getElementById('stat-completed').textContent = stats.completed;
 
-            // Render table
-            renderOnboardingTable(onboardingData, highlightId);
+                renderOnboardingTable(onboardingData, highlightId);
+                updateSearchInfo(onboardingData.length, onboardingData.length);
+                showNotification(`✅ Loaded ${onboardingData.length} onboarding records`);
 
-            // Update search results info
-            updateSearchInfo(onboardingData.length, onboardingData.length);
-
-            showNotification(`✅ Loaded ${onboardingData.length} onboarding records`);
-
-          } catch (error) {
-            console.error('Error loading onboarding data:', error);
-            document.getElementById('onboarding-table-body').innerHTML = `
-              <tr>
-                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--error-red);">
-                  ❌ Error loading data: ${error.message}
-                </td>
-              </tr>
-            `;
-            showNotification('❌ Failed to load data', 'error');
-          }
+            } catch (error) {
+                console.error('Error loading onboarding data:', error);
+                document.getElementById('onboarding-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-red-600">
+                            ❌ Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                showNotification('❌ Failed to load data', 'error');
+            }
         }
 
         function renderOnboardingTable(data, highlightId = null) {
-          const tableBody = document.getElementById('onboarding-table-body');
+            const tableBody = document.getElementById('onboarding-table-body');
 
-          if (data.length === 0) {
-            tableBody.innerHTML = `
-              <tr>
-                <td colspan="7">
-                  <div class="no-results-message">
-                    <div class="no-results-icon">🔍</div>
-                    <p>No results found</p>
-                  </div>
-                </td>
-              </tr>
-            `;
-          } else {
-            tableBody.innerHTML = data.map(record => {
-              const shouldHighlight = highlightId && record.id === highlightId;
-              const rowClass = shouldHighlight ? 'row-updated' : '';
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-12 text-center">
+                            <div class="text-5xl mb-4 opacity-50">🔍</div>
+                            <p class="text-zinc-600">No results found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableBody.innerHTML = data.map(record => {
+                    const shouldHighlight = highlightId && record.id === highlightId;
+                    const statusColors = {
+                        'pending': 'bg-zinc-100 text-zinc-800',
+                        'in-progress': 'bg-teal-100 text-teal-800',
+                        'completed': 'bg-green-100 text-green-800'
+                    };
+                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-800';
 
-              return `
-                <tr id="row-${record.id}" class="${rowClass}">
-                  <td><span class="worker-id">${record.workerId.substring(0, 8)}...</span></td>
-                  <td>${record.workerName}</td>
-                  <td><span class="status-badge status-${record.status}">${record.status}</span></td>
-                  <td>${record.department}</td>
-                  <td>${formatDate(record.startDate)}</td>
-                  <td>${formatDate(record.lastUpdated)}</td>
-                  <td>${record.updatedBy}</td>
-                </tr>
-              `;
-            }).join('');
+                    return `
+                        <tr id="row-${record.id}" class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-orange bg-orange-50' : ''}">
+                            <td class="px-4 py-3 text-sm font-mono text-teal cursor-help" title="${record.workerId}">${record.workerId.length > 15 ? record.workerId.substring(0, 12) + '...' : record.workerId}</td>
+                            <td class="px-4 py-3 text-sm text-deepblue" title="${record.workerName}">${record.workerName}</td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusClass}">${record.status}</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-zinc-600" title="${record.department}">${record.department}</td>
+                            <td class="px-4 py-3 text-sm text-zinc-600">${formatDate(record.startDate)}</td>
+                            <td class="px-4 py-3 text-sm text-zinc-600">${formatDate(record.lastUpdated)}</td>
+                            <td class="px-4 py-3 text-sm text-zinc-600" title="${record.updatedBy}">${record.updatedBy.length > 25 ? record.updatedBy.substring(0, 22) + '...' : record.updatedBy}</td>
+                        </tr>
+                    `;
+                }).join('');
 
-            // Trigger fade-out animation for highlighted row
-            if (highlightId) {
-              setTimeout(() => {
-                const row = document.getElementById(`row-${highlightId}`);
-                if (row) {
-                  row.classList.remove('row-updated');
-                  row.classList.add('row-updated-fading');
-
-                  // Remove the fading class after animation completes
-                  setTimeout(() => {
-                    row.classList.remove('row-updated-fading');
-                  }, 5000);
+                if (highlightId) {
+                    setTimeout(() => {
+                        const row = document.getElementById(`row-${highlightId}`);
+                        if (row) {
+                            row.classList.remove('ring-2', 'ring-orange', 'bg-orange-50');
+                            row.classList.add('row-updated-fading');
+                            setTimeout(() => {
+                                row.classList.remove('row-updated-fading');
+                            }, 5000);
+                        }
+                    }, 100);
                 }
-              }, 100);
             }
-          }
         }
 
         function formatDate(dateString) {
-          if (!dateString) return 'N/A';
-          const date = new Date(dateString);
-          return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
         function showNotification(message, type = 'success') {
-          const toast = document.getElementById('notification-toast');
-          toast.textContent = message;
-          toast.classList.add('show');
+            const toast = document.getElementById('notification-toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
 
-          if (type === 'error') {
-            toast.style.background = 'var(--error-red)';
-          } else {
-            toast.style.background = 'var(--teal)';
-          }
+            if (type === 'error') {
+                toast.classList.remove('bg-teal');
+                toast.classList.add('bg-red-500');
+            } else {
+                toast.classList.remove('bg-red-500');
+                toast.classList.add('bg-teal');
+            }
 
-          setTimeout(() => {
-            toast.classList.remove('show');
-          }, 3000);
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
         }
 
         function filterOnboardingTable() {
-          const searchInput = document.getElementById('onboarding-search');
-          const clearBtn = document.getElementById('clear-search-btn');
+            const searchInput = document.getElementById('onboarding-search');
+            const clearBtn = document.getElementById('clear-search-btn');
 
-          if (!searchInput || !onboardingData || onboardingData.length === 0) return;
+            if (!searchInput || !onboardingData || onboardingData.length === 0) return;
 
-          const searchTerm = searchInput.value.toLowerCase().trim();
+            const searchTerm = searchInput.value.toLowerCase().trim();
 
-          // Show/hide clear button
-          if (searchTerm) {
-            clearBtn.classList.add('show');
-          } else {
-            clearBtn.classList.remove('show');
-          }
+            if (searchTerm) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
 
-          // Filter data
-          const filteredData = searchTerm
-            ? onboardingData.filter(record => {
-                return (
-                  record.workerName.toLowerCase().includes(searchTerm) ||
-                  record.workerId.toLowerCase().includes(searchTerm) ||
-                  record.department.toLowerCase().includes(searchTerm) ||
-                  record.updatedBy.toLowerCase().includes(searchTerm)
-                );
-              })
-            : onboardingData;
+            const filteredData = searchTerm
+                ? onboardingData.filter(record => {
+                    return (
+                        (record.workerName && record.workerName.toLowerCase().includes(searchTerm)) ||
+                        (record.workerId && record.workerId.toLowerCase().includes(searchTerm)) ||
+                        (record.department && record.department.toLowerCase().includes(searchTerm)) ||
+                        (record.updatedBy && record.updatedBy.toLowerCase().includes(searchTerm))
+                    );
+                })
+                : onboardingData;
 
-          // Render filtered results
-          renderOnboardingTable(filteredData);
-
-          // Update search info
-          updateSearchInfo(filteredData.length, onboardingData.length);
+            renderOnboardingTable(filteredData);
+            updateSearchInfo(filteredData.length, onboardingData.length);
         }
 
         function clearSearch() {
-          const searchInput = document.getElementById('onboarding-search');
-          const clearBtn = document.getElementById('clear-search-btn');
+            const searchInput = document.getElementById('onboarding-search');
+            const clearBtn = document.getElementById('clear-search-btn');
 
-          if (searchInput) {
-            searchInput.value = '';
-            clearBtn.classList.remove('show');
-            filterOnboardingTable();
-          }
+            if (searchInput) {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                filterOnboardingTable();
+            }
         }
 
         function updateSearchInfo(shown, total) {
-          const infoElement = document.getElementById('search-results-info');
-          if (infoElement) {
-            if (shown === total) {
-              infoElement.textContent = `Showing ${total} worker${total !== 1 ? 's' : ''}`;
-            } else {
-              infoElement.textContent = `Showing ${shown} of ${total} workers`;
+            const infoElement = document.getElementById('search-results-info');
+            if (infoElement) {
+                if (shown === total) {
+                    infoElement.textContent = `Showing ${total} worker${total !== 1 ? 's' : ''}`;
+                } else {
+                    infoElement.textContent = `Showing ${shown} of ${total} workers`;
+                }
             }
-          }
         }
 
         async function testEndpoint(cardId, method, path, needsParam, hasBody) {
-          const button = document.getElementById(`btn-${cardId}`);
-          const responseArea = document.getElementById(`response-${cardId}`);
-          const responseContent = document.getElementById(`response-content-${cardId}`);
+            const button = document.getElementById(`btn-${cardId}`);
+            const responseArea = document.getElementById(`response-${cardId}`);
+            const responseContent = document.getElementById(`response-content-${cardId}`);
 
-          if (!button || !responseArea || !responseContent) {
-            console.error('UI elements not found for:', cardId);
-            return;
-          }
-
-          button.disabled = true;
-          button.innerHTML = '<span class="loading"></span> Testing...';
-          responseArea.style.display = 'block';
-
-          let finalPath = path;
-          let requestBody = null;
-          const startTime = performance.now();
-
-          try {
-            // Handle ID parameter
-            if (needsParam) {
-              const paramInput = document.getElementById(`param-${cardId}`);
-              let paramValue = paramInput ? paramInput.value.trim() : '';
-
-              if (!paramValue) {
-                paramValue = await getSampleId(needsParam);
-                if (paramValue && paramInput) {
-                  paramInput.value = paramValue;
-                }
-              }
-
-              if (paramValue) {
-                finalPath = path.replace(':id', paramValue);
-              } else {
-                throw new Error(`${needsParam.toUpperCase()} ID is required`);
-              }
+            if (!button || !responseArea || !responseContent) {
+                console.error('UI elements not found for:', cardId);
+                return;
             }
 
-            // Handle request body
-            if (hasBody) {
-              const bodyInput = document.getElementById(`body-${cardId}`);
-              if (bodyInput && bodyInput.value.trim()) {
-                requestBody = JSON.parse(bodyInput.value);
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Testing...';
+            responseArea.classList.remove('hidden');
 
-                // Auto-fill worker IDs
-                if (requestBody.workerId === '' && sampleIds.worker) {
-                  requestBody.workerId = sampleIds.worker;
-                  bodyInput.value = JSON.stringify(requestBody, null, 2);
+            let finalPath = path;
+            let requestBody = null;
+            const startTime = performance.now();
+
+            try {
+                if (needsParam) {
+                    const paramInput = document.getElementById(`param-${cardId}`);
+                    let paramValue = paramInput ? paramInput.value.trim() : '';
+
+                    if (!paramValue) {
+                        paramValue = await getSampleId(needsParam);
+                        if (paramValue && paramInput) {
+                            paramInput.value = paramValue;
+                        }
+                    }
+
+                    if (paramValue) {
+                        finalPath = path.replace(':id', paramValue);
+                    } else {
+                        throw new Error(`${needsParam.toUpperCase()} ID is required`);
+                    }
                 }
 
-                if (requestBody.assignedTo === '' && sampleIds.worker) {
-                  requestBody.assignedTo = sampleIds.worker;
-                  bodyInput.value = JSON.stringify(requestBody, null, 2);
+                if (hasBody) {
+                    const bodyInput = document.getElementById(`body-${cardId}`);
+                    if (bodyInput && bodyInput.value.trim()) {
+                        requestBody = JSON.parse(bodyInput.value);
+
+                        if (requestBody.workerId === '' && sampleIds.worker) {
+                            requestBody.workerId = sampleIds.worker;
+                            bodyInput.value = JSON.stringify(requestBody, null, 2);
+                        }
+
+                        if (requestBody.assignedTo === '' && sampleIds.worker) {
+                            requestBody.assignedTo = sampleIds.worker;
+                            bodyInput.value = JSON.stringify(requestBody, null, 2);
+                        }
+                    }
                 }
-              }
-            }
 
-            // Make API request
-            const config = {
-              method: method,
-              url: `${API_BASE}${finalPath}`,
-              headers: { 'Content-Type': 'application/json' }
-            };
+                const config = {
+                    method: method,
+                    url: `${API_BASE}${finalPath}`,
+                    headers: { 'Content-Type': 'application/json' }
+                };
 
-            if (requestBody) config.data = requestBody;
+                if (requestBody) config.data = requestBody;
 
-            const response = await axios(config);
-            const responseTime = Math.round(performance.now() - startTime);
-            const dataLength = Array.isArray(response.data) ? response.data.length : 'Object';
+                const response = await axios(config);
+                const responseTime = Math.round(performance.now() - startTime);
+                const dataLength = Array.isArray(response.data) ? response.data.length : 'Object';
 
-            responseContent.innerHTML = `✅ ${response.status} ${response.statusText}
+                responseContent.innerHTML = `✅ ${response.status} ${response.statusText}
 📊 Records: ${dataLength} | ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
 
 📋 Response Data:
 ${JSON.stringify(response.data, null, 2)}`;
 
-            if (window.Prism) {
-              window.Prism.highlightAllUnder(responseContent);
-            }
-
-            // Auto-refresh live data after POST/PATCH operations
-            if ((method === 'POST' || method === 'PATCH') && path.includes('/hr/onboarding')) {
-              // Track updatedBy from response
-              if (response.data) {
-                const recordId = response.data.id;
-                const updatedBy = response.data.updatedBy || 'API Update';
-
-                if (recordId) {
-                  updatedByMap[recordId] = updatedBy;
-                  // Save to localStorage
-                  localStorage.setItem('onboarding_updatedBy', JSON.stringify(updatedByMap));
+                if (window.Prism) {
+                    window.Prism.highlightAllUnder(responseContent);
                 }
 
-                // Refresh and highlight the updated row
-                setTimeout(() => {
-                  if (document.getElementById('onboarding-table-body')) {
-                    loadLiveOnboardingData(recordId);
-                  }
-                }, 500);
-              } else {
-                // No specific ID, just refresh
-                setTimeout(() => {
-                  if (document.getElementById('onboarding-table-body')) {
-                    loadLiveOnboardingData();
-                  }
-                }, 500);
-              }
-            }
+                if ((method === 'POST' || method === 'PATCH') && path.includes('/hr/onboarding')) {
+                    if (response.data) {
+                        const recordId = response.data.id;
+                        const updatedBy = response.data.updatedBy || 'API Update';
 
-          } catch (error) {
-            const responseTime = Math.round(performance.now() - startTime);
-            const status = error.response?.status || 'Network Error';
+                        if (recordId) {
+                            updatedByMap[recordId] = updatedBy;
+                            localStorage.setItem('onboarding_updatedBy', JSON.stringify(updatedByMap));
+                        }
 
-            responseContent.innerHTML = `❌ Error: ${status}
+                        setTimeout(() => {
+                            if (document.getElementById('onboarding-table-body')) {
+                                loadLiveOnboardingData(recordId);
+                            }
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            if (document.getElementById('onboarding-table-body')) {
+                                loadLiveOnboardingData();
+                            }
+                        }, 500);
+                    }
+                }
+
+            } catch (error) {
+                const responseTime = Math.round(performance.now() - startTime);
+                const status = error.response?.status || 'Network Error';
+
+                responseContent.innerHTML = `❌ Error: ${status}
 ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
 
 🔍 Error Details:
 ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}`;
-          }
+            }
 
-          button.disabled = false;
-          button.innerHTML = 'TEST ENDPOINT 🚀';
+            button.disabled = false;
+            button.innerHTML = 'TEST ENDPOINT 🚀';
         }
 
         async function getSampleId(type) {
-          if (sampleIds[type]) return sampleIds[type];
+            if (sampleIds[type]) return sampleIds[type];
 
-          const endpoints = {
-            worker: '/hr/workers',
-            invoice: '/finance/invoices',
-            customer: '/crm/customers',
-            device: '/iot/devices',
-            opportunity: '/crm/opportunities',
-            onboarding: '/hr/onboarding'
-          };
+            const endpoints = {
+                worker: '/hr/workers',
+                invoice: '/finance/invoices',
+                customer: '/crm/customers',
+                device: '/iot/devices',
+                opportunity: '/crm/opportunities',
+                onboarding: '/hr/onboarding'
+            };
 
-          const endpoint = endpoints[type];
-          if (!endpoint) {
-            console.warn(`No endpoint defined for type: ${type}`);
-            return null;
-          }
-
-          try {
-            const response = await axios.get(`${API_BASE}${endpoint}`);
-            if (response.data && response.data.length > 0) {
-              sampleIds[type] = response.data[0].id;
-              return sampleIds[type];
+            const endpoint = endpoints[type];
+            if (!endpoint) {
+                console.warn(`No endpoint defined for type: ${type}`);
+                return null;
             }
-          } catch (error) {
-            console.warn(`Could not fetch ${type} ID from ${API_BASE}${endpoint}:`, error);
-          }
-          return null;
+
+            try {
+                const response = await axios.get(`${API_BASE}${endpoint}`);
+                if (response.data && response.data.length > 0) {
+                    sampleIds[type] = response.data[0].id;
+                    return sampleIds[type];
+                }
+            } catch (error) {
+                console.warn(`Could not fetch ${type} ID from ${API_BASE}${endpoint}:`, error);
+            }
+            return null;
         }
 
         async function loadSampleIds() {
-          await Promise.all(Object.keys(sampleIds).map(type => getSampleId(type)));
+            await Promise.all(Object.keys(sampleIds).map(type => getSampleId(type)));
         }
 
         async function checkApiHealth() {
-          const startTime = performance.now();
+            const startTime = performance.now();
 
-          try {
-            const response = await axios.get(`${API_BASE.replace('/api', '')}/health`);
-            const responseTime = Math.round(performance.now() - startTime);
+            try {
+                const response = await axios.get(`${API_BASE.replace('/api', '')}/health`);
+                const responseTime = Math.round(performance.now() - startTime);
 
-            apiHealth = { isOnline: true, responseTime: responseTime };
+                apiHealth = { isOnline: true, responseTime: responseTime };
 
-            document.getElementById('connection-status').textContent = '●';
-            document.getElementById('connection-status').style.color = 'var(--success-green)';
-            document.getElementById('response-time').textContent = `${responseTime}ms`;
+                document.getElementById('connection-status').textContent = '●';
+                document.getElementById('connection-status').style.color = '#31d263';
+                document.getElementById('response-time').textContent = `${responseTime}ms`;
 
-          } catch (error) {
-            apiHealth.isOnline = false;
-            document.getElementById('connection-status').textContent = '●';
-            document.getElementById('connection-status').style.color = 'var(--error-red)';
-          }
+            } catch (error) {
+                apiHealth.isOnline = false;
+                document.getElementById('connection-status').textContent = '●';
+                document.getElementById('connection-status').style.color = '#f5222d';
+            }
         }
 
         console.log('🚀 UiPath Workshop API Interface - All 87 endpoints ready!');

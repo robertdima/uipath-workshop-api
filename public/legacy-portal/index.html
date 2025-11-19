@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACME Legacy HR Portal</title>
+  <style>
+    /* Intentionally "legacy" looking design */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      border: 2px solid #333;
+      box-shadow: 5px 5px 0px #999;
+    }
+
+    .header {
+      background: #003366;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .header .version {
+      font-size: 11px;
+      color: #99ccff;
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: #e0e0e0;
+      border-bottom: 2px solid #999;
+    }
+
+    .nav-tabs a {
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 12px;
+      border-right: 1px solid #999;
+    }
+
+    .nav-tabs a:hover {
+      background: #d0d0d0;
+    }
+
+    .nav-tabs a.active {
+      background: white;
+      border-bottom: 2px solid white;
+      margin-bottom: -2px;
+      font-weight: bold;
+    }
+
+    .form-container {
+      padding: 20px;
+    }
+
+    .form-title {
+      background: #e0e0e0;
+      padding: 10px;
+      margin: -20px -20px 20px -20px;
+      border-bottom: 1px solid #999;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-group label {
+      width: 120px;
+      font-size: 12px;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    .form-group .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #999;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: 2px solid #003366;
+    }
+
+    .form-group.error input,
+    .form-group.error select,
+    .form-group.error textarea {
+      border-color: red;
+      background-color: #ffe0e0;
+    }
+
+    .required::after {
+      content: "*";
+      color: red;
+    }
+
+    textarea {
+      height: 60px;
+      resize: vertical;
+    }
+
+    .date-input-group {
+      display: flex;
+      flex: 1;
+    }
+
+    .date-input-group input {
+      flex: 1;
+      border-right: none;
+    }
+
+    .date-input-group button {
+      padding: 5px 10px;
+      background: #f0f0f0;
+      border: 1px solid #999;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .date-input-group button:hover {
+      background: #e0e0e0;
+    }
+
+    .button-group {
+      text-align: center;
+      padding: 15px 0;
+      border-top: 1px solid #ccc;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 8px 20px;
+      margin: 0 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    #btnClear {
+      background: #f0f0f0;
+      border: 1px solid #999;
+    }
+
+    #btnClear:hover {
+      background: #e0e0e0;
+    }
+
+    #btnSubmit {
+      background: #003366;
+      color: white;
+      border: 1px solid #001a33;
+    }
+
+    #btnSubmit:hover {
+      background: #004488;
+    }
+
+    #btnSubmit:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .status-container {
+      margin: 0 -20px -20px -20px;
+      padding: 10px 20px;
+      border-top: 1px solid #999;
+      font-size: 12px;
+    }
+
+    .status-ready {
+      background: #e0e0e0;
+      color: #666;
+    }
+
+    .status-processing {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 10px;
+      color: #666;
+      background: #f0f0f0;
+      border-top: 1px solid #ccc;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #003366;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-box {
+      background: white;
+      padding: 30px 50px;
+      border: 2px solid #333;
+      box-shadow: 5px 5px 0px #666;
+      text-align: center;
+    }
+
+    .loading-box .spinner {
+      width: 30px;
+      height: 30px;
+      border-width: 3px;
+      margin: 0 0 15px 0;
+    }
+
+    .loading-box p {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    /* Date picker popup */
+    .date-picker-popup {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 2px solid #333;
+      box-shadow: 5px 5px 0px #999;
+      z-index: 100;
+      width: 250px;
+    }
+
+    .date-picker-popup.active {
+      display: block;
+    }
+
+    .date-picker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #003366;
+      color: white;
+    }
+
+    .date-picker-header button {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 5px;
+    }
+
+    .date-picker-header button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .date-picker-header span {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .date-picker-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 10px;
+    }
+
+    .date-picker-days .day-header {
+      padding: 5px;
+      background: #e0e0e0;
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+    }
+
+    .date-picker-days .day {
+      padding: 8px 5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .date-picker-days .day:hover {
+      background: #cce5ff;
+    }
+
+    .date-picker-days .day.other-month {
+      color: #999;
+    }
+
+    .date-picker-days .day.today {
+      font-weight: bold;
+      background: #ffffd0;
+    }
+
+    .date-picker-days .day.selected {
+      background: #003366;
+      color: white;
+    }
+
+    .date-picker-footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-top: 1px solid #999;
+    }
+
+    .date-picker-footer button {
+      padding: 5px 10px;
+      font-size: 10px;
+    }
+
+    /* Help modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 20px;
+      border: 2px solid #333;
+      box-shadow: 5px 5px 0px #666;
+      max-width: 400px;
+      font-size: 12px;
+    }
+
+    .modal-box h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #999;
+      padding-bottom: 10px;
+    }
+
+    .modal-box button {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏢 ACME Corporation</h1>
+      <div class="version">Legacy HR Portal v2.3.1</div>
+    </div>
+
+    <div class="nav-tabs">
+      <a href="/legacy-portal" id="tabNew" class="active">New Registration</a>
+      <a href="/legacy-portal/search.html" id="tabView">View Registrations</a>
+      <a href="#" id="tabHelp" onclick="showHelp(); return false;">Help</a>
+    </div>
+
+    <div class="form-container">
+      <div class="form-title">New Employee Registration</div>
+
+      <form id="registrationForm" onsubmit="return handleSubmit(event)">
+        <div class="form-group" id="group-employeeId">
+          <label for="employeeId" class="required">Employee ID</label>
+          <div class="input-wrapper">
+            <input type="text" id="employeeId" name="employeeId"
+                   placeholder="e.g., WRK-001" required>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-fullName">
+          <label for="fullName" class="required">Full Name</label>
+          <div class="input-wrapper">
+            <input type="text" id="fullName" name="fullName"
+                   placeholder="John Doe" required>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-department">
+          <label for="department" class="required">Department</label>
+          <div class="input-wrapper">
+            <select id="department" name="department" required>
+              <option value="">-- Select Department --</option>
+              <option value="engineering">Engineering</option>
+              <option value="marketing">Marketing</option>
+              <option value="sales">Sales</option>
+              <option value="finance">Finance</option>
+              <option value="hr">Human Resources</option>
+              <option value="operations">Operations</option>
+              <option value="legal">Legal</option>
+              <option value="it">IT</option>
+              <option value="support">Customer Support</option>
+              <option value="product">Product</option>
+              <option value="research">Research</option>
+              <option value="qa">Quality Assurance</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-position">
+          <label for="position">Position</label>
+          <div class="input-wrapper">
+            <input type="text" id="position" name="position"
+                   placeholder="Software Developer">
+          </div>
+        </div>
+
+        <div class="form-group" id="group-email">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <input type="text" id="email" name="email"
+                   placeholder="john.doe@acme.com">
+          </div>
+        </div>
+
+        <div class="form-group" id="group-startDate">
+          <label for="startDate">Start Date</label>
+          <div class="input-wrapper">
+            <div class="date-input-group">
+              <input type="text" id="startDate" name="startDate"
+                     placeholder="MM/DD/YYYY" readonly>
+              <button type="button" id="btnDatePicker" onclick="toggleDatePicker()">📅</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-manager">
+          <label for="manager">Manager</label>
+          <div class="input-wrapper">
+            <input type="text" id="manager" name="manager"
+                   placeholder="Jane Smith">
+          </div>
+        </div>
+
+        <div class="form-group" id="group-notes">
+          <label for="notes">Notes</label>
+          <div class="input-wrapper">
+            <textarea id="notes" name="notes"
+                      placeholder="Additional information..."></textarea>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="button" id="btnClear" onclick="clearForm()">
+            Clear Form
+          </button>
+          <button type="submit" id="btnSubmit">
+            Submit Registration
+          </button>
+        </div>
+      </form>
+
+      <div id="statusContainer" class="status-container status-ready">
+        <span id="statusMessage">Ready</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      © 2015 ACME Corporation - Internal Use Only
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p id="loadingMessage">Processing...</p>
+    </div>
+  </div>
+
+  <!-- Date Picker Popup -->
+  <div id="datePickerPopup" class="date-picker-popup">
+    <div class="date-picker-header">
+      <button type="button" id="btnPrevMonth" onclick="changeMonth(-1)">◀</button>
+      <span id="currentMonth">November 2025</span>
+      <button type="button" id="btnNextMonth" onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="date-picker-days" id="datePickerGrid">
+      <!-- Calendar will be generated here -->
+    </div>
+    <div class="date-picker-footer">
+      <button type="button" id="btnToday" onclick="selectToday()">Today</button>
+      <button type="button" id="btnClearDate" onclick="clearDate()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>Help - New Employee Registration</h3>
+      <p><strong>Required Fields:</strong></p>
+      <ul>
+        <li>Employee ID (format: PREFIX-NUMBER, e.g., WRK-001)</li>
+        <li>Full Name (at least 2 characters)</li>
+        <li>Department (select from list)</li>
+      </ul>
+      <p><strong>Optional Fields:</strong></p>
+      <ul>
+        <li>Position, Email, Start Date, Manager, Notes</li>
+      </ul>
+      <p>For assistance, contact HR at ext. 5555.</p>
+      <button onclick="closeHelp()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // Session timeout management
+    let inactivityTimer;
+    const TIMEOUT_WARNING = 5 * 60 * 1000; // 5 minutes
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(showTimeoutWarning, TIMEOUT_WARNING);
+    }
+
+    function showTimeoutWarning() {
+      const continueSession = confirm(
+        "⚠️ Session Timeout Warning\n\n" +
+        "Your session will expire due to inactivity.\n\n" +
+        "Click OK to continue working or Cancel to logout."
+      );
+
+      if (continueSession) {
+        resetInactivityTimer();
+      } else {
+        window.location.href = '/legacy-portal?timeout=true';
+      }
+    }
+
+    // Reset timer on user activity
+    document.addEventListener('click', resetInactivityTimer);
+    document.addEventListener('keypress', resetInactivityTimer);
+    resetInactivityTimer();
+
+    // Date picker state
+    let currentDate = new Date();
+    let selectedDate = null;
+
+    function toggleDatePicker() {
+      const popup = document.getElementById('datePickerPopup');
+      const btn = document.getElementById('btnDatePicker');
+      const rect = btn.getBoundingClientRect();
+
+      if (popup.classList.contains('active')) {
+        popup.classList.remove('active');
+      } else {
+        popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+        popup.style.left = (rect.left + window.scrollX - 200) + 'px';
+        popup.classList.add('active');
+        renderCalendar();
+      }
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('datePickerGrid');
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+
+      document.getElementById('currentMonth').textContent =
+        monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+
+      const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      const startDay = firstDay.getDay();
+      const today = new Date();
+
+      let html = '<div class="day-header">Su</div><div class="day-header">Mo</div>' +
+                 '<div class="day-header">Tu</div><div class="day-header">We</div>' +
+                 '<div class="day-header">Th</div><div class="day-header">Fr</div>' +
+                 '<div class="day-header">Sa</div>';
+
+      // Previous month days
+      const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+      for (let i = startDay - 1; i >= 0; i--) {
+        const day = prevMonth.getDate() - i;
+        html += `<div class="day other-month" onclick="selectDay(${prevMonth.getFullYear()}, ${prevMonth.getMonth()}, ${day})">${day}</div>`;
+      }
+
+      // Current month days
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        let classes = 'day';
+        if (today.getDate() === day &&
+            today.getMonth() === currentDate.getMonth() &&
+            today.getFullYear() === currentDate.getFullYear()) {
+          classes += ' today';
+        }
+        if (selectedDate &&
+            selectedDate.getDate() === day &&
+            selectedDate.getMonth() === currentDate.getMonth() &&
+            selectedDate.getFullYear() === currentDate.getFullYear()) {
+          classes += ' selected';
+        }
+        html += `<div class="${classes}" onclick="selectDay(${currentDate.getFullYear()}, ${currentDate.getMonth()}, ${day})">${day}</div>`;
+      }
+
+      // Next month days
+      const remainingDays = 42 - (startDay + lastDay.getDate());
+      for (let day = 1; day <= remainingDays; day++) {
+        html += `<div class="day other-month" onclick="selectDay(${currentDate.getFullYear()}, ${currentDate.getMonth() + 1}, ${day})">${day}</div>`;
+      }
+
+      grid.innerHTML = html;
+    }
+
+    function changeMonth(delta) {
+      currentDate.setMonth(currentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function selectDay(year, month, day) {
+      selectedDate = new Date(year, month, day);
+      const formatted = String(month + 1).padStart(2, '0') + '/' +
+                       String(day).padStart(2, '0') + '/' + year;
+      document.getElementById('startDate').value = formatted;
+      document.getElementById('datePickerPopup').classList.remove('active');
+    }
+
+    function selectToday() {
+      const today = new Date();
+      selectDay(today.getFullYear(), today.getMonth(), today.getDate());
+    }
+
+    function clearDate() {
+      selectedDate = null;
+      document.getElementById('startDate').value = '';
+      document.getElementById('datePickerPopup').classList.remove('active');
+    }
+
+    // Close date picker when clicking outside
+    document.addEventListener('click', function(e) {
+      const popup = document.getElementById('datePickerPopup');
+      const btn = document.getElementById('btnDatePicker');
+      if (!popup.contains(e.target) && e.target !== btn) {
+        popup.classList.remove('active');
+      }
+    });
+
+    // Help modal
+    function showHelp() {
+      document.getElementById('helpModal').classList.add('active');
+    }
+
+    function closeHelp() {
+      document.getElementById('helpModal').classList.remove('active');
+    }
+
+    // Form functions
+    function clearForm() {
+      document.getElementById('registrationForm').reset();
+      selectedDate = null;
+      clearErrors();
+      setStatus('ready', 'Ready');
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.form-group').forEach(group => {
+        group.classList.remove('error');
+      });
+    }
+
+    function setStatus(type, message) {
+      const container = document.getElementById('statusContainer');
+      const messageEl = document.getElementById('statusMessage');
+
+      container.className = 'status-container status-' + type;
+      messageEl.innerHTML = message;
+    }
+
+    function showFieldError(fieldId) {
+      document.getElementById('group-' + fieldId).classList.add('error');
+    }
+
+    function setFormEnabled(enabled) {
+      const form = document.getElementById('registrationForm');
+      const inputs = form.querySelectorAll('input, select, textarea, button');
+      inputs.forEach(input => {
+        input.disabled = !enabled;
+      });
+    }
+
+    function showLoading(message) {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+      clearErrors();
+
+      // Get form values
+      const employeeId = document.getElementById('employeeId').value.trim();
+      const fullName = document.getElementById('fullName').value.trim();
+      const department = document.getElementById('department').value;
+      const position = document.getElementById('position').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const manager = document.getElementById('manager').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+
+      // Validation
+      const errors = [];
+
+      if (!employeeId) {
+        errors.push("Employee ID is required");
+        showFieldError('employeeId');
+      } else if (!/^[A-Z]+-\d+$/i.test(employeeId)) {
+        errors.push("Employee ID must be format: PREFIX-NUMBER (e.g., WRK-001)");
+        showFieldError('employeeId');
+      }
+
+      if (!fullName) {
+        errors.push("Full Name is required");
+        showFieldError('fullName');
+      } else if (fullName.length < 2) {
+        errors.push("Name must be at least 2 characters");
+        showFieldError('fullName');
+      } else if (!/^[a-zA-Z\s\-']+$/.test(fullName)) {
+        errors.push("Name contains invalid characters");
+        showFieldError('fullName');
+      }
+
+      if (!department) {
+        errors.push("Department is required");
+        showFieldError('department');
+      }
+
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push("Invalid email format");
+        showFieldError('email');
+      }
+
+      // Show validation errors
+      if (errors.length > 0) {
+        setStatus('error', '✗ ' + errors.join('<br>✗ '));
+        return false;
+      }
+
+      // Get department display name
+      const deptSelect = document.getElementById('department');
+      const deptName = deptSelect.options[deptSelect.selectedIndex].text;
+
+      // Show confirmation dialog
+      const confirmed = confirm(
+        "Submit this registration?\n\n" +
+        "Employee ID: " + employeeId + "\n" +
+        "Name: " + fullName + "\n" +
+        "Department: " + deptName + "\n\n" +
+        "Click OK to confirm or Cancel to review."
+      );
+
+      if (!confirmed) {
+        return false;
+      }
+
+      // Disable form and show processing
+      setFormEnabled(false);
+
+      try {
+        // Multi-step loading simulation
+        showLoading("Connecting to HR database...");
+        await delay(1000);
+
+        showLoading("Validating employee ID...");
+        await delay(800);
+
+        // 10% chance of simulated error for testing
+        if (Math.random() < 0.1) {
+          throw new Error("Database connection timeout. Please try again.");
+        }
+
+        showLoading("Checking for duplicates...");
+        await delay(600);
+
+        // 5% chance of duplicate error
+        if (Math.random() < 0.05) {
+          throw new Error("Employee ID already exists in the system.");
+        }
+
+        showLoading("Creating registration record...");
+        await delay(1500);
+
+        showLoading("Generating confirmation...");
+        await delay(500);
+
+        hideLoading();
+
+        // Split full name into first and last name
+        const nameParts = fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
+
+        // Submit to backend API
+        const response = await fetch('/api/hr/legacy-portal/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            employeeId,
+            firstName,
+            lastName,
+            email,
+            department: deptName,
+            jobTitle: position,
+            manager,
+            startDate,
+            employmentType: 'Full-time',
+            location: 'Office',
+            notes
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Show success
+          const recordId = result.record ? result.record.id : '0';
+          setStatus('success',
+            '✓ Registration Complete! Confirmation: ' + result.registrationId +
+            '<br><a href="/legacy-portal/view.html?id=' + recordId + '" style="color: #155724;">View Details</a>'
+          );
+          // Clear form after successful submission
+          document.getElementById('registrationForm').reset();
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+
+      } catch (error) {
+        hideLoading();
+        setStatus('error', '✗ Error: ' + error.message);
+      }
+
+      setFormEnabled(true);
+      return false;
+    }
+
+    // Check for timeout message
+    if (window.location.search.includes('timeout=true')) {
+      alert('Your session has expired. Please log in again.');
+    }
+  </script>
+</body>
+</html>

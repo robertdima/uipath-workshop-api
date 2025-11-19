@@ -109,6 +109,7 @@
                     <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-workers">👤 Workers</a>
                     <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-performance">📈 Performance</a>
                     <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-onboarding">🎯 Onboarding</a>
+                    <a href="/legacy-portal/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🏢 Legacy Portal ↗</a>
                 </div>
 
                 <div class="mb-6">
@@ -254,7 +255,12 @@
                     { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding setups (filtered in UiPath)' },
                     { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding', body: {status: 'in-progress'} },
                     { method: 'POST', path: '/hr/onboarding', description: 'Create new onboarding record', body: {workerId: '', status: 'pending', startDate: '2025-01-15'} },
-                    { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' }
+                    { method: 'GET', path: '/hr/onboarding/:id', description: 'Get single onboarding record by ID', needsId: 'onboarding' },
+                    { method: 'DELETE', path: '/hr/onboarding/:id', description: 'Delete onboarding record', needsId: 'onboarding' },
+                    { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' },
+                    { method: 'POST', path: '/hr/legacy-portal/submit', description: 'Submit registration from Legacy Portal', body: {employeeId: 'EMP001', firstName: 'John', lastName: 'Doe', email: 'john@company.com', department: 'Engineering', startDate: '2025-01-15'} },
+                    { method: 'GET', path: '/hr/legacy-portal/submissions', description: 'Get all Legacy Portal submissions' },
+                    { method: 'GET', path: '/hr/legacy-portal/verify/:id', description: 'Verify registration by ID', needsId: 'onboarding' }
                 ],
                 hasLiveData: true
             },

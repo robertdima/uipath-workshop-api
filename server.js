@@ -624,6 +624,175 @@ server.get('/', (req, res) => {
   });
 });
 
+/* ---------- Legacy Portal Routes ---------- */
+
+// Serve legacy portal main page
+server.get('/legacy-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'legacy-portal', 'index.html'));
+});
+
+// Legacy Portal - Submit Registration
+server.post('/api/hr/legacy-portal/submit', (req, res) => {
+  const {
+    employeeId,
+    firstName,
+    lastName,
+    email,
+    department,
+    jobTitle,
+    manager,
+    startDate,
+    employmentType,
+    location,
+    notes
+  } = req.body;
+
+  // Validation
+  if (!employeeId || !firstName || !lastName || !email || !department) {
+    return res.status(400).json({
+      success: false,
+      error: 'Required fields missing: employeeId, firstName, lastName, email, department'
+    });
+  }
+
+  // Check for duplicate employee ID
+  const existingRecord = db.hr_onboardings.find(r => r.employeeId === employeeId);
+  if (existingRecord) {
+    return res.status(409).json({
+      success: false,
+      error: `Employee ID ${employeeId} already exists in the system`
+    });
+  }
+
+  // Generate new ID
+  const newId = db.hr_onboardings.length > 0
+    ? Math.max(...db.hr_onboardings.map(r => typeof r.id === 'number' ? r.id : parseInt(r.id) || 0)) + 1
+    : 1;
+
+  const newRecord = {
+    id: newId,
+    employeeId,
+    workerId: employeeId,
+    workerName: `${firstName} ${lastName}`,
+    firstName,
+    lastName,
+    email,
+    department,
+    jobTitle: jobTitle || 'Not Specified',
+    manager: manager || 'Not Assigned',
+    startDate: startDate || new Date().toISOString().split('T')[0],
+    employmentType: employmentType || 'Full-time',
+    location: location || 'Not Specified',
+    notes: notes || '',
+    status: 'pending',
+    completedTasks: 0,
+    totalTasks: 10,
+    equipmentAssigned: false,
+    accessGranted: false,
+    source: 'Legacy Portal',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  db.hr_onboardings.push(newRecord);
+
+  res.status(201).json({
+    success: true,
+    message: 'Registration submitted successfully',
+    registrationId: `REG-${String(newId).padStart(5, '0')}`,
+    record: newRecord
+  });
+});
+
+// Legacy Portal - Get All Submissions
+server.get('/api/hr/legacy-portal/submissions', (req, res) => {
+  // Filter only legacy portal submissions
+  const legacySubmissions = db.hr_onboardings.filter(r => r.source === 'Legacy Portal');
+
+  res.json({
+    success: true,
+    count: legacySubmissions.length,
+    submissions: legacySubmissions
+  });
+});
+
+// Legacy Portal - Verify Registration
+server.get('/api/hr/legacy-portal/verify/:id', (req, res) => {
+  const { id } = req.params;
+
+  // Try to find by numeric ID or registration ID
+  let record = db.hr_onboardings.find(r =>
+    r.id === parseInt(id) ||
+    r.id === id ||
+    r.employeeId === id
+  );
+
+  if (!record) {
+    return res.status(404).json({
+      success: false,
+      verified: false,
+      error: `Registration with ID ${id} not found`
+    });
+  }
+
+  res.json({
+    success: true,
+    verified: true,
+    registrationId: `REG-${String(record.id).padStart(5, '0')}`,
+    employeeId: record.employeeId,
+    workerName: record.workerName,
+    department: record.department,
+    status: record.status,
+    source: record.source || 'Dashboard',
+    createdAt: record.createdAt,
+    message: record.source === 'Legacy Portal'
+      ? 'Registration verified - submitted via Legacy Portal'
+      : 'Registration verified - submitted via Dashboard'
+  });
+});
+
+// Legacy Portal - Get single onboarding record by ID
+server.get('/api/hr/onboarding/:id', (req, res) => {
+  const { id } = req.params;
+
+  const record = db.hr_onboardings.find(r =>
+    r.id === parseInt(id) ||
+    r.id === id
+  );
+
+  if (!record) {
+    return res.status(404).json({
+      error: `Record with ID ${id} not found`
+    });
+  }
+
+  res.json(record);
+});
+
+// Legacy Portal - Delete onboarding record
+server.delete('/api/hr/onboarding/:id', (req, res) => {
+  const { id } = req.params;
+
+  const index = db.hr_onboardings.findIndex(r =>
+    r.id === parseInt(id) ||
+    r.id === id
+  );
+
+  if (index === -1) {
+    return res.status(404).json({
+      error: `Record with ID ${id} not found`
+    });
+  }
+
+  const deleted = db.hr_onboardings.splice(index, 1)[0];
+
+  res.json({
+    success: true,
+    message: 'Record deleted successfully',
+    deletedRecord: deleted
+  });
+});
+
 server.use(jsonServer.rewriter(rewrites));
 
 server.use(router);

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Registration - HR Employee Registration System</title>
+    <style>
+        /* Legacy styling - intentionally dated appearance */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+        }
+
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 15px 20px;
+            border-bottom: 3px solid #ffcc00;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            color: #cccccc;
+            margin-top: 5px;
+        }
+
+        .nav-tabs {
+            background-color: #004080;
+            padding: 0 20px;
+            display: flex;
+        }
+
+        .nav-tabs a {
+            color: #cccccc;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: inline-block;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs a:hover {
+            background-color: #003366;
+            color: white;
+        }
+
+        .nav-tabs a.active {
+            background-color: #f0f0f0;
+            color: #003366;
+            border-bottom: 3px solid #ffcc00;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .panel {
+            background-color: white;
+            border: 2px solid #003366;
+            box-shadow: 5px 5px 0px #999999;
+            margin-bottom: 20px;
+        }
+
+        .panel-header {
+            background-color: #003366;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        /* Back button */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #003366;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Record details */
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #003366;
+        }
+
+        .record-id {
+            font-size: 20px;
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .record-status {
+            padding: 8px 16px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #856404;
+        }
+
+        .status-in_progress {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 2px solid #004085;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #155724;
+        }
+
+        /* Detail grid */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #cccccc;
+        }
+
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #003366;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .detail-value.empty {
+            color: #999999;
+            font-style: italic;
+        }
+
+        /* Section headers */
+        .section-header {
+            background-color: #e0e0e0;
+            padding: 8px 10px;
+            font-weight: bold;
+            color: #003366;
+            margin: 20px 0 10px 0;
+            border-left: 4px solid #003366;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #003366;
+            color: white;
+            border-color: #003366;
+        }
+
+        .btn-primary:hover {
+            background-color: #004080;
+        }
+
+        .btn-secondary {
+            background-color: #666666;
+            color: white;
+            border-color: #666666;
+        }
+
+        .btn-secondary:hover {
+            background-color: #777777;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-content {
+            background-color: white;
+            padding: 30px 50px;
+            border: 3px solid #003366;
+            text-align: center;
+        }
+
+        .loading-content .spinner {
+            font-size: 24px;
+            margin-bottom: 15px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .loading-content .message {
+            color: #003366;
+            font-weight: bold;
+        }
+
+        /* Error message */
+        .error-message {
+            background-color: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Verification badge */
+        .verification-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .verified {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #155724;
+        }
+
+        .unverified {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #721c24;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666666;
+            font-size: 12px;
+            border-top: 1px solid #cccccc;
+            margin-top: 40px;
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-tabs, .action-buttons, .back-link, .footer {
+                display: none;
+            }
+            .panel {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner">&#9203;</div>
+            <div class="message" id="loadingMessage">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>&#128196; HR Employee Registration System</h1>
+        <div class="subtitle">Human Resources Department - Internal Use Only</div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <a href="/legacy-portal" id="tabNew">New Registration</a>
+        <a href="/legacy-portal/search.html" id="tabView" class="active">View Registrations</a>
+        <a href="#" id="tabHelp" onclick="showPrintHelp(); return false;">Print</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <a href="/legacy-portal/search.html" class="back-link" id="backLink">&laquo; Back to Search Results</a>
+
+        <!-- Record Details Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>&#128203; Registration Details</span>
+                <span id="verificationBadge"></span>
+            </div>
+            <div class="panel-body" id="recordContent">
+                <!-- Content will be loaded dynamically -->
+                <div class="loading-placeholder">Loading record...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2015 ACME Corporation - HR Systems Division</p>
+        <p>Version 3.2.1 | Last Updated: March 2015</p>
+        <p>For technical support, contact IT Help Desk ext. 4357</p>
+    </div>
+
+    <script>
+        // Session timeout management
+        let inactivityTimer;
+        const TIMEOUT_WARNING = 5 * 60 * 1000; // 5 minutes
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(showTimeoutWarning, TIMEOUT_WARNING);
+        }
+
+        function showTimeoutWarning() {
+            const continueSession = confirm(
+                "Session Timeout Warning\n\n" +
+                "Your session will expire due to inactivity.\n\n" +
+                "Click OK to continue working or Cancel to logout."
+            );
+
+            if (continueSession) {
+                resetInactivityTimer();
+            } else {
+                window.location.href = '/legacy-portal';
+            }
+        }
+
+        // Reset timer on user activity
+        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, resetInactivityTimer);
+        });
+
+        // Loading overlay functions
+        function showLoading(message) {
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Print functionality
+        function showPrintHelp() {
+            if (confirm('Print this registration record?\n\nClick OK to print or Cancel to go back.')) {
+                window.print();
+            }
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            try {
+                const date = new Date(dateString);
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                return month + '/' + day + '/' + year;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Format datetime for display
+        function formatDateTime(dateString) {
+            if (!dateString) return null;
+            try {
+                const date = new Date(dateString);
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const mins = String(date.getMinutes()).padStart(2, '0');
+                return month + '/' + day + '/' + year + ' ' + hours + ':' + mins;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Get status class
+        function getStatusClass(status) {
+            return 'status-' + status;
+        }
+
+        // Load record data
+        async function loadRecord() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const recordId = urlParams.get('id');
+
+            if (!recordId) {
+                showError('No record ID specified. Please go back to the search page.');
+                return;
+            }
+
+            showLoading('Connecting to database...');
+
+            try {
+                // Simulate legacy system delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                showLoading('Retrieving record #' + recordId + '...');
+                await new Promise(resolve => setTimeout(resolve, 600));
+
+                // Fetch from onboarding API
+                const response = await fetch('/api/hr/onboarding/' + recordId);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Record not found. It may have been deleted.');
+                    }
+                    throw new Error('Failed to retrieve record from database');
+                }
+
+                const record = await response.json();
+
+                showLoading('Processing data...');
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                displayRecord(record);
+
+            } catch (error) {
+                console.error('Error loading record:', error);
+                showError(error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display record data
+        function displayRecord(record) {
+            const content = document.getElementById('recordContent');
+            const regId = 'REG-' + String(record.id).padStart(5, '0');
+            const status = record.status || 'pending';
+            const statusText = status.replace('_', ' ').toUpperCase();
+
+            // Determine verification status
+            const isVerified = record.source === 'Legacy Portal';
+            const verificationBadge = document.getElementById('verificationBadge');
+            if (isVerified) {
+                verificationBadge.innerHTML = '<span class="verification-badge verified">VERIFIED</span>';
+            } else {
+                verificationBadge.innerHTML = '<span class="verification-badge unverified">UNVERIFIED</span>';
+            }
+
+            let html = '';
+
+            // Record header
+            html += '<div class="record-header">';
+            html += '<span class="record-id" id="recordId" data-id="' + record.id + '">' + regId + '</span>';
+            html += '<span class="record-status ' + getStatusClass(status) + '">' + statusText + '</span>';
+            html += '</div>';
+
+            // Employee Information Section
+            html += '<div class="section-header">Employee Information</div>';
+            html += '<div class="detail-grid">';
+
+            html += createDetailItem('Employee ID', record.employeeId || record.workerId);
+            html += createDetailItem('Full Name', record.workerName || ((record.firstName || '') + ' ' + (record.lastName || '')).trim());
+            html += createDetailItem('Department', record.department);
+            html += createDetailItem('Job Title', record.jobTitle || record.position);
+            html += createDetailItem('Email Address', record.email);
+            html += createDetailItem('Manager', record.manager || record.assignedBuddy);
+
+            html += '</div>';
+
+            // Employment Details Section
+            html += '<div class="section-header">Employment Details</div>';
+            html += '<div class="detail-grid">';
+
+            html += createDetailItem('Start Date', formatDate(record.startDate));
+            html += createDetailItem('Employment Type', record.employmentType);
+            html += createDetailItem('Work Location', record.location || record.workLocation);
+            html += createDetailItem('Registration Date', formatDateTime(record.createdAt));
+
+            html += '</div>';
+
+            // Equipment & Access Section (if applicable)
+            if (record.equipment || record.accessRequired) {
+                html += '<div class="section-header">Equipment & Access</div>';
+                html += '<div class="detail-grid">';
+
+                if (record.equipment) {
+                    html += createDetailItem('Equipment Requested', record.equipment, true);
+                }
+                if (record.accessRequired) {
+                    html += createDetailItem('System Access Required', record.accessRequired, true);
+                }
+
+                html += '</div>';
+            }
+
+            // Notes Section (if applicable)
+            if (record.notes || record.specialRequirements) {
+                html += '<div class="section-header">Additional Information</div>';
+                html += '<div class="detail-grid">';
+                html += createDetailItem('Notes / Special Requirements', record.notes || record.specialRequirements, true);
+                html += '</div>';
+            }
+
+            // System Information Section
+            html += '<div class="section-header">System Information</div>';
+            html += '<div class="detail-grid">';
+
+            html += createDetailItem('Record ID', record.id);
+            html += createDetailItem('Source', record.source || 'Dashboard');
+            html += createDetailItem('Created', formatDateTime(record.createdAt));
+            html += createDetailItem('Last Updated', formatDateTime(record.updatedAt || record.createdAt));
+
+            html += '</div>';
+
+            // Action buttons
+            html += '<div class="action-buttons">';
+            html += '<a href="/legacy-portal/search.html" class="btn btn-secondary">Back to Search</a>';
+            html += '<button type="button" class="btn btn-primary" onclick="window.print()">Print Record</button>';
+            html += '<button type="button" class="btn btn-danger" onclick="confirmDelete(' + record.id + ')">Delete Record</button>';
+            html += '</div>';
+
+            content.innerHTML = html;
+        }
+
+        // Create detail item HTML
+        function createDetailItem(label, value, fullWidth) {
+            const isEmpty = !value || value === '';
+            const displayValue = isEmpty ? 'Not specified' : value;
+            const valueClass = isEmpty ? 'detail-value empty' : 'detail-value';
+            const widthClass = fullWidth ? ' full-width' : '';
+
+            return '<div class="detail-item' + widthClass + '">' +
+                   '<div class="detail-label">' + label + '</div>' +
+                   '<div class="' + valueClass + '">' + displayValue + '</div>' +
+                   '</div>';
+        }
+
+        // Show error message
+        function showError(message) {
+            const content = document.getElementById('recordContent');
+            content.innerHTML = '<div class="error-message">' +
+                               '<strong>Error</strong><br><br>' +
+                               message + '<br><br>' +
+                               '<a href="/legacy-portal/search.html" class="btn btn-primary">Return to Search</a>' +
+                               '</div>';
+        }
+
+        // Confirm delete
+        async function confirmDelete(id) {
+            const confirmed = confirm(
+                'DELETE RECORD\n\n' +
+                'Are you sure you want to delete this registration?\n\n' +
+                'This action cannot be undone.\n\n' +
+                'Click OK to delete or Cancel to keep the record.'
+            );
+
+            if (!confirmed) return;
+
+            showLoading('Deleting record...');
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const response = await fetch('/api/hr/onboarding/' + id, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete record');
+                }
+
+                alert('Record deleted successfully.\n\nYou will be redirected to the search page.');
+                window.location.href = '/legacy-portal/search.html';
+
+            } catch (error) {
+                hideLoading();
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            resetInactivityTimer();
+            loadRecord();
+        });
+    </script>
+</body>
+</html>

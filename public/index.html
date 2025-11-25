@@ -19,7 +19,19 @@
                 extend: {
                     colors: {
                         orange: '#FA4616',
-                        teal: '#0ba2b3',
+                        teal: {
+                            DEFAULT: '#0BA2B3',
+                            50: '#E6F7F9',
+                            100: '#A5E2F0',
+                            200: '#5BCBDE',
+                            300: '#3CB5C2',
+                            400: '#0BA2B3',
+                            500: '#0BA2B3',
+                            600: '#15839A',
+                            700: '#1E6482',
+                            800: '#0D5A6A',
+                            900: '#083C47'
+                        },
                         deepblue: '#172125',
                         lightblue: '#f0f9fc'
                     },
@@ -68,7 +80,7 @@
 </head>
 
 <body class="bg-zinc-50 min-h-screen">
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="max-w-[95%] mx-auto p-6">
         <!-- Header -->
         <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
             <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
@@ -159,6 +171,7 @@
         let apiHealth = { isOnline: false, responseTime: 0 };
         let onboardingData = [];
         let updatedByMap = {};
+        let activeStatusFilter = 'all'; // Track active status filter: 'all', 'pending', 'in-progress', 'completed'
 
         // ALL ENDPOINTS - Complete Module Definitions
         const modules = {
@@ -544,19 +557,23 @@
                     </div>
 
                     <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 text-center shadow-sm">
+                        <div id="filter-all" onclick="setStatusFilter('all')"
+                            class="rounded-xl bg-gradient-to-br from-teal-700 to-teal-800 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105 ring-4 ring-white">
                             <div id="stat-total" class="text-4xl font-bold mb-2">-</div>
                             <div class="text-xs uppercase tracking-wide">Total Workers</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-zinc-400 to-zinc-500 text-white p-4 text-center shadow-sm">
+                        <div id="filter-pending" onclick="setStatusFilter('pending')"
+                            class="rounded-xl bg-gradient-to-br from-neutral-400 to-neutral-500 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
                             <div id="stat-pending" class="text-4xl font-bold mb-2">-</div>
                             <div class="text-xs uppercase tracking-wide">Pending</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-4 text-center shadow-sm">
+                        <div id="filter-in-progress" onclick="setStatusFilter('in-progress')"
+                            class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
                             <div id="stat-in-progress" class="text-4xl font-bold mb-2">-</div>
                             <div class="text-xs uppercase tracking-wide">In Progress</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-4 text-center shadow-sm">
+                        <div id="filter-completed" onclick="setStatusFilter('completed')"
+                            class="rounded-xl bg-gradient-to-br from-teal-200 to-teal-300 text-teal-900 p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
                             <div id="stat-completed" class="text-4xl font-bold mb-2">-</div>
                             <div class="text-xs uppercase tracking-wide">Completed</div>
                         </div>
@@ -574,22 +591,24 @@
                         <div id="search-results-info" class="text-xs text-zinc-600"></div>
                     </div>
 
-                    <div class="rounded-xl overflow-hidden border border-zinc-200 shadow-sm">
-                        <table class="w-full">
+                    <div class="rounded-xl border border-zinc-200 shadow-sm">
+                        <table class="w-full table-fixed">
                             <thead class="bg-zinc-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Worker ID</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Worker Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Department</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Start Date</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Last Updated</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider">Updated By</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Employee ID</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Name</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[15%]">Email</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Department</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[13%]">Position</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Manager</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Status</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Start Date</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Source</th>
                                 </tr>
                             </thead>
                             <tbody id="onboarding-table-body" class="divide-y divide-zinc-200">
                                 <tr>
-                                    <td colspan="7" class="px-4 py-8 text-center text-zinc-600">
+                                    <td colspan="9" class="px-4 py-8 text-center text-zinc-600">
                                         <span class="loading"></span> Loading data...
                                     </td>
                                 </tr>
@@ -602,30 +621,23 @@
 
         async function loadLiveOnboardingData(highlightId = null) {
             try {
-                const [onboardingRes, workersRes] = await Promise.all([
-                    axios.get(`${API_BASE}/hr/onboarding`),
-                    axios.get(`${API_BASE}/hr/workers`)
-                ]);
-
+                // Use the json-server default endpoint for all onboarding records (at root level, not /api)
+                const onboardingRes = await axios.get(`${window.location.origin}/hr_onboardings`);
                 const onboardings = onboardingRes.data;
-                const workers = workersRes.data;
 
-                const workerMap = {};
-                workers.forEach(worker => {
-                    workerMap[worker.id] = worker;
-                });
-
+                // Map the enriched data directly - no need for additional lookups
                 onboardingData = onboardings.map(onboarding => {
-                    const worker = workerMap[onboarding.workerId];
                     return {
                         id: onboarding.id,
-                        workerId: onboarding.workerId,
-                        workerName: onboarding.workerName || (worker ? worker.descriptor : 'Unknown'),
+                        employeeId: onboarding.employeeId || onboarding.workerId,
+                        workerName: onboarding.workerName || `${onboarding.firstName || ''} ${onboarding.lastName || ''}`.trim() || 'Unknown',
+                        email: onboarding.email || 'N/A',
+                        department: onboarding.department || 'N/A',
+                        position: onboarding.position || onboarding.jobTitle || 'N/A',
+                        manager: onboarding.manager || 'Not Assigned',
                         status: onboarding.status,
-                        department: onboarding.department || worker?.primaryJob?.department || 'N/A',
                         startDate: onboarding.startDate,
-                        lastUpdated: onboarding.lastUpdated,
-                        updatedBy: onboarding.updatedBy || updatedByMap[onboarding.workerId] || 'System'
+                        source: onboarding.source || 'Dashboard'
                     };
                 });
 
@@ -641,15 +653,26 @@
                 document.getElementById('stat-in-progress').textContent = stats.inProgress;
                 document.getElementById('stat-completed').textContent = stats.completed;
 
-                renderOnboardingTable(onboardingData, highlightId);
-                updateSearchInfo(onboardingData.length, onboardingData.length);
+                // Apply any active filters (status and/or search)
+                filterOnboardingTable();
+
+                // Handle highlighting if needed
+                if (highlightId) {
+                    setTimeout(() => {
+                        const row = document.getElementById(`row-${highlightId}`);
+                        if (row) {
+                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
+                }
+
                 showNotification(`✅ Loaded ${onboardingData.length} onboarding records`);
 
             } catch (error) {
                 console.error('Error loading onboarding data:', error);
                 document.getElementById('onboarding-table-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-red-600">
+                        <td colspan="9" class="px-4 py-8 text-center text-red-600">
                             ❌ Error loading data: ${error.message}
                         </td>
                     </tr>
@@ -664,7 +687,7 @@
             if (data.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center">
+                        <td colspan="9" class="px-4 py-12 text-center">
                             <div class="text-5xl mb-4 opacity-50">🔍</div>
                             <p class="text-zinc-600">No results found</p>
                         </td>
@@ -674,23 +697,27 @@
                 tableBody.innerHTML = data.map(record => {
                     const shouldHighlight = highlightId && record.id === highlightId;
                     const statusColors = {
-                        'pending': 'bg-zinc-100 text-zinc-800',
-                        'in-progress': 'bg-teal-100 text-teal-800',
-                        'completed': 'bg-green-100 text-green-800'
+                        'pending': 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300',
+                        'in-progress': 'bg-teal-100 text-teal-800 ring-1 ring-teal-300',
+                        'completed': 'bg-green-100 text-green-800 ring-1 ring-green-300'
                     };
-                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-800';
+                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300';
 
                     return `
                         <tr id="row-${record.id}" class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-orange bg-orange-50' : ''}">
-                            <td class="px-4 py-3 text-sm font-mono text-teal cursor-help" title="${record.workerId}">${record.workerId.length > 15 ? record.workerId.substring(0, 12) + '...' : record.workerId}</td>
-                            <td class="px-4 py-3 text-sm text-deepblue" title="${record.workerName}">${record.workerName}</td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusClass}">${record.status}</span>
+                            <td class="px-4 py-4 text-sm font-mono text-teal break-words">${record.employeeId}</td>
+                            <td class="px-4 py-4 text-sm text-deepblue break-words">${record.workerName}</td>
+                            <td class="px-4 py-4 text-sm break-words">${record.email}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.department}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.position}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.manager}</td>
+                            <td class="px-4 py-4 text-sm">
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${record.status}</span>
                             </td>
-                            <td class="px-4 py-3 text-sm text-zinc-600" title="${record.department}">${record.department}</td>
-                            <td class="px-4 py-3 text-sm text-zinc-600">${formatDate(record.startDate)}</td>
-                            <td class="px-4 py-3 text-sm text-zinc-600">${formatDate(record.lastUpdated)}</td>
-                            <td class="px-4 py-3 text-sm text-zinc-600" title="${record.updatedBy}">${record.updatedBy.length > 25 ? record.updatedBy.substring(0, 22) + '...' : record.updatedBy}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${formatDate(record.startDate)}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600">
+                                <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${record.source}</span>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -734,6 +761,19 @@
             }, 3000);
         }
 
+        function setStatusFilter(status) {
+            activeStatusFilter = status;
+
+            // Update visual indicator - add ring to active filter, remove from others
+            document.querySelectorAll('[id^="filter-"]').forEach(card => {
+                card.classList.remove('ring-4', 'ring-white');
+            });
+            document.getElementById(`filter-${status}`).classList.add('ring-4', 'ring-white');
+
+            // Re-apply filters
+            filterOnboardingTable();
+        }
+
         function filterOnboardingTable() {
             const searchInput = document.getElementById('onboarding-search');
             const clearBtn = document.getElementById('clear-search-btn');
@@ -748,19 +788,33 @@
                 clearBtn.classList.add('hidden');
             }
 
-            const filteredData = searchTerm
-                ? onboardingData.filter(record => {
+            // Apply both status filter and search filter
+            let filteredData = onboardingData;
+
+            // First apply status filter
+            if (activeStatusFilter !== 'all') {
+                filteredData = filteredData.filter(record => record.status === activeStatusFilter);
+            }
+
+            const statusFilteredCount = filteredData.length;
+
+            // Then apply search filter
+            if (searchTerm) {
+                filteredData = filteredData.filter(record => {
                     return (
                         (record.workerName && record.workerName.toLowerCase().includes(searchTerm)) ||
-                        (record.workerId && record.workerId.toLowerCase().includes(searchTerm)) ||
+                        (record.employeeId && record.employeeId.toLowerCase().includes(searchTerm)) ||
+                        (record.email && record.email.toLowerCase().includes(searchTerm)) ||
                         (record.department && record.department.toLowerCase().includes(searchTerm)) ||
-                        (record.updatedBy && record.updatedBy.toLowerCase().includes(searchTerm))
+                        (record.position && record.position.toLowerCase().includes(searchTerm)) ||
+                        (record.manager && record.manager.toLowerCase().includes(searchTerm)) ||
+                        (record.source && record.source.toLowerCase().includes(searchTerm))
                     );
-                })
-                : onboardingData;
+                });
+            }
 
             renderOnboardingTable(filteredData);
-            updateSearchInfo(filteredData.length, onboardingData.length);
+            updateSearchInfo(filteredData.length, statusFilteredCount);
         }
 
         function clearSearch() {

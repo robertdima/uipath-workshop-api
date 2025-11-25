@@ -252,7 +252,7 @@
                 endpoints: [
                     { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
                     { method: 'GET', path: '/hr/onboarding/inProgress', description: 'Get active onboarding processes (filtered in UiPath)' },
-                    { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding setups (filtered in UiPath)' },
+                    { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding records with enriched worker data (firstName, lastName, email, department, position)' },
                     { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding', body: {status: 'in-progress'} },
                     { method: 'POST', path: '/hr/onboarding', description: 'Create new onboarding record', body: {workerId: '', status: 'pending', startDate: '2025-01-15'} },
                     { method: 'GET', path: '/hr/onboarding/:id', description: 'Get single onboarding record by ID', needsId: 'onboarding' },

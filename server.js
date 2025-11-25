@@ -751,6 +751,62 @@ server.get('/api/hr/legacy-portal/verify/:id', (req, res) => {
   });
 });
 
+// Get pending onboarding records with enriched worker data
+server.get('/api/hr/onboarding/pending', (req, res) => {
+  // Get all pending onboarding records
+  const pendingRecords = db.hr_onboardings.filter(r => r.status === 'pending');
+
+  // Enrich each record with worker details
+  const enrichedRecords = pendingRecords.map(record => {
+    // Legacy portal records already have all fields
+    if (record.source === 'Legacy Portal') {
+      return {
+        ...record,
+        // Ensure position field exists (map jobTitle to position)
+        position: record.jobTitle || record.position || 'Not Specified'
+      };
+    }
+
+    // Base records need worker data lookup
+    const worker = db.hr_workers.find(w => w.id === record.workerId);
+
+    if (!worker) {
+      // If worker not found, return record with defaults
+      return {
+        ...record,
+        employeeId: record.workerId,
+        firstName: 'Unknown',
+        lastName: 'Worker',
+        email: 'unknown@company.com',
+        department: 'Not Assigned',
+        position: 'Not Specified',
+        jobTitle: 'Not Specified',
+        manager: 'Not Assigned',
+        notes: '',
+        source: 'Dashboard'
+      };
+    }
+
+    // Merge onboarding record with worker details
+    return {
+      ...record,
+      employeeId: worker.employeeId || worker.id,
+      firstName: worker.firstName,
+      lastName: worker.lastName,
+      workerName: worker.fullName,
+      email: worker.email,
+      department: worker.department,
+      position: worker.jobTitle,
+      jobTitle: worker.jobTitle,
+      manager: worker.supervisorName || 'Not Assigned',
+      notes: record.notes || '',
+      source: record.source || 'Dashboard'
+    };
+  });
+
+  res.json(enrichedRecords);
+});
+
 // Legacy Portal - Get single onboarding record by ID
 server.get('/api/hr/onboarding/:id', (req, res) => {
   const { id } = req.params;

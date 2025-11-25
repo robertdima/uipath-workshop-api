@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UiPath Workshop API Interface</title>
+    <link rel="icon" type="image/png" href="/mock_platform_icon.png">
 
     <!-- External Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
@@ -18,22 +19,95 @@
             theme: {
                 extend: {
                     colors: {
-                        orange: '#FA4616',
+                        // === PRIMARY COLORS ===
+                        // Robotic Orange - hero color for robots/RPA
+                        orange: {
+                            DEFAULT: '#FA4616',
+                            50: '#FFF5F2',
+                            100: '#FCC0C5',
+                            200: '#FA7678',
+                            300: '#FB6B45',
+                            400: '#FA4616',
+                            500: '#FA4616',
+                            600: '#CE340B',
+                            700: '#A32200',
+                            800: '#7A1A00',
+                            900: '#521100'
+                        },
+                        // Agentic Teal - for agents/AI
                         teal: {
                             DEFAULT: '#0BA2B3',
                             50: '#E6F7F9',
-                            100: '#A5E2F0',
-                            200: '#5BCBDE',
-                            300: '#3CB5C2',
-                            400: '#0BA2B3',
+                            100: '#CCF2FF',
+                            200: '#A5E2F0',
+                            300: '#5BCBDE',
+                            400: '#3CB5C2',
                             500: '#0BA2B3',
                             600: '#15839A',
                             700: '#1E6482',
                             800: '#0D5A6A',
                             900: '#083C47'
                         },
-                        deepblue: '#172125',
-                        lightblue: '#f0f9fc'
+                        // Deep Blue - primary dark
+                        deepblue: {
+                            DEFAULT: '#182126',
+                            50: '#A0AAB9',
+                            100: '#646E78',
+                            200: '#3C464B',
+                            300: '#2D373C',
+                            400: '#182126',
+                            500: '#182126',
+                            600: '#131A1E',
+                            700: '#0E1316',
+                            800: '#090C0E',
+                            900: '#040506'
+                        },
+                        // Bright White
+                        white: '#FFFFFF',
+
+                        // === SECONDARY COLORS ===
+                        // Bright Blue
+                        brightblue: '#CCF2FF',
+                        // Dark Blue
+                        darkblue: '#1E6482',
+                        // Offset Orange
+                        offsetorange: '#A32200',
+                        // Offset Grey
+                        offsetgrey: '#D9D9D9',
+                        // Testing Purple
+                        purple: {
+                            DEFAULT: '#8B288A',
+                            50: '#FFCBFF',
+                            100: '#C862C8',
+                            200: '#8B288A',
+                            300: '#721472',
+                            400: '#5A005A',
+                            500: '#8B288A',
+                            600: '#721472',
+                            700: '#5A005A',
+                            800: '#400040',
+                            900: '#260026'
+                        },
+                        // Black
+                        black: '#000000',
+
+                        // === NEUTRAL COLORS ===
+                        neutral: {
+                            DEFAULT: '#9D9D9D',
+                            50: '#F6F6F6',
+                            100: '#D9D9D9',
+                            200: '#B9B9B9',
+                            300: '#9D9D9D',
+                            400: '#616161',
+                            500: '#484848',
+                            600: '#343434',
+                            700: '#262626',
+                            800: '#1A1A1A',
+                            900: '#0D0D0D'
+                        },
+
+                        // === LEGACY ALIASES ===
+                        lightblue: '#CCF2FF'
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']

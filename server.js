@@ -165,18 +165,68 @@ function generateDatabase() {
       reviewDate: date(60),
       nextReviewDate: futureDate(90)
     })),
-    hr_onboardings: workerIds.slice(0, 12).map(id => ({
-      id: uuid(),
-      workerId: id,
-      status: rand(['in_progress', 'completed', 'pending']),
-      startDate: faker.date.recent({ days: 30 }).toISOString().slice(0, 10),
-      expectedCompletionDate: futureDate(14),
-      completedTasks: faker.number.int({ min: 0, max: 10 }),
-      totalTasks: 10,
-      assignedBuddy: rand(workerIds),
-      equipmentAssigned: faker.datatype.boolean(),
-      accessGranted: faker.datatype.boolean()
-    })),
+    hr_onboardings: (() => {
+      // Create 10 default onboarding records with realistic data
+      const defaultOnboardings = [];
+      const selectedWorkers = hr_workers.slice(0, 10);
+      const statuses = [
+        'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
+        'in-progress', 'in-progress', 'completed'
+      ];
+
+      selectedWorkers.forEach((worker, index) => {
+        const nameParts = worker.descriptor.split(' ');
+        const status = statuses[index];
+
+        // Remove common titles and clean up name
+        let firstName, lastName;
+        if (nameParts[0].match(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Miss)$/)) {
+          // Title is first word, skip it
+          firstName = nameParts[1] || 'Unknown';
+          lastName = nameParts.slice(2).join(' ') || 'Worker';
+        } else {
+          // No title
+          firstName = nameParts[0];
+          lastName = nameParts.slice(1).join(' ') || 'Worker';
+        }
+
+        // Generate matching email based on cleaned name
+        const cleanLastName = lastName.split(' ')[0]; // Take first word of last name
+        const email = `${firstName.toLowerCase()}.${cleanLastName.toLowerCase()}@company.com`;
+
+        defaultOnboardings.push({
+          id: uuid(),
+          workerId: worker.id,
+          employeeId: `WRK-${String(index + 1).padStart(3, '0')}`,
+          firstName: firstName,
+          lastName: lastName,
+          workerName: worker.descriptor,
+          email: email,
+          department: worker.department,
+          position: worker.primaryJob.title,
+          jobTitle: worker.primaryJob.title,
+          manager: managers.find(m => m.id === worker.managerId)?.descriptor || 'Not Assigned',
+          status: status,
+          startDate: status === 'completed'
+            ? faker.date.recent({ days: 45 }).toISOString().slice(0, 10)
+            : status === 'in-progress'
+            ? faker.date.recent({ days: 15 }).toISOString().slice(0, 10)
+            : futureDate(30),
+          expectedCompletionDate: futureDate(14),
+          completedTasks: status === 'completed' ? 10 : status === 'in-progress' ? faker.number.int({ min: 3, max: 7 }) : 0,
+          totalTasks: 10,
+          assignedBuddy: rand(workerIds),
+          equipmentAssigned: status !== 'pending',
+          accessGranted: status === 'completed',
+          lastUpdated: new Date().toISOString(),
+          updatedBy: status === 'completed' ? 'System' : status === 'in-progress' ? 'HR Team' : 'Automated',
+          notes: status === 'pending' ? 'Awaiting start date' : status === 'in-progress' ? 'Equipment setup in progress' : 'Onboarding completed successfully',
+          source: 'Dashboard'
+        });
+      });
+
+      return defaultOnboardings;
+    })(),
 
     // ═══ Finance ═══
     finance_invoices,
@@ -749,6 +799,187 @@ server.get('/api/hr/legacy-portal/verify/:id', (req, res) => {
       ? 'Registration verified - submitted via Legacy Portal'
       : 'Registration verified - submitted via Dashboard'
   });
+});
+
+// Get pending onboarding records with enriched worker data
+server.get('/api/hr/onboarding/pending', (req, res) => {
+  // Get all pending onboarding records
+  const pendingRecords = db.hr_onboardings.filter(r => r.status === 'pending');
+
+  // Enrich each record with worker details
+  const enrichedRecords = pendingRecords.map(record => {
+    // Check if record already has enriched fields (from default onboarding data or Legacy Portal)
+    if (record.firstName && record.lastName && record.email && record.position) {
+      return {
+        ...record,
+        // Ensure position field exists (map jobTitle to position if needed)
+        position: record.position || record.jobTitle || 'Not Specified'
+      };
+    }
+
+    // Base records need worker data lookup
+    const worker = db.hr_workers.find(w => w.id === record.workerId);
+
+    if (!worker) {
+      // If worker not found, return record with defaults
+      return {
+        ...record,
+        employeeId: record.employeeId || record.workerId,
+        firstName: 'Unknown',
+        lastName: 'Worker',
+        workerName: 'Unknown Worker',
+        email: 'unknown@company.com',
+        department: 'Not Assigned',
+        position: 'Not Specified',
+        jobTitle: 'Not Specified',
+        manager: 'Not Assigned',
+        notes: '',
+        source: 'Dashboard'
+      };
+    }
+
+    // Merge onboarding record with worker details (map from worker object structure)
+    const firstName = worker.descriptor ? worker.descriptor.split(' ')[0] : 'Unknown';
+    const lastName = worker.descriptor ? worker.descriptor.split(' ').slice(1).join(' ') : 'Worker';
+    const managerWorker = db.hr_workers.find(w => w.id === worker.managerId);
+
+    return {
+      ...record,
+      employeeId: record.employeeId || worker.id,
+      firstName: firstName,
+      lastName: lastName,
+      workerName: worker.descriptor,
+      email: worker.primaryWorkEmail,
+      department: worker.department,
+      position: worker.primaryJob?.title || 'Not Specified',
+      jobTitle: worker.primaryJob?.title || 'Not Specified',
+      manager: managerWorker?.descriptor || 'Not Assigned',
+      notes: record.notes || '',
+      source: record.source || 'Dashboard'
+    };
+  });
+
+  res.json(enrichedRecords);
+});
+
+// Get in-progress onboarding records with enriched worker data
+server.get('/api/hr/onboarding/inProgress', (req, res) => {
+  // Get all in-progress onboarding records
+  const inProgressRecords = db.hr_onboardings.filter(r => r.status === 'in-progress');
+
+  // Enrich each record with worker details
+  const enrichedRecords = inProgressRecords.map(record => {
+    // Check if record already has enriched fields (from default onboarding data or Legacy Portal)
+    if (record.firstName && record.lastName && record.email && record.position) {
+      return {
+        ...record,
+        // Ensure position field exists (map jobTitle to position if needed)
+        position: record.position || record.jobTitle || 'Not Specified'
+      };
+    }
+
+    // Base records need worker data lookup
+    const worker = db.hr_workers.find(w => w.id === record.workerId);
+
+    if (!worker) {
+      // If worker not found, return record with defaults
+      return {
+        ...record,
+        employeeId: record.employeeId || record.workerId,
+        firstName: 'Unknown',
+        lastName: 'Worker',
+        workerName: 'Unknown Worker',
+        email: 'unknown@company.com',
+        department: 'Not Assigned',
+        position: 'Not Specified',
+        jobTitle: 'Not Specified',
+        manager: 'Not Assigned',
+        notes: '',
+        source: 'Dashboard'
+      };
+    }
+
+    // Merge onboarding record with worker details (map from worker object structure)
+    const firstName = worker.descriptor ? worker.descriptor.split(' ')[0] : 'Unknown';
+    const lastName = worker.descriptor ? worker.descriptor.split(' ').slice(1).join(' ') : 'Worker';
+    const managerWorker = db.hr_workers.find(w => w.id === worker.managerId);
+
+    return {
+      ...record,
+      employeeId: record.employeeId || worker.id,
+      firstName: firstName,
+      lastName: lastName,
+      workerName: worker.descriptor,
+      email: worker.primaryWorkEmail,
+      department: worker.department,
+      position: worker.primaryJob?.title || 'Not Specified',
+      jobTitle: worker.primaryJob?.title || 'Not Specified',
+      manager: managerWorker?.descriptor || 'Not Assigned',
+      notes: record.notes || '',
+      source: record.source || 'Dashboard'
+    };
+  });
+
+  res.json(enrichedRecords);
+});
+
+// Get ALL onboarding records with enriched worker data (for dashboard display)
+server.get('/api/hr/onboarding/enriched', (req, res) => {
+  // Get ALL onboarding records (not filtered by status)
+  const allRecords = db.hr_onboardings;
+
+  // Use the same enrichment logic as the pending endpoint
+  const enrichedRecords = allRecords.map(record => {
+    // Check if record already has enriched fields (from default onboarding data or Legacy Portal)
+    if (record.firstName && record.lastName && record.email && record.position) {
+      return {
+        ...record,
+        position: record.position || record.jobTitle || 'Not Specified'
+      };
+    }
+
+    // Base records need worker data lookup
+    const worker = db.hr_workers.find(w => w.id === record.workerId);
+
+    if (!worker) {
+      return {
+        ...record,
+        employeeId: record.employeeId || record.workerId,
+        firstName: 'Unknown',
+        lastName: 'Worker',
+        workerName: 'Unknown Worker',
+        email: 'unknown@company.com',
+        department: 'Not Assigned',
+        position: 'Not Specified',
+        jobTitle: 'Not Specified',
+        manager: 'Not Assigned',
+        notes: '',
+        source: 'Dashboard'
+      };
+    }
+
+    // Merge onboarding record with worker details
+    const firstName = worker.descriptor ? worker.descriptor.split(' ')[0] : 'Unknown';
+    const lastName = worker.descriptor ? worker.descriptor.split(' ').slice(1).join(' ') : 'Worker';
+    const managerWorker = db.hr_workers.find(w => w.id === worker.managerId);
+
+    return {
+      ...record,
+      employeeId: record.employeeId || worker.id,
+      firstName: firstName,
+      lastName: lastName,
+      workerName: worker.descriptor,
+      email: worker.primaryWorkEmail,
+      department: worker.department,
+      position: worker.primaryJob?.title || 'Not Specified',
+      jobTitle: worker.primaryJob?.title || 'Not Specified',
+      manager: managerWorker?.descriptor || 'Not Assigned',
+      notes: record.notes || '',
+      source: record.source || 'Dashboard'
+    };
+  });
+
+  res.json(enrichedRecords);
 });
 
 // Legacy Portal - Get single onboarding record by ID

@@ -25,18 +25,19 @@ function generateDatabase() {
   const futureDate = (days = 30) => faker.date.soon({ days }).toISOString().slice(0, 10);
 
   // ── HR Data ──
-  const departments = ['R&D', 'Sales', 'Marketing', 'Finance', 'Operations', 'HR'];
+  // Departments aligned with Legacy Portal dropdown options
+  const departments = ['Engineering', 'Marketing', 'Sales', 'Finance', 'Human Resources', 'Operations', 'Legal', 'IT', 'Customer Support', 'Product', 'Research', 'Quality Assurance'];
   
-  const managers = Array.from({ length: 6 }, (_, i) => ({
+  const managers = Array.from({ length: departments.length }, (_, i) => ({
     id: uuid(),
     descriptor: faker.person.fullName(),
     primaryWorkEmail: faker.internet.email(),
     isActive: true,
     managerId: null,
     department: departments[i],
-    supervisoryOrgId: `org_${departments[i].replace('&', '')}`,
-    primaryJob: { 
-      title: `${departments[i]} Manager`, 
+    supervisoryOrgId: `org_${departments[i].replace(/\s+/g, '_').toLowerCase()}`,
+    primaryJob: {
+      title: `${departments[i]} Manager`,
       department: departments[i],
       level: 'Manager',
       salary: faker.number.int({ min: 80000, max: 120000 })
@@ -146,14 +147,11 @@ function generateDatabase() {
   return {
     // ═══ HR ═══
     hr_workers,
-    hr_orgs: [
-      { id: 'org_RD', descriptor: 'R&D Division', headId: managers[0]?.id },
-      { id: 'org_Sales', descriptor: 'Sales Division', headId: managers[1]?.id },
-      { id: 'org_Marketing', descriptor: 'Marketing Division', headId: managers[2]?.id },
-      { id: 'org_Finance', descriptor: 'Finance Division', headId: managers[3]?.id },
-      { id: 'org_Operations', descriptor: 'Operations Division', headId: managers[4]?.id },
-      { id: 'org_HR', descriptor: 'HR Division', headId: managers[5]?.id }
-    ],
+    hr_orgs: departments.map((dept, i) => ({
+      id: `org_${dept.replace(/\s+/g, '_').toLowerCase()}`,
+      descriptor: `${dept} Division`,
+      headId: managers[i]?.id
+    })),
     hr_worker_performance: workerIds.map(id => ({
       id: uuid(),
       workerId: id,

@@ -707,20 +707,21 @@
                         <table class="w-full table-fixed">
                             <thead class="bg-zinc-50">
                                 <tr>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Employee ID</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Name</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[15%]">Email</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Department</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[13%]">Position</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[12%]">Manager</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Status</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Start Date</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Source</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Employee ID</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[11%]">Name</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[14%]">Email</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Department</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Position</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Manager</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Status</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Start Date</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Updated By</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Source</th>
                                 </tr>
                             </thead>
                             <tbody id="onboarding-table-body" class="divide-y divide-zinc-200">
                                 <tr>
-                                    <td colspan="9" class="px-4 py-8 text-center text-zinc-600">
+                                    <td colspan="10" class="px-4 py-8 text-center text-zinc-600">
                                         <span class="loading"></span> Loading data...
                                     </td>
                                 </tr>
@@ -749,6 +750,7 @@
                         manager: onboarding.manager || 'Not Assigned',
                         status: onboarding.status,
                         startDate: onboarding.startDate,
+                        updatedBy: onboarding.updatedBy || 'N/A',
                         source: onboarding.source || 'Dashboard'
                     };
                 });
@@ -784,7 +786,7 @@
                 console.error('Error loading onboarding data:', error);
                 document.getElementById('onboarding-table-body').innerHTML = `
                     <tr>
-                        <td colspan="9" class="px-4 py-8 text-center text-red-600">
+                        <td colspan="10" class="px-4 py-8 text-center text-red-600">
                             ❌ Error loading data: ${error.message}
                         </td>
                     </tr>
@@ -799,7 +801,7 @@
             if (data.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="px-4 py-12 text-center">
+                        <td colspan="10" class="px-4 py-12 text-center">
                             <div class="text-5xl mb-4 opacity-50">🔍</div>
                             <p class="text-zinc-600">No results found</p>
                         </td>
@@ -827,6 +829,7 @@
                                 <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${record.status}</span>
                             </td>
                             <td class="px-4 py-4 text-sm text-zinc-600 break-words">${formatDate(record.startDate)}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.updatedBy}</td>
                             <td class="px-4 py-4 text-sm text-zinc-600">
                                 <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${record.source}</span>
                             </td>
@@ -920,6 +923,7 @@
                         (record.department && record.department.toLowerCase().includes(searchTerm)) ||
                         (record.position && record.position.toLowerCase().includes(searchTerm)) ||
                         (record.manager && record.manager.toLowerCase().includes(searchTerm)) ||
+                        (record.updatedBy && record.updatedBy.toLowerCase().includes(searchTerm)) ||
                         (record.source && record.source.toLowerCase().includes(searchTerm))
                     );
                 });

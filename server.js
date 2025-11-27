@@ -164,13 +164,14 @@ function generateDatabase() {
       nextReviewDate: futureDate(90)
     })),
     hr_onboardings: (() => {
-      // Create 10 default onboarding records with realistic data
+      // Create 6 default onboarding records with realistic data
       const defaultOnboardings = [];
       // Select from employees only (not managers) so they have valid manager assignments
-      const selectedWorkers = employees.slice(0, 10);
+      const selectedWorkers = employees.slice(0, 6);
       const statuses = [
-        'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
-        'in-progress', 'in-progress', 'completed'
+        'pending', 'pending',
+        'in-progress', 'in-progress',
+        'completed', 'completed'
       ];
 
       selectedWorkers.forEach((worker, index) => {
@@ -671,11 +672,12 @@ server.post('/api/hr/onboarding/reset', (req, res) => {
   // Clear existing onboarding records
   db.hr_onboardings.length = 0;
 
-  // Generate 10 default records
-  const selectedWorkers = employees.slice(0, 10);
+  // Generate 6 default records
+  const selectedWorkers = employees.slice(0, 6);
   const statuses = [
-    'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
-    'in-progress', 'in-progress', 'completed'
+    'pending', 'pending',
+    'in-progress', 'in-progress',
+    'completed', 'completed'
   ];
 
   selectedWorkers.forEach((worker, index) => {

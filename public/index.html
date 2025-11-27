@@ -624,10 +624,48 @@
                 <div class="mt-12 pt-8 border-t border-zinc-200">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-2xl font-bold text-deepblue">📊 Live Onboarding Data</h3>
-                        <button onclick="loadLiveOnboardingData()"
-                            class="rounded-lg px-4 py-2 font-semibold transition-colors bg-teal text-white hover:bg-teal-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal">
-                            🔄 Refresh Data
-                        </button>
+                        <div class="flex gap-3">
+                            <button onclick="resetOnboardingData()"
+                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-600 text-white hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-600">
+                                🔄 Reset to Defaults
+                            </button>
+                            <button onclick="toggleGeneratePanel()"
+                                id="generate-toggle-btn"
+                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
+                                ➕ Add Sample Records
+                            </button>
+                            <button onclick="loadLiveOnboardingData()"
+                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-teal text-white hover:bg-teal-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal">
+                                🔄 Refresh Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Generate Panel (hidden by default) -->
+                    <div id="generate-panel" class="hidden mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm font-semibold text-deepblue">Status:</label>
+                                <select id="generate-status" class="h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-orange focus:border-transparent">
+                                    <option value="pending" selected>Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm font-semibold text-deepblue">Count:</label>
+                                <input type="number" id="generate-count" value="5" min="1" max="20"
+                                    class="w-20 h-10 rounded-lg border border-zinc-300 px-3 text-sm text-center focus:ring-2 focus:ring-orange focus:border-transparent">
+                            </div>
+                            <button onclick="generateOnboardingRecords()"
+                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
+                                Generate
+                            </button>
+                            <button onclick="toggleGeneratePanel()"
+                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-200 text-zinc-700 hover:bg-zinc-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-300">
+                                Cancel
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-4 gap-4 mb-6">
@@ -910,6 +948,77 @@
                 } else {
                     infoElement.textContent = `Showing ${shown} of ${total} workers`;
                 }
+            }
+        }
+
+        // Toggle the generate panel visibility
+        function toggleGeneratePanel() {
+            const panel = document.getElementById('generate-panel');
+            const btn = document.getElementById('generate-toggle-btn');
+
+            if (panel) {
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    if (btn) btn.textContent = '✕ Close Panel';
+                } else {
+                    panel.classList.add('hidden');
+                    if (btn) btn.textContent = '➕ Add Sample Records';
+                }
+            }
+        }
+
+        // Reset onboarding data to defaults
+        async function resetOnboardingData() {
+            if (!confirm('This will reset all onboarding records to the default 10 records. Continue?')) {
+                return;
+            }
+
+            try {
+                showNotification('🔄 Resetting data...');
+
+                const response = await axios.post(`${API_BASE}/hr/onboarding/reset`);
+
+                if (response.data.success) {
+                    showNotification(`✅ Reset complete! ${response.data.count} records restored.`);
+                    // Reset filter to 'all' and reload data
+                    activeStatusFilter = 'all';
+                    await loadLiveOnboardingData();
+                } else {
+                    showNotification('❌ Reset failed: ' + response.data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Reset error:', error);
+                showNotification('❌ Reset failed: ' + (error.response?.data?.error || error.message), 'error');
+            }
+        }
+
+        // Generate new sample onboarding records
+        async function generateOnboardingRecords() {
+            const statusSelect = document.getElementById('generate-status');
+            const countInput = document.getElementById('generate-count');
+
+            const status = statusSelect ? statusSelect.value : 'pending';
+            const count = countInput ? parseInt(countInput.value) || 5 : 5;
+
+            try {
+                showNotification(`🔄 Generating ${count} ${status} records...`);
+
+                const response = await axios.post(`${API_BASE}/hr/onboarding/generate`, {
+                    status: status,
+                    count: count
+                });
+
+                if (response.data.success) {
+                    showNotification(`✅ Generated ${response.data.generated} new record(s)!`);
+                    // Hide the panel and reload data
+                    toggleGeneratePanel();
+                    await loadLiveOnboardingData();
+                } else {
+                    showNotification('❌ Generation failed: ' + response.data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Generate error:', error);
+                showNotification('❌ Generation failed: ' + (error.response?.data?.error || error.message), 'error');
             }
         }
 

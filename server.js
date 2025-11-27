@@ -166,7 +166,8 @@ function generateDatabase() {
     hr_onboardings: (() => {
       // Create 10 default onboarding records with realistic data
       const defaultOnboardings = [];
-      const selectedWorkers = hr_workers.slice(0, 10);
+      // Select from employees only (not managers) so they have valid manager assignments
+      const selectedWorkers = employees.slice(0, 10);
       const statuses = [
         'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
         'in-progress', 'in-progress', 'completed'
@@ -652,6 +653,186 @@ server.post('/api/hr/onboarding', (req, res) => {
     success: true,
     message: 'Onboarding record created successfully',
     onboarding: newOnboarding
+  });
+});
+
+// HR Onboarding - Reset to Defaults
+server.post('/api/hr/onboarding/reset', (req, res) => {
+  // Helper functions
+  const rand = faker.helpers.arrayElement;
+  const uuid = () => faker.string.uuid();
+  const futureDate = (days = 30) => faker.date.soon({ days }).toISOString().slice(0, 10);
+
+  // Get employees (workers with managerId set - not managers themselves)
+  const employees = db.hr_workers.filter(w => w.managerId !== null);
+  const managers = db.hr_workers.filter(w => w.managerId === null);
+  const workerIds = db.hr_workers.map(w => w.id);
+
+  // Clear existing onboarding records
+  db.hr_onboardings.length = 0;
+
+  // Generate 10 default records
+  const selectedWorkers = employees.slice(0, 10);
+  const statuses = [
+    'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
+    'in-progress', 'in-progress', 'completed'
+  ];
+
+  selectedWorkers.forEach((worker, index) => {
+    const nameParts = worker.descriptor.split(' ');
+    const status = statuses[index];
+
+    let firstName, lastName;
+    if (nameParts[0].match(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Miss)$/)) {
+      firstName = nameParts[1] || 'Unknown';
+      lastName = nameParts.slice(2).join(' ') || 'Worker';
+    } else {
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(' ') || 'Worker';
+    }
+
+    const cleanLastName = lastName.split(' ')[0];
+    const email = `${firstName.toLowerCase()}.${cleanLastName.toLowerCase()}@company.com`;
+
+    db.hr_onboardings.push({
+      id: uuid(),
+      workerId: worker.id,
+      employeeId: `WRK-${String(index + 1).padStart(3, '0')}`,
+      firstName: firstName,
+      lastName: lastName,
+      workerName: worker.descriptor,
+      email: email,
+      department: worker.department,
+      position: worker.primaryJob.title,
+      jobTitle: worker.primaryJob.title,
+      manager: managers.find(m => m.id === worker.managerId)?.descriptor || 'Not Assigned',
+      status: status,
+      startDate: status === 'completed'
+        ? faker.date.recent({ days: 45 }).toISOString().slice(0, 10)
+        : status === 'in-progress'
+        ? faker.date.recent({ days: 15 }).toISOString().slice(0, 10)
+        : futureDate(30),
+      expectedCompletionDate: futureDate(14),
+      completedTasks: status === 'completed' ? 10 : status === 'in-progress' ? faker.number.int({ min: 3, max: 7 }) : 0,
+      totalTasks: 10,
+      assignedBuddy: rand(workerIds),
+      equipmentAssigned: status !== 'pending',
+      accessGranted: status === 'completed',
+      lastUpdated: new Date().toISOString(),
+      updatedBy: status === 'completed' ? 'System' : status === 'in-progress' ? 'HR Team' : 'Automated',
+      notes: status === 'pending' ? 'Awaiting start date' : status === 'in-progress' ? 'Equipment setup in progress' : 'Onboarding completed successfully',
+      source: 'Dashboard'
+    });
+  });
+
+  res.json({
+    success: true,
+    message: 'Onboarding records reset to defaults',
+    count: db.hr_onboardings.length,
+    records: db.hr_onboardings
+  });
+});
+
+// HR Onboarding - Generate Sample Records
+server.post('/api/hr/onboarding/generate', (req, res) => {
+  const { count = 5, status = 'pending' } = req.body;
+
+  // Validate inputs
+  const validStatuses = ['pending', 'in-progress', 'completed'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+    });
+  }
+
+  const recordCount = Math.min(Math.max(1, parseInt(count) || 5), 20); // Limit 1-20
+
+  // Helper functions
+  const rand = faker.helpers.arrayElement;
+  const uuid = () => faker.string.uuid();
+  const futureDate = (days = 30) => faker.date.soon({ days }).toISOString().slice(0, 10);
+
+  // Get employees and managers
+  const employees = db.hr_workers.filter(w => w.managerId !== null);
+  const managers = db.hr_workers.filter(w => w.managerId === null);
+  const workerIds = db.hr_workers.map(w => w.id);
+
+  // Get existing worker IDs in onboarding to avoid duplicates
+  const existingWorkerIds = new Set(db.hr_onboardings.map(o => o.workerId));
+
+  // Find available workers (not already in onboarding)
+  const availableWorkers = employees.filter(w => !existingWorkerIds.has(w.id));
+
+  if (availableWorkers.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'No available workers to add. All employees already have onboarding records.'
+    });
+  }
+
+  const workersToAdd = availableWorkers.slice(0, recordCount);
+  const newRecords = [];
+
+  workersToAdd.forEach((worker, index) => {
+    const nameParts = worker.descriptor.split(' ');
+
+    let firstName, lastName;
+    if (nameParts[0].match(/^(Mr\.|Mrs\.|Ms\.|Dr\.|Miss)$/)) {
+      firstName = nameParts[1] || 'Unknown';
+      lastName = nameParts.slice(2).join(' ') || 'Worker';
+    } else {
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(' ') || 'Worker';
+    }
+
+    const cleanLastName = lastName.split(' ')[0];
+    const email = `${firstName.toLowerCase()}.${cleanLastName.toLowerCase()}@company.com`;
+
+    // Generate employee ID based on current count
+    const newEmployeeId = `WRK-${String(db.hr_onboardings.length + index + 1).padStart(3, '0')}`;
+
+    const newRecord = {
+      id: uuid(),
+      workerId: worker.id,
+      employeeId: newEmployeeId,
+      firstName: firstName,
+      lastName: lastName,
+      workerName: worker.descriptor,
+      email: email,
+      department: worker.department,
+      position: worker.primaryJob.title,
+      jobTitle: worker.primaryJob.title,
+      manager: managers.find(m => m.id === worker.managerId)?.descriptor || 'Not Assigned',
+      status: status,
+      startDate: status === 'completed'
+        ? faker.date.recent({ days: 45 }).toISOString().slice(0, 10)
+        : status === 'in-progress'
+        ? faker.date.recent({ days: 15 }).toISOString().slice(0, 10)
+        : futureDate(30),
+      expectedCompletionDate: futureDate(14),
+      completedTasks: status === 'completed' ? 10 : status === 'in-progress' ? faker.number.int({ min: 3, max: 7 }) : 0,
+      totalTasks: 10,
+      assignedBuddy: rand(workerIds),
+      equipmentAssigned: status !== 'pending',
+      accessGranted: status === 'completed',
+      lastUpdated: new Date().toISOString(),
+      updatedBy: 'Sample Generator',
+      notes: `Generated sample record with status: ${status}`,
+      source: 'Dashboard'
+    };
+
+    db.hr_onboardings.push(newRecord);
+    newRecords.push(newRecord);
+  });
+
+  res.status(201).json({
+    success: true,
+    message: `Generated ${newRecords.length} new onboarding record(s)`,
+    requested: recordCount,
+    generated: newRecords.length,
+    status: status,
+    records: newRecords
   });
 });
 

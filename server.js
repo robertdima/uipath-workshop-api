@@ -166,7 +166,8 @@ function generateDatabase() {
     hr_onboardings: (() => {
       // Create 10 default onboarding records with realistic data
       const defaultOnboardings = [];
-      const selectedWorkers = hr_workers.slice(0, 10);
+      // Select from employees only (not managers) so they have valid manager assignments
+      const selectedWorkers = employees.slice(0, 10);
       const statuses = [
         'pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
         'in-progress', 'in-progress', 'completed'

@@ -860,7 +860,7 @@ server.get('/legacy-portal', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'legacy-portal', 'index.html'));
 });
 
-// Legacy Portal - Submit Registration
+// Legacy Portal - Submit Registration (upsert - creates new or updates existing)
 server.post('/api/hr/legacy-portal/submit', (req, res) => {
   const {
     employeeId,
@@ -884,16 +884,38 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
     });
   }
 
-  // Check for duplicate employee ID
+  // Check if record already exists
   const existingRecord = db.hr_onboardings.find(r => r.employeeId === employeeId);
+
   if (existingRecord) {
-    return res.status(409).json({
-      success: false,
-      error: `Employee ID ${employeeId} already exists in the system`
+    // UPDATE existing record
+    existingRecord.firstName = firstName;
+    existingRecord.lastName = lastName;
+    existingRecord.workerName = `${firstName} ${lastName}`;
+    existingRecord.email = email;
+    existingRecord.department = department;
+    existingRecord.jobTitle = jobTitle || existingRecord.jobTitle || 'Not Specified';
+    existingRecord.position = jobTitle || existingRecord.position || 'Not Specified';
+    existingRecord.manager = manager || existingRecord.manager || 'Not Assigned';
+    existingRecord.startDate = startDate || existingRecord.startDate;
+    existingRecord.employmentType = employmentType || existingRecord.employmentType || 'Full-time';
+    existingRecord.location = location || existingRecord.location || 'Not Specified';
+    existingRecord.notes = notes || existingRecord.notes || '';
+    existingRecord.source = 'Legacy Portal';
+    existingRecord.updatedBy = 'Legacy Portal';
+    existingRecord.lastUpdated = new Date().toISOString();
+    existingRecord.updatedAt = new Date().toISOString();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Registration updated successfully',
+      action: 'updated',
+      registrationId: `REG-${String(existingRecord.id).padStart(5, '0')}`,
+      record: existingRecord
     });
   }
 
-  // Generate new ID
+  // CREATE new record
   const newId = db.hr_onboardings.length > 0
     ? Math.max(...db.hr_onboardings.map(r => typeof r.id === 'number' ? r.id : parseInt(r.id) || 0)) + 1
     : 1;
@@ -908,6 +930,7 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
     email,
     department,
     jobTitle: jobTitle || 'Not Specified',
+    position: jobTitle || 'Not Specified',
     manager: manager || 'Not Assigned',
     startDate: startDate || new Date().toISOString().split('T')[0],
     employmentType: employmentType || 'Full-time',
@@ -919,6 +942,8 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
     equipmentAssigned: false,
     accessGranted: false,
     source: 'Legacy Portal',
+    updatedBy: 'Legacy Portal',
+    lastUpdated: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -928,6 +953,7 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
   res.status(201).json({
     success: true,
     message: 'Registration submitted successfully',
+    action: 'created',
     registrationId: `REG-${String(newId).padStart(5, '0')}`,
     record: newRecord
   });

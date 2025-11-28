@@ -218,7 +218,8 @@ function generateDatabase() {
           assignedBuddy: rand(workerIds),
           equipmentAssigned: status !== 'pending',
           accessGranted: status === 'completed',
-          lastUpdated: new Date().toISOString(),
+          // Stagger timestamps so records sort properly (higher index = older record)
+          lastUpdated: new Date(Date.now() - (index * 60000)).toISOString(),
           updatedBy: status === 'completed' ? 'System' : status === 'in-progress' ? 'HR Team' : 'Automated',
           notes: status === 'pending' ? 'Awaiting start date' : status === 'in-progress' ? 'Equipment setup in progress' : 'Onboarding completed successfully',
           source: 'Dashboard'
@@ -720,7 +721,8 @@ server.post('/api/hr/onboarding/reset', (req, res) => {
       assignedBuddy: rand(workerIds),
       equipmentAssigned: status !== 'pending',
       accessGranted: status === 'completed',
-      lastUpdated: new Date().toISOString(),
+      // Stagger timestamps so records sort properly (higher index = older record)
+      lastUpdated: new Date(Date.now() - (index * 60000)).toISOString(),
       updatedBy: status === 'completed' ? 'System' : status === 'in-progress' ? 'HR Team' : 'Automated',
       notes: status === 'pending' ? 'Awaiting start date' : status === 'in-progress' ? 'Equipment setup in progress' : 'Onboarding completed successfully',
       source: 'Dashboard'

@@ -776,6 +776,14 @@ server.post('/api/hr/onboarding/generate', (req, res) => {
   const workersToAdd = availableWorkers.slice(0, recordCount);
   const newRecords = [];
 
+  // Find the highest existing employee ID number to avoid duplicates
+  const existingIds = db.hr_onboardings
+    .map(r => r.employeeId)
+    .filter(id => id && id.startsWith('WRK-'))
+    .map(id => parseInt(id.replace('WRK-', ''), 10))
+    .filter(n => !isNaN(n));
+  let nextIdNumber = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+
   workersToAdd.forEach((worker, index) => {
     const nameParts = worker.descriptor.split(' ');
 
@@ -791,8 +799,8 @@ server.post('/api/hr/onboarding/generate', (req, res) => {
     const cleanLastName = lastName.split(' ')[0];
     const email = `${firstName.toLowerCase()}.${cleanLastName.toLowerCase()}@company.com`;
 
-    // Generate employee ID based on current count
-    const newEmployeeId = `WRK-${String(db.hr_onboardings.length + index + 1).padStart(3, '0')}`;
+    // Generate unique employee ID
+    const newEmployeeId = `WRK-${String(nextIdNumber + index).padStart(3, '0')}`;
 
     const newRecord = {
       id: uuid(),

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Email - Server Down</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+        .email-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background: #c0392b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .email-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .email-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .alert-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .email-body {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 10px;
+        }
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .info-value.critical {
+            color: #c0392b;
+            font-weight: 600;
+        }
+        .status-timeline {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+        .timeline-time {
+            color: #888;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        .timeline-event {
+            font-size: 14px;
+        }
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 5px;
+        }
+        .dot-red { background: #c0392b; }
+        .dot-yellow { background: #f39c12; }
+        .dot-blue { background: #3498db; }
+        .impact-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .impact-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .impact-box ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+        .impact-box li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: #c0392b;
+            color: white;
+        }
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        .email-footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer-links {
+            margin-top: 10px;
+        }
+        .footer-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .metadata {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-top: 1px solid #eee;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>SERVER DOWN ALERT</h1>
+            <p>Automated notification from ACME Infrastructure Monitoring</p>
+            <span class="alert-badge">SEVERITY: CRITICAL</span>
+        </div>
+
+        <div class="email-body">
+            <div class="section">
+                <div class="section-title">Alert Details</div>
+                <div class="info-grid">
+                    <span class="info-label">Alert ID:</span>
+                    <span class="info-value">ALT-2025-021347</span>
+
+                    <span class="info-label">Server:</span>
+                    <span class="info-value critical">WEBSRV-03.acme-corp.local</span>
+
+                    <span class="info-label">IP Address:</span>
+                    <span class="info-value">10.20.30.103</span>
+
+                    <span class="info-label">Alert Type:</span>
+                    <span class="info-value critical">Host Unreachable</span>
+
+                    <span class="info-label">Detection Time:</span>
+                    <span class="info-value">2025-02-13 10:55:17 UTC</span>
+
+                    <span class="info-label">Duration:</span>
+                    <span class="info-value critical">18 minutes (ongoing)</span>
+
+                    <span class="info-label">Environment:</span>
+                    <span class="info-value">Production</span>
+
+                    <span class="info-label">Application:</span>
+                    <span class="info-value">InternalApp (IIS)</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Event Timeline</div>
+                <div class="status-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-yellow"></div>
+                        <span class="timeline-time">10:28:33</span>
+                        <span class="timeline-event">Low virtual memory warning detected</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-yellow"></div>
+                        <span class="timeline-time">10:30:45</span>
+                        <span class="timeline-event">IIS worker process not responding to ping</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-yellow"></div>
+                        <span class="timeline-time">10:32:14</span>
+                        <span class="timeline-event">Application pool shutdown timeout exceeded</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-red"></div>
+                        <span class="timeline-time">10:55:17</span>
+                        <span class="timeline-event">System bugcheck (BSOD) - Error 0x0000007e</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-red"></div>
+                        <span class="timeline-time">10:55:20</span>
+                        <span class="timeline-event">Host became unreachable - All health checks failing</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot dot-blue"></div>
+                        <span class="timeline-time">10:55:47</span>
+                        <span class="timeline-event">Alert triggered - On-call team notified</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Business Impact</div>
+                <div class="impact-box">
+                    <h4>Affected Services</h4>
+                    <ul>
+                        <li>InternalApp - Monthly report generation unavailable</li>
+                        <li>HR Portal - Employee self-service degraded</li>
+                        <li>API Gateway - Backend routing affected (failover active)</li>
+                        <li>Estimated users affected: ~150 internal users</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Preliminary Analysis</div>
+                <p style="font-size: 14px; line-height: 1.6; color: #333;">
+                    Based on the event timeline, this outage appears to be caused by memory exhaustion
+                    in the IIS worker process (w3wp.exe), which led to a system-wide resource depletion
+                    and eventual blue screen (BSOD). The memory dump has been saved to
+                    <code>C:\Windows\MEMORY.DMP</code> for analysis.
+                </p>
+                <p style="font-size: 14px; line-height: 1.6; color: #333; margin-top: 10px;">
+                    <strong>Related KB Article:</strong> KB-003 - Server High CPU/Memory Troubleshooting
+                </p>
+            </div>
+
+            <div class="action-buttons">
+                <a href="#" class="btn btn-primary">Create Incident Ticket</a>
+                <a href="#" class="btn btn-secondary">View in Dashboard</a>
+                <a href="#" class="btn btn-secondary">Acknowledge Alert</a>
+            </div>
+        </div>
+
+        <div class="metadata">
+            Message-ID: &lt;alert-2025021310551747@monitoring.acme-corp.com&gt;<br>
+            X-Alert-Priority: 1<br>
+            X-Alert-Source: Nagios/ACME-MON-01<br>
+            X-Correlation-ID: evt-7bc4a123-8f2c-4d7e-b7f9-a0c1d2e3f4a5
+        </div>
+
+        <div class="email-footer">
+            This is an automated alert from ACME Infrastructure Monitoring System.
+            <br>Do not reply to this email.
+            <div class="footer-links">
+                <a href="#">Monitoring Dashboard</a>
+                <a href="#">Alert Settings</a>
+                <a href="#">On-Call Schedule</a>
+                <a href="#">Unsubscribe</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

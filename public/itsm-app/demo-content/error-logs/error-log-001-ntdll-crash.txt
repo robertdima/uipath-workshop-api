@@ -1,0 +1,130 @@
+================================================================================
+                         APPLICATION ERROR REPORT
+================================================================================
+Date/Time:       2025-02-13 09:47:23 UTC
+Computer Name:   WKS-HR-042
+User:           jsmith@acme-corp.com
+OS Version:     Windows 11 Pro 23H2 (Build 22631.3155)
+================================================================================
+
+EXCEPTION DETAILS
+-----------------
+Exception Code:     0xc0000005 (EXCEPTION_ACCESS_VIOLATION)
+Exception Address:  0x00007FFAE234F4F0 (ntdll.dll+0x000000000004F4F0)
+Exception Flags:    0x00000000
+
+FAULTING MODULE
+---------------
+Module Name:    ntdll.dll
+Module Path:    C:\Windows\System32\ntdll.dll
+Module Version: 10.0.22621.3155
+Module Time:    2024-12-15 14:23:45
+
+PROCESS INFORMATION
+-------------------
+Process Name:   ACME_CRM.exe
+Process ID:     14532
+Process Path:   C:\Program Files\ACME\CRM\ACME_CRM.exe
+Process Version: 4.2.1.156
+Command Line:   "C:\Program Files\ACME\CRM\ACME_CRM.exe" /autostart
+
+THREAD INFORMATION
+------------------
+Thread ID:      18724
+Thread State:   Running
+Stack Pointer:  0x000000E8B45FF6A0
+
+CALL STACK
+----------
+Frame    Address            Module           Function
+-------- ------------------ ---------------- ----------------------------------
+00       0x00007FFAE234F4F0 ntdll.dll        RtlReportCriticalFailure+0x40
+01       0x00007FFAE234EEBC ntdll.dll        RtlpHeapHandleError+0x12
+02       0x00007FFAE234EC7F ntdll.dll        RtlpHpHeapHandleError+0x7F
+03       0x00007FFAE2304D24 ntdll.dll        RtlpLogHeapFailure+0x44
+04       0x00007FFAE22F8B6C ntdll.dll        RtlpFreeHeapInternal+0x87C
+05       0x00007FFAE22F432B ntdll.dll        RtlFreeHeap+0x4B
+06       0x00007FFAE128B542 ucrtbase.dll     free+0x22
+07       0x00007FF7BC4523A8 ACME_CRM.exe     CRM::DataManager::FreeBuffer+0x38
+08       0x00007FF7BC451C34 ACME_CRM.exe     CRM::DataManager::ProcessRecord+0x244
+09       0x00007FF7BC4508E7 ACME_CRM.exe     CRM::SyncEngine::ProcessBatch+0xD7
+10       0x00007FF7BC44F192 ACME_CRM.exe     CRM::SyncEngine::Run+0x142
+11       0x00007FF7BC44E5C4 ACME_CRM.exe     CRM::Application::Main+0x234
+12       0x00007FF7BC501234 ACME_CRM.exe     WinMain+0x44
+13       0x00007FFAE0EE7614 KERNEL32.DLL     BaseThreadInitThunk+0x14
+14       0x00007FFAE22C26A1 ntdll.dll        RtlUserThreadStart+0x21
+
+LOADED MODULES (Partial)
+------------------------
+Module                          Version           Address
+------------------------------ ----------------- ------------------
+ACME_CRM.exe                   4.2.1.156         0x00007FF7BC400000
+ntdll.dll                      10.0.22621.3155   0x00007FFAE2230000
+KERNEL32.DLL                   10.0.22621.3155   0x00007FFAE0ED0000
+KERNELBASE.dll                 10.0.22621.3155   0x00007FFADF890000
+ucrtbase.dll                   10.0.22621.3155   0x00007FFAE1240000
+msvcp140.dll                   14.38.33130.0     0x00007FFADE180000
+vcruntime140.dll               14.38.33130.0     0x00007FFADFDC0000
+sqlncli11.dll                  11.0.7512.0       0x00007FFAB8200000
+OLEDB32.dll                    10.0.22621.3155   0x00007FFAB6100000
+
+HEAP INFORMATION
+----------------
+Heap Handle:    0x0000020B45670000
+Heap Type:      NT Heap
+Heap Flags:     0x00000002 (HEAP_GROWABLE)
+Total Size:     156,234,752 bytes
+Committed:      145,678,336 bytes
+Free:           10,556,416 bytes
+
+MEMORY STATUS
+-------------
+Total Physical:     16,384 MB
+Available Physical: 2,847 MB
+Total Page File:    24,576 MB
+Available Page:     8,234 MB
+Process Working Set: 892 MB
+Process Peak WS:    1,234 MB
+
+RECENT EVENT LOG ENTRIES
+------------------------
+[09:47:22] Application Error - Event ID 1000
+    Faulting application name: ACME_CRM.exe, version: 4.2.1.156
+    Faulting module name: ntdll.dll, version: 10.0.22621.3155
+    Exception code: 0xc0000005
+    Fault offset: 0x000000000004f4f0
+    Faulting process id: 0x38c4
+
+[09:47:15] Information - ACME CRM
+    Database sync started for user jsmith
+
+[09:46:58] Information - ACME CRM
+    User jsmith logged in successfully
+
+[09:32:10] Warning - .NET Runtime
+    Application: ACME_CRM.exe
+    CoreCLR Version: 8.0.124.58304
+    Description: The process was terminated due to an unhandled exception.
+
+ANALYSIS NOTES
+--------------
+This crash appears to be caused by a heap corruption error. The stack trace
+shows the crash occurring during memory deallocation (RtlFreeHeap) within
+the CRM application's DataManager component.
+
+Possible causes:
+1. Double-free of memory buffer
+2. Buffer overflow corrupting heap metadata
+3. Use-after-free condition
+4. Memory corruption from another thread
+
+Recommended actions:
+1. Check for application updates (current: 4.2.1.156)
+2. Review recent changes to CRM configuration
+3. Test with verbose logging enabled
+4. Collect additional dumps if reproducible
+5. Escalate to vendor if persists
+
+================================================================================
+                              END OF REPORT
+================================================================================

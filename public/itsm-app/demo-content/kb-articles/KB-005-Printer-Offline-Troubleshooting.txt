@@ -1,0 +1,138 @@
+# KB-005: Network Printer Offline Troubleshooting
+
+**Category:** Hardware
+**Applies To:** Windows 10, Windows 11, Network Printers
+**Last Updated:** 2025-02-01
+**Author:** Hardware Support Team
+
+## Overview
+
+Network printers showing "Offline" status is a common issue. This guide covers troubleshooting steps from user workstation to print server.
+
+## Quick Diagnosis
+
+### Check Printer Status
+```powershell
+Get-Printer -Name "PrinterName" | Select-Object Name, PrinterStatus, PortName
+```
+
+### Status Codes
+| Status | Meaning |
+|--------|---------|
+| Normal | Ready to print |
+| Offline | Cannot communicate |
+| Error | Hardware issue |
+| PaperJam | Paper jam detected |
+| TonerLow | Replace toner soon |
+
+## Troubleshooting Steps
+
+### Step 1: Verify Physical Printer Status
+1. Check printer display panel for errors
+2. Verify power LED is solid green
+3. Confirm network cable is connected (link light active)
+4. Print configuration page from printer panel
+
+### Step 2: Test Network Connectivity
+```cmd
+ping 10.1.50.25
+```
+(Replace with actual printer IP from configuration page)
+
+**If ping fails:**
+- Check network cable
+- Verify VLAN assignment
+- Contact Network team
+
+### Step 3: Clear Print Queue
+```powershell
+# Stop spooler
+Stop-Service -Name Spooler -Force
+
+# Clear queue
+Remove-Item "$env:SystemRoot\System32\spool\PRINTERS\*" -Force
+
+# Restart spooler
+Start-Service -Name Spooler
+```
+
+### Step 4: Remove and Re-add Printer (User Workstation)
+```powershell
+# Remove printer
+Remove-Printer -Name "PrinterName"
+
+# Re-add via print server
+Add-Printer -ConnectionName "\\PRINTSVR01\PrinterName"
+```
+
+### Step 5: Update Printer Driver
+1. Open Device Manager
+2. Expand "Print queues"
+3. Right-click printer > Update driver
+4. Select "Search automatically"
+
+### Step 6: Check Print Server (if centrally managed)
+```powershell
+# On print server
+Get-Printer -ComputerName PRINTSVR01 | Where-Object {$_.Name -eq "PrinterName"}
+Restart-Service -Name Spooler -ComputerName PRINTSVR01
+```
+
+## Common Issues
+
+### Issue: "Driver unavailable"
+**Cause:** Driver not installed or corrupted
+**Fix:** Download driver from manufacturer, install via Device Manager
+
+### Issue: Prints to wrong tray
+**Cause:** Default tray setting incorrect
+**Fix:** Printer Properties > Device Settings > Configure trays
+
+### Issue: Slow printing
+**Cause:** Network congestion or driver issue
+**Fix:**
+1. Check network utilization
+2. Update driver
+3. Reduce print quality for drafts
+
+### Issue: Garbled output
+**Cause:** Driver mismatch or corrupt job
+**Fix:**
+1. Clear print queue
+2. Reinstall correct PCL6/PostScript driver
+3. Try printing from different application
+
+## Windows Update KB5034441 Known Issue
+
+**IMPORTANT:** Windows Update KB5034441 (January 2025) causes printing issues with certain HP and Canon printers.
+
+**Symptoms:**
+- Printer shows offline after update
+- Print jobs fail silently
+- Spooler service crashes
+
+**Workaround:**
+1. Uninstall KB5034441:
+   ```cmd
+   wusa /uninstall /kb:5034441 /quiet /norestart
+   ```
+2. Restart computer
+3. Hide update using Microsoft Show/Hide tool
+
+**Permanent Fix:** Install KB5035432 (February 2025 patch)
+
+See: Vendor Advisory VA-2025-001 for details
+
+## Escalation
+
+| Issue | Team | Priority |
+|-------|------|----------|
+| Single user, workaround available | Service Desk | P4 |
+| Multiple users, same printer | Hardware Support | P3 |
+| Print server issue | Server Team | P2 |
+| Floor/building wide outage | Infrastructure Lead | P1 |
+
+## Related Articles
+- KB-009: Print Server Architecture
+- KB-016: Driver Installation Guide
+- KB-024: Secure Print Release Setup

@@ -1,0 +1,150 @@
+================================================================================
+              CISCO ANYCONNECT VPN CLIENT - DIAGNOSTIC LOG
+================================================================================
+Generated: 2025-02-13 14:32:45 EST
+Client Version: 4.10.07073
+OS: Windows 11 Pro (Build 22631.3155)
+User: mwilliams@acme-corp.com
+Computer: LAPTOP-SALES-089
+================================================================================
+
+[14:32:01.234] [INFO] AnyConnect started by user
+[14:32:01.456] [INFO] Loading VPN profile: ACME_Corporate_VPN
+[14:32:01.567] [INFO] Profile loaded successfully
+[14:32:01.678] [DEBUG] Connection host: vpn.acme-corp.com
+[14:32:01.789] [DEBUG] Connection protocol: IPsec/IKEv2
+[14:32:01.890] [INFO] Initiating connection to vpn.acme-corp.com
+
+[14:32:02.123] [DEBUG] DNS resolution started for vpn.acme-corp.com
+[14:32:02.345] [DEBUG] DNS resolved: vpn.acme-corp.com -> 203.45.67.89
+[14:32:02.456] [INFO] Target IP: 203.45.67.89:443
+
+[14:32:02.567] [DEBUG] Initializing IKEv2 SA
+[14:32:02.678] [DEBUG] Sending IKE_SA_INIT request
+[14:32:02.789] [DEBUG] IKE version: 2.0
+[14:32:02.890] [DEBUG] Proposed transforms:
+                       - Encryption: AES-256-GCM
+                       - PRF: SHA-512
+                       - Integrity: SHA-512
+                       - DH Group: 21 (521-bit ECDH)
+
+[14:32:03.123] [DEBUG] IKE_SA_INIT request sent (456 bytes)
+[14:32:05.456] [WARN] No response received, retrying (attempt 1/3)
+[14:32:07.789] [DEBUG] IKE_SA_INIT request resent
+[14:32:10.123] [WARN] No response received, retrying (attempt 2/3)
+[14:32:12.456] [DEBUG] IKE_SA_INIT request resent
+[14:32:15.789] [WARN] No response received, retrying (attempt 3/3)
+
+[14:32:18.123] [ERROR] IKE_SA_INIT failed: No response from peer
+[14:32:18.234] [ERROR] IPsec negotiation failed
+[14:32:18.345] [ERROR] Error Code: 809 - The network connection between your
+               computer and the VPN server could not be established because
+               the remote server is not responding.
+
+[14:32:18.456] [INFO] Attempting SSL fallback connection
+[14:32:18.567] [DEBUG] Initiating SSL/TLS connection to 203.45.67.89:443
+[14:32:18.678] [DEBUG] TLS version: 1.3
+[14:32:18.789] [DEBUG] Cipher suite: TLS_AES_256_GCM_SHA384
+
+[14:32:19.123] [DEBUG] SSL handshake started
+[14:32:19.456] [DEBUG] Server certificate received
+[14:32:19.567] [DEBUG] Certificate CN: vpn.acme-corp.com
+[14:32:19.678] [DEBUG] Certificate issuer: DigiCert Global Root CA
+[14:32:19.789] [DEBUG] Certificate expiry: 2025-08-15
+[14:32:19.890] [DEBUG] Certificate validation: PASSED
+
+[14:32:20.123] [DEBUG] SSL handshake completed successfully
+[14:32:20.234] [INFO] Connected via SSL fallback
+
+[14:32:20.456] [DEBUG] Authenticating user: mwilliams@acme-corp.com
+[14:32:20.567] [DEBUG] Authentication method: Certificate + Password
+[14:32:20.678] [DEBUG] Client certificate found: CN=mwilliams, OU=Sales
+[14:32:20.789] [INFO] Sending authentication request
+
+[14:32:21.123] [DEBUG] Authentication response received
+[14:32:21.234] [ERROR] Authentication failed
+[14:32:21.345] [ERROR] Reason: RADIUS server rejected credentials
+[14:32:21.456] [ERROR] RADIUS Error Code: 18 - Invalid credentials
+
+[14:32:21.567] [ERROR] VPN connection failed
+[14:32:21.678] [ERROR] Error Code: 691 - The remote connection was denied
+               because the user name and password combination you provided
+               is not recognized, or the selected authentication protocol
+               is not permitted on the remote access server.
+
+[14:32:21.789] [INFO] Connection attempt terminated
+[14:32:21.890] [DEBUG] Cleaning up connection state
+[14:32:22.001] [INFO] VPN client ready for next attempt
+
+================================================================================
+                         NETWORK DIAGNOSTICS
+================================================================================
+
+Ping Test Results:
+-----------------
+vpn.acme-corp.com (203.45.67.89)
+  Packet 1: Reply, time=45ms, TTL=52
+  Packet 2: Reply, time=43ms, TTL=52
+  Packet 3: Reply, time=44ms, TTL=52
+  Packet 4: Reply, time=46ms, TTL=52
+  Statistics: Sent=4, Received=4, Lost=0 (0% loss)
+  Avg RTT: 44.5ms
+
+Port Connectivity:
+-----------------
+TCP 443 (HTTPS):   OPEN
+UDP 500 (IKE):     FILTERED/BLOCKED
+UDP 4500 (NAT-T):  FILTERED/BLOCKED
+
+Network Adapter:
+---------------
+Adapter: Intel Wi-Fi 6 AX201 160MHz
+IP Address: 192.168.1.105
+Subnet Mask: 255.255.255.0
+Gateway: 192.168.1.1
+DNS Server: 8.8.8.8, 8.8.4.4
+DHCP Enabled: Yes
+Connection: Home_WiFi_5G
+
+Firewall Status:
+---------------
+Windows Firewall: Enabled
+Domain Profile: Active
+Private Profile: Inactive
+Public Profile: Inactive
+
+================================================================================
+                           TROUBLESHOOTING NOTES
+================================================================================
+
+ISSUE 1: IPsec Connection Failed (Error 809)
+--------------------------------------------
+- UDP ports 500 and 4500 appear to be blocked
+- Likely cause: Home router firewall blocking IPsec traffic
+- SSL fallback was successful, indicating server is reachable
+
+Recommendation:
+1. Configure home router to allow UDP 500/4500 outbound
+2. Or continue using SSL fallback (less optimal performance)
+
+ISSUE 2: Authentication Failed (Error 691)
+------------------------------------------
+- SSL connection successful
+- Certificate validation passed
+- RADIUS authentication rejected
+
+Possible causes:
+1. Incorrect password
+2. Account locked in Active Directory
+3. MFA token out of sync
+4. Account disabled or expired
+
+Recommendation:
+1. Verify AD account status
+2. Reset password if recently changed
+3. Re-sync MFA token
+4. Contact IT if issue persists
+
+================================================================================
+                              END OF LOG
+================================================================================

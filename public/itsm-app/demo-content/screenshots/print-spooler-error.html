@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Event Viewer - Print Spooler Errors</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+        }
+        .window {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border: 1px solid #999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .title-bar {
+            background: linear-gradient(180deg, #0078d7, #0067c0);
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .title-bar-text {
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .title-bar-text img {
+            width: 16px;
+            height: 16px;
+        }
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+        .window-btn {
+            width: 46px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .window-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .window-btn.close:hover {
+            background: #e81123;
+        }
+        .menu-bar {
+            background: #f3f3f3;
+            padding: 2px 5px;
+            border-bottom: 1px solid #ddd;
+            font-size: 12px;
+        }
+        .menu-bar span {
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+        .menu-bar span:hover {
+            background: #e5e5e5;
+        }
+        .toolbar {
+            background: #f9f9f9;
+            padding: 5px 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 5px;
+        }
+        .toolbar-btn {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            background: white;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        .toolbar-btn:hover {
+            background: #e8e8e8;
+        }
+        .content-area {
+            display: flex;
+            height: 500px;
+        }
+        .sidebar {
+            width: 220px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow: auto;
+        }
+        .tree-item {
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tree-item:hover {
+            background: #e8f4fc;
+        }
+        .tree-item.selected {
+            background: #cce8ff;
+        }
+        .tree-item.parent {
+            font-weight: 500;
+        }
+        .tree-indent {
+            margin-left: 20px;
+        }
+        .tree-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .event-list {
+            flex: 1;
+            overflow: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th {
+            background: #f3f3f3;
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            font-weight: 500;
+        }
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        tr.selected {
+            background: #cce8ff;
+        }
+        .level-error {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+        .level-warning {
+            color: #f57c00;
+        }
+        .level-info {
+            color: #1976d2;
+        }
+        .icon-error {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #d32f2f;
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 16px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .icon-warning {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #f57c00;
+            position: relative;
+        }
+        .icon-warning::after {
+            content: "!";
+            position: absolute;
+            top: 3px;
+            left: -3px;
+            font-size: 9px;
+            color: white;
+            font-weight: bold;
+        }
+        .detail-pane {
+            height: 150px;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            background: #fafafa;
+            overflow: auto;
+        }
+        .detail-pane h4 {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 5px;
+            font-size: 11px;
+        }
+        .detail-label {
+            color: #666;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .status-bar {
+            background: #f3f3f3;
+            padding: 4px 10px;
+            border-top: 1px solid #ddd;
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="title-bar">
+            <span class="title-bar-text">
+                <span>📋</span>
+                Event Viewer
+            </span>
+            <div class="window-controls">
+                <button class="window-btn">─</button>
+                <button class="window-btn">□</button>
+                <button class="window-btn close">✕</button>
+            </div>
+        </div>
+
+        <div class="menu-bar">
+            <span>File</span>
+            <span>Action</span>
+            <span>View</span>
+            <span>Help</span>
+        </div>
+
+        <div class="toolbar">
+            <button class="toolbar-btn">⟳ Refresh</button>
+            <button class="toolbar-btn">🔍 Find</button>
+            <button class="toolbar-btn">📋 Filter Current Log</button>
+            <button class="toolbar-btn">💾 Save All Events As...</button>
+            <button class="toolbar-btn">🗑 Clear Log</button>
+        </div>
+
+        <div class="content-area">
+            <div class="sidebar">
+                <div class="tree-item parent">
+                    <span class="tree-icon">▼</span>
+                    <span>📁 Event Viewer (Local)</span>
+                </div>
+                <div class="tree-indent">
+                    <div class="tree-item parent">
+                        <span class="tree-icon">▼</span>
+                        <span>📁 Windows Logs</span>
+                    </div>
+                    <div class="tree-indent">
+                        <div class="tree-item">
+                            <span class="tree-icon"></span>
+                            <span>📋 Application</span>
+                        </div>
+                        <div class="tree-item">
+                            <span class="tree-icon"></span>
+                            <span>📋 Security</span>
+                        </div>
+                        <div class="tree-item">
+                            <span class="tree-icon"></span>
+                            <span>📋 Setup</span>
+                        </div>
+                        <div class="tree-item selected">
+                            <span class="tree-icon"></span>
+                            <span>📋 System</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="event-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="60">Level</th>
+                                <th width="150">Date and Time</th>
+                                <th width="180">Source</th>
+                                <th width="70">Event ID</th>
+                                <th>Task Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="selected">
+                                <td><span class="icon-error">✕</span> <span class="level-error">Error</span></td>
+                                <td>2/13/2025 10:58:47 AM</td>
+                                <td>Service Control Manager</td>
+                                <td>7031</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-error">✕</span> <span class="level-error">Error</span></td>
+                                <td>2/13/2025 10:57:32 AM</td>
+                                <td>Service Control Manager</td>
+                                <td>7031</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-error">✕</span> <span class="level-error">Error</span></td>
+                                <td>2/13/2025 10:55:18 AM</td>
+                                <td>Service Control Manager</td>
+                                <td>7034</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-error">✕</span> <span class="level-error">Error</span></td>
+                                <td>2/13/2025 10:55:17 AM</td>
+                                <td>WER-SystemErrorReporting</td>
+                                <td>1001</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-error">✕</span> <span class="level-error">Error</span></td>
+                                <td>2/13/2025 10:32:15 AM</td>
+                                <td>Service Control Manager</td>
+                                <td>7043</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-warning"></span> <span class="level-warning">Warning</span></td>
+                                <td>2/13/2025 10:32:14 AM</td>
+                                <td>Microsoft-Windows-IIS-W3SVC</td>
+                                <td>5011</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-warning"></span> <span class="level-warning">Warning</span></td>
+                                <td>2/13/2025 10:30:45 AM</td>
+                                <td>Microsoft-Windows-WAS</td>
+                                <td>5010</td>
+                                <td>None</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-warning"></span> <span class="level-warning">Warning</span></td>
+                                <td>2/13/2025 10:28:33 AM</td>
+                                <td>Resource-Exhaustion-Detector</td>
+                                <td>2004</td>
+                                <td>Resource Exhaustion</td>
+                            </tr>
+                            <tr>
+                                <td><span class="icon-warning"></span> <span class="level-warning">Warning</span></td>
+                                <td>2/13/2025 10:15:22 AM</td>
+                                <td>Kernel-Processor-Power</td>
+                                <td>37</td>
+                                <td>(7)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="detail-pane">
+                    <h4>Event 7031, Service Control Manager</h4>
+                    <div class="detail-grid">
+                        <span class="detail-label">Log Name:</span>
+                        <span class="detail-value">System</span>
+                        <span class="detail-label">Source:</span>
+                        <span class="detail-value">Service Control Manager</span>
+                        <span class="detail-label">Event ID:</span>
+                        <span class="detail-value">7031</span>
+                        <span class="detail-label">Level:</span>
+                        <span class="detail-value">Error</span>
+                        <span class="detail-label">User:</span>
+                        <span class="detail-value">N/A</span>
+                        <span class="detail-label">Computer:</span>
+                        <span class="detail-value">WEBSRV-03.acme-corp.local</span>
+                        <span class="detail-label">Description:</span>
+                        <span class="detail-value">The Print Spooler service terminated unexpectedly. It has done this 5 time(s). The following corrective action will be taken in 60000 milliseconds: Restart the service.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span>System - 9 events (5 Errors, 4 Warnings)</span>
+            <span>WEBSRV-03</span>
+        </div>
+    </div>
+</body>
+</html>

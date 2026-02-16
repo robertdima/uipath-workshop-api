@@ -1,0 +1,152 @@
+# KB-006: Outlook Email Sync Issues Troubleshooting
+
+**Category:** Email
+**Applies To:** Microsoft Outlook 2019, Microsoft 365
+**Last Updated:** 2025-02-11
+**Author:** Messaging Team
+
+## Overview
+
+Outlook email synchronization issues can manifest as missing emails, delayed delivery, or "Disconnected" status. This guide covers common causes and resolutions.
+
+## Symptoms
+
+- Outlook status shows "Disconnected" or "Working Offline"
+- Emails visible in OWA but not in Outlook client
+- Sent items not appearing in Sent folder
+- Calendar invites not syncing
+- "Sync issues" folder contains errors
+
+## Quick Diagnosis
+
+### Check Connection Status
+Look at bottom-right of Outlook window:
+- **Connected** - Normal operation
+- **Disconnected** - No server connection
+- **Working Offline** - Offline mode enabled
+- **Trying to connect...** - Connection issue
+
+### Check Sync Issues Folder
+1. Go to Folder List (Ctrl+6)
+2. Expand "Sync Issues"
+3. Review "Conflicts" and "Server Failures"
+
+## Troubleshooting Steps
+
+### Step 1: Toggle Offline Mode
+1. Go to Send/Receive tab
+2. Click "Work Offline" to toggle
+3. If highlighted, click again to go online
+
+### Step 2: Test Outlook Connectivity
+```cmd
+# Test autodiscover
+outlook.exe /rpcdiag
+```
+
+### Step 3: Verify Credentials
+1. Control Panel > Credential Manager
+2. Windows Credentials
+3. Remove entries for "MicrosoftOffice*" and "outlook.office365.com"
+4. Restart Outlook and re-authenticate
+
+### Step 4: Repair Outlook Profile
+1. Control Panel > Mail (Microsoft Outlook)
+2. Show Profiles > Select profile
+3. Properties > Email Accounts
+4. Repair selected account
+
+### Step 5: Clear Outlook Cache
+1. Close Outlook completely
+2. Navigate to:
+   ```
+   %LOCALAPPDATA%\Microsoft\Outlook\RoamCache
+   ```
+3. Delete all files in this folder
+4. Restart Outlook
+
+### Step 6: Create New Outlook Profile
+1. Control Panel > Mail > Show Profiles
+2. Add > Create new profile
+3. Set as default
+4. Restart Outlook
+
+### Step 7: Check OST File Size
+Large OST files can cause sync issues:
+```powershell
+Get-ChildItem "$env:LOCALAPPDATA\Microsoft\Outlook\*.ost" |
+    Select-Object Name, @{N='SizeGB';E={[math]::Round($_.Length/1GB,2)}}
+```
+
+**If > 25GB:**
+1. Archive old items
+2. Empty Deleted Items
+3. Reduce cached mail period
+
+## Exchange Online Specific
+
+### Check Service Health
+1. Go to admin.microsoft.com
+2. Health > Service health
+3. Check Exchange Online status
+
+### Verify Mailbox
+```powershell
+# Admin PowerShell
+Get-Mailbox -Identity "user@acme-corp.com" | Select-Object DisplayName, ProhibitSendReceiveQuota, TotalItemSize
+```
+
+### Check Mail Flow
+```powershell
+Get-MessageTrace -RecipientAddress "user@acme-corp.com" -StartDate (Get-Date).AddHours(-24) -EndDate (Get-Date)
+```
+
+## Common Error Messages
+
+### "Outlook cannot connect to your outgoing (SMTP) server"
+**Cause:** SMTP authentication issue
+**Fix:**
+1. Account Settings > Change
+2. More Settings > Outgoing Server
+3. Enable "My outgoing server requires authentication"
+
+### "The operation failed. The messaging interfaces have returned an unknown error"
+**Cause:** Corrupt Outlook profile
+**Fix:** Create new Outlook profile
+
+### "Synchronization of some deletions failed"
+**Cause:** Server-side retention conflict
+**Fix:**
+1. Empty Deleted Items via OWA
+2. Clear local cache
+
+### "Cannot start Microsoft Outlook. Cannot open the Outlook window"
+**Cause:** Add-in conflict or corrupt profile
+**Fix:**
+```cmd
+outlook.exe /safe
+```
+If works in safe mode, disable add-ins
+
+## Performance Optimization
+
+| Setting | Recommendation |
+|---------|----------------|
+| Cached Exchange Mode | Enabled |
+| Download email for past | 6 months |
+| Download shared folders | Disabled |
+| Download Public Folders | Disabled |
+
+## Escalation
+
+| Issue | Team | Priority |
+|-------|------|----------|
+| Single user, profile fix works | Service Desk | P4 |
+| Multiple users, same symptoms | Messaging Team | P3 |
+| Exchange service degradation | Exchange Admin | P2 |
+| Complete mail flow failure | Incident Manager | P1 |
+
+## Related Articles
+- KB-010: Exchange Online Administration
+- KB-017: Outlook Add-in Troubleshooting
+- KB-023: Email Archiving Policy

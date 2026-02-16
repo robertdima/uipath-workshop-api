@@ -1,0 +1,124 @@
+# Vendor Advisory: VA-2025-001
+
+## Microsoft Windows Update KB5034441 Breaks Network Printing
+
+**Advisory ID:** VA-2025-001
+**Vendor:** Microsoft
+**Published:** 2025-01-15
+**Updated:** 2025-02-10
+**Severity:** High
+**CVE:** N/A (Non-security)
+
+---
+
+## Summary
+
+Microsoft Windows Update KB5034441, released January 9, 2025, causes network printing failures on systems with certain HP and Canon printer drivers. Affected users experience printer offline status, silent print job failures, and Print Spooler service crashes.
+
+## Affected Products
+
+| Product | Version | Build |
+|---------|---------|-------|
+| Windows 11 | 23H2 | 22631.x |
+| Windows 11 | 22H2 | 22621.x |
+| Windows 10 | 22H2 | 19045.x |
+| Windows Server 2022 | 21H2 | 20348.x |
+
+## Affected Printer Models
+
+**HP:**
+- HP LaserJet Enterprise M400 series
+- HP LaserJet Pro M200 series
+- HP Color LaserJet Pro M400 series
+- HP OfficeJet Pro 9000 series
+
+**Canon:**
+- Canon imageRUNNER ADVANCE C5500 series
+- Canon imageRUNNER ADVANCE DX C3800 series
+- Canon i-SENSYS MF700 series
+
+## Symptoms
+
+1. Network printers show "Offline" status
+2. Print jobs sent but never printed
+3. Print Spooler service (spoolsv.exe) crashes
+4. Event Log Error:
+   ```
+   Log: System
+   Source: Service Control Manager
+   Event ID: 7031
+   The Print Spooler service terminated unexpectedly.
+   It has done this 3 time(s).
+   ```
+
+## Root Cause
+
+KB5034441 introduces changes to the Windows Print Spooler that conflicts with Type 3 printer drivers using certain port monitor configurations. The driver attempts to access a deprecated API, causing an access violation.
+
+## Workarounds
+
+### Option 1: Uninstall the Update (Recommended Short-term)
+```cmd
+wusa /uninstall /kb:5034441 /quiet /norestart
+shutdown /r /t 60 /c "Restart required to complete KB removal"
+```
+
+### Option 2: Use Type 4 Printer Driver
+1. Remove existing printer
+2. Download Type 4 (V4) driver from manufacturer
+3. Install using V4 driver package
+4. Re-add printer
+
+### Option 3: Direct IP Printing
+If using print server, switch to direct IP:
+1. Remove network printer
+2. Add printer using TCP/IP port
+3. Enter printer's IP address directly
+
+## Permanent Fix
+
+Microsoft released KB5035432 on February 13, 2025, which resolves this issue.
+
+**To install:**
+1. Open Windows Update
+2. Check for updates
+3. Install KB5035432
+4. Restart system
+
+**Or via command line:**
+```powershell
+Install-WindowsUpdate -KBArticleID KB5035432 -AcceptAll -AutoReboot
+```
+
+## ACME Impact Assessment
+
+| Location | Affected Printers | Status |
+|----------|-------------------|--------|
+| HQ Building A | 12 | Patched (2/14) |
+| HQ Building B | 8 | Patched (2/14) |
+| Branch Office NYC | 4 | Scheduled (2/16) |
+| Branch Office LA | 3 | Scheduled (2/17) |
+| Data Center | 0 | N/A (servers only) |
+
+## Action Items
+
+1. **Immediate:** Apply workaround for affected users
+2. **This Week:** Deploy KB5035432 via WSUS
+3. **Ongoing:** Monitor for related issues
+
+## References
+
+- Microsoft Support Article: https://support.microsoft.com/kb/5034441
+- HP Advisory: HP-2025-0023
+- Canon Advisory: CANON-SEC-2025-001
+
+## Contact
+
+For questions about this advisory:
+- Internal: infrastructure@acme-corp.com
+- Vendor Support: Microsoft Premier Support Case #2025011500234
+
+---
+
+**Classification:** Internal Use Only
+**Review Date:** 2025-03-10

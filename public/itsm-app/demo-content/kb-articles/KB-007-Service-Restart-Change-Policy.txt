@@ -1,0 +1,129 @@
+# KB-007: Service Restart and Change Management Policy
+
+**Category:** Policy
+**Applies To:** All IT Staff
+**Last Updated:** 2025-01-20
+**Author:** IT Governance Team
+**Policy Reference:** POL-002
+
+## Overview
+
+This article defines when Change Advisory Board (CAB) approval is required for service restarts and related actions in production environments.
+
+## Change Classification Matrix
+
+### Standard Changes (No CAB Required)
+
+These actions can be performed with proper documentation:
+
+| Action | Conditions | Example |
+|--------|------------|---------|
+| Application Pool Recycle | Single server, outside business hours | IIS AppPool restart |
+| Non-critical Service Restart | Non-production, documented procedure | Dev environment services |
+| Log Rotation | Automated, no service impact | Windows Event Log archive |
+| Cache Clear | No service interruption | Redis cache flush (non-prod) |
+
+### Normal Changes (CAB Required)
+
+Submit change request 3 business days in advance:
+
+| Action | Conditions | Approval |
+|--------|------------|----------|
+| Production Service Restart | Any production service | CAB + App Owner |
+| Scheduled Maintenance | Planned downtime | CAB |
+| Configuration Change | Production configs | CAB + Change Manager |
+| Patch Deployment | Non-emergency patches | CAB |
+
+### Emergency Changes (Expedited CAB)
+
+For critical issues requiring immediate action:
+
+| Action | Conditions | Approval |
+|--------|------------|----------|
+| Emergency Service Restart | Active incident, P1/P2 | Incident Manager + On-call CAB |
+| Hotfix Deployment | Security vulnerability | Security Lead + Emergency CAB |
+| Rollback | Failed deployment | Change Manager verbal approval |
+
+## Decision Tree: Do I Need CAB Approval?
+
+```
+Is this a PRODUCTION environment?
+├── NO → Standard Change (document in ticket)
+└── YES → Is there an active P1/P2 incident?
+    ├── YES → Emergency Change (get IM approval, document retroactively)
+    └── NO → Is this during maintenance window?
+        ├── YES → Was it pre-approved in change calendar?
+        │   ├── YES → Proceed (reference CHG number)
+        │   └── NO → Submit Normal Change
+        └── NO → Does this cause user impact?
+            ├── YES → Submit Normal Change (3-day lead time)
+            └── NO → Is this a documented Standard Change?
+                ├── YES → Proceed (reference runbook)
+                └── NO → Submit Normal Change
+```
+
+## Service Classification
+
+### Tier 1 - Critical (Always CAB)
+- Payment Gateway
+- Core Banking
+- Authentication Services (AD, ADFS)
+- Production Databases
+- External-facing Web Services
+
+### Tier 2 - Important (CAB during business hours)
+- Internal Applications
+- Reporting Services
+- Integration Services
+- Backup Systems
+
+### Tier 3 - Standard (CAB if user impact)
+- Development Environments
+- Test Systems
+- Monitoring Tools
+- Internal Tools
+
+## Maintenance Windows
+
+| Window | Time (UTC) | Use For |
+|--------|------------|---------|
+| Weekly | Saturday 02:00-06:00 | Routine maintenance |
+| Monthly | 1st Sunday 00:00-06:00 | Major updates |
+| Emergency | Any time | P1 incidents only |
+
+## Documentation Requirements
+
+All changes must include:
+1. **What** - Specific action being taken
+2. **Why** - Business justification
+3. **When** - Scheduled date/time
+4. **Impact** - Expected user/service impact
+5. **Rollback** - How to reverse if needed
+6. **Testing** - Validation steps
+
+## CAB Meeting Schedule
+
+- **Regular CAB:** Wednesday 10:00 AM (UTC)
+- **Emergency CAB:** On-call rotation, 15-minute SLA
+
+## Exceptions
+
+The following have standing CAB approval:
+- Automated health check restarts (documented in RB-010)
+- Pre-approved security patches (per Security Policy)
+- Disaster recovery failover (DR runbook)
+
+## Violations
+
+Unauthorized production changes may result in:
+1. First occurrence: Documented coaching
+2. Second occurrence: Written warning
+3. Third occurrence: Access revocation review
+
+## Related Articles
+- KB-012: Change Request Submission Guide
+- KB-018: Emergency Change Process
+- KB-025: CAB Calendar Access
+
+## Policy Document
+Full policy available: POL-002 IT Change Management Policy v3.2

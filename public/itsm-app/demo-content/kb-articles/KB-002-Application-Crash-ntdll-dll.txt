@@ -1,0 +1,104 @@
+# KB-002: Application Crash - ntdll.dll Error Troubleshooting
+
+**Category:** Application
+**Applies To:** Windows 10, Windows 11, Windows Server 2019/2022
+**Last Updated:** 2025-02-08
+**Author:** Application Support Team
+
+## Overview
+
+The ntdll.dll crash is a common Windows error that occurs when an application attempts to execute invalid code or access protected memory. This article covers diagnosis and resolution steps.
+
+## Identifying ntdll.dll Crashes
+
+### Event Viewer Signature
+```
+Log Name:      Application
+Source:        Application Error
+Event ID:      1000
+Level:         Error
+Faulting module name: ntdll.dll
+```
+
+### Common Stack Trace Pattern
+```
+Exception Code: 0xc0000005 (Access Violation)
+Fault offset: 0x000000000004f4f0
+Faulting process: application.exe
+Faulting module: ntdll.dll
+```
+
+## Root Causes
+
+1. **Memory Corruption** - Application writing to invalid memory address
+2. **Heap Corruption** - Improper memory allocation/deallocation
+3. **DLL Version Mismatch** - Incompatible DLL versions loaded
+4. **Driver Conflicts** - Kernel-mode driver interfering with user-mode code
+5. **Antivirus Interference** - Security software blocking legitimate operations
+
+## Troubleshooting Steps
+
+### Step 1: Collect Crash Dump
+1. Open Windows Settings > Privacy > Diagnostics & feedback
+2. Enable "Full" diagnostic data collection
+3. Check `%LOCALAPPDATA%\CrashDumps` for .dmp files
+
+### Step 2: Analyze Event Viewer
+```powershell
+Get-WinEvent -FilterHashtable @{LogName='Application'; ID=1000} -MaxEvents 10 |
+    Where-Object {$_.Message -like "*ntdll.dll*"} |
+    Format-List TimeCreated, Message
+```
+
+### Step 3: Check for Recent Changes
+- Review installed Windows updates in last 7 days
+- Check for recently installed software
+- Verify no driver updates occurred
+
+### Step 4: Run System File Checker
+```cmd
+sfc /scannow
+DISM /Online /Cleanup-Image /RestoreHealth
+```
+
+### Step 5: Check Application Compatibility
+1. Right-click application executable
+2. Properties > Compatibility
+3. Try "Run in compatibility mode" for Windows 8
+
+### Step 6: Disable Antivirus Temporarily
+If crash stops with AV disabled:
+- Add application to AV exclusion list
+- Contact Security team to whitelist
+
+### Step 7: Reinstall Visual C++ Redistributables
+Download and install all versions from Microsoft:
+- VC++ 2015-2022 (x86 and x64)
+- VC++ 2013 (x86 and x64)
+- VC++ 2010 (x86 and x64)
+
+## Resolution Codes
+
+| Code | Resolution | Next Steps |
+|------|------------|------------|
+| FIXED-PATCH | Windows update resolved | Document KB number |
+| FIXED-REINSTALL | Application reinstall fixed | Note version installed |
+| FIXED-COMPAT | Compatibility mode applied | Document settings |
+| ESCALATE-VENDOR | Vendor bug confirmed | Open vendor support case |
+| ESCALATE-SECURITY | AV conflict identified | Engage Security team |
+
+## When to Escalate
+
+**Escalate to Application Support (P2):**
+- Crash persists after all steps
+- Multiple applications affected
+- Crash dump analysis required
+
+**Escalate to Vendor (P3):**
+- Bug confirmed in application code
+- No workaround available
+
+## Related Articles
+- KB-008: Windows Update Troubleshooting
+- KB-019: Crash Dump Analysis Guide
+- KB-025: Application Compatibility Settings

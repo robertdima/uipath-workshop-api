@@ -1,0 +1,83 @@
+# KB-001: VPN Connection Troubleshooting Guide
+
+**Category:** Network
+**Applies To:** Windows 10, Windows 11, macOS
+**Last Updated:** 2025-02-10
+**Author:** Network Operations Team
+
+## Overview
+
+This article provides step-by-step troubleshooting for common VPN connection issues with the corporate Cisco AnyConnect VPN client.
+
+## Common Error Codes
+
+| Error Code | Description | Resolution |
+|------------|-------------|------------|
+| Error 809 | IPsec negotiation failed | Check firewall ports 500/4500 UDP |
+| Error 691 | Invalid credentials | Verify username/password, check AD account status |
+| Error 800 | VPN tunnel failed | Restart VPN service, check network connectivity |
+| Error 789 | L2TP connection failed | Enable IPsec Policy Agent service |
+| Error 812 | Authentication method mismatch | Contact IT to verify RADIUS configuration |
+
+## Troubleshooting Steps
+
+### Step 1: Verify Network Connectivity
+```cmd
+ping vpn.acme-corp.com
+tracert vpn.acme-corp.com
+```
+Expected: Successful ping response. If timeout, check internet connectivity first.
+
+### Step 2: Check VPN Client Status
+1. Open Cisco AnyConnect from system tray
+2. Verify connection profile is set to "ACME Corporate VPN"
+3. Check for any error messages in the client window
+
+### Step 3: Verify Credentials
+- Ensure AD account is not locked (check with IT if unsure)
+- Verify MFA token is synchronized
+- Try resetting password if recently changed
+
+### Step 4: Clear VPN Cache
+```cmd
+cd %ProgramData%\Cisco\Cisco AnyConnect Secure Mobility Client\Profile
+del *.xml
+```
+Restart the AnyConnect client after clearing cache.
+
+### Step 5: Check Certificate Status
+1. Open `certmgr.msc`
+2. Navigate to Personal > Certificates
+3. Verify "ACME Corporate VPN" certificate is present and not expired
+
+### Step 6: Restart VPN Service
+```cmd
+net stop vpnagent
+net start vpnagent
+```
+
+### Step 7: Check Firewall Rules
+Ensure the following ports are allowed outbound:
+- UDP 500 (IKE)
+- UDP 4500 (NAT-T)
+- TCP 443 (SSL VPN fallback)
+
+## When to Escalate
+
+Escalate to Network Team (Priority P2) if:
+- All troubleshooting steps fail
+- Multiple users affected simultaneously
+- Error persists after credential reset
+- Certificate issues identified
+
+## Related Articles
+- KB-015: MFA Token Synchronization
+- KB-022: Corporate Network Architecture Overview
+- KB-031: Remote Access Policy
+
+## Automation Available
+This runbook has automated steps available via RB-001. Automatable steps:
+- Network connectivity check
+- VPN cache clearing
+- Certificate validation
+- Service restart

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITSM Console - Service Desk Management</title>
+    <link rel="stylesheet" href="styles/retro.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Consolas&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header Bar -->
+    <header class="header-bar">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">🖥️</span>
+                <span class="logo-text">ITSM Console</span>
+                <span class="logo-version">v2.4.1</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="env-badge">DEMO ENVIRONMENT</div>
+        </div>
+        <div class="header-right">
+            <div class="header-info">
+                <div class="notification-bell" id="notification-bell" onclick="NotificationsModule.togglePanel(event)">
+                    <span class="bell-icon">🔔</span>
+                    <span class="notification-badge" id="notification-count">3</span>
+                </div>
+                <span class="info-item">👤 tech.support</span>
+                <span class="info-item">🕐 <span id="current-time"></span></span>
+            </div>
+            <button class="btn-header" onclick="showSessionInfo()">Session Info</button>
+            <button class="btn-header btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">Service Desk</div>
+                <a href="#" class="nav-item active" data-module="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-module="incidents">
+                    <span class="nav-icon">🎫</span>
+                    <span class="nav-text">Incidents</span>
+                    <span class="nav-badge" id="incidents-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-module="problems">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Problems</span>
+                    <span class="nav-badge" id="problems-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-module="my-tickets">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">My Tickets</span>
+                </a>
+                <a href="#" class="nav-item" data-module="service-catalog">
+                    <span class="nav-icon">🛒</span>
+                    <span class="nav-text">Service Catalog</span>
+                </a>
+                <a href="#" class="nav-item" data-module="my-requests">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">My Requests</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">Knowledge</div>
+                <a href="#" class="nav-item" data-module="knowledge-base">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-text">Knowledge Base</span>
+                </a>
+                <a href="#" class="nav-item" data-module="runbooks">
+                    <span class="nav-icon">📖</span>
+                    <span class="nav-text">Runbooks</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">Change Management</div>
+                <a href="#" class="nav-item" data-module="changes">
+                    <span class="nav-icon">🔄</span>
+                    <span class="nav-text">Change Requests</span>
+                </a>
+                <a href="#" class="nav-item" data-module="cab-calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">CAB Calendar</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">Configuration</div>
+                <a href="#" class="nav-item" data-module="assets">
+                    <span class="nav-icon">🖥️</span>
+                    <span class="nav-text">Assets / CMDB</span>
+                </a>
+                <a href="#" class="nav-item" data-module="policies">
+                    <span class="nav-icon">📜</span>
+                    <span class="nav-text">Policies</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">Reports</div>
+                <a href="#" class="nav-item" data-module="reports">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="#" class="nav-item" data-module="audit-log">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Audit Log</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-header">Administration</div>
+                <a href="#" class="nav-item" data-module="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </a>
+                <a href="#" class="nav-item" data-module="demo-reset">
+                    <span class="nav-icon">🔃</span>
+                    <span class="nav-text">Reset Demo Data</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="/" class="back-link">← Back to Workshop API</a>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-area" id="content-area">
+            <!-- Content will be dynamically loaded here -->
+        </main>
+
+        <!-- Right Panel (Context/Details) -->
+        <aside class="right-panel" id="right-panel">
+            <div class="panel-header">
+                <span>Quick Actions</span>
+                <button class="panel-close" onclick="toggleRightPanel()">×</button>
+            </div>
+            <div class="panel-content">
+                <div class="quick-action-group">
+                    <h4>Create New</h4>
+                    <button class="quick-action-btn" onclick="createNewIncident()">
+                        🎫 New Incident
+                    </button>
+                    <button class="quick-action-btn" onclick="createNewChange()">
+                        🔄 New Change Request
+                    </button>
+                </div>
+                <div class="quick-action-group">
+                    <h4>Recent Activity</h4>
+                    <div class="activity-list" id="recent-activity">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+        <div class="status-left">
+            <span class="status-item">Connected to: ITSM-PROD-01</span>
+            <span class="status-item status-ok">● Database: Online</span>
+            <span class="status-item status-ok">● API: Healthy</span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">Last Sync: <span id="last-sync">Just now</span></span>
+            <span class="status-item">Session: 45:23</span>
+        </div>
+    </footer>
+
+    <!-- Modal Container -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-container" id="modal-container">
+            <!-- Modal content will be injected here -->
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Data -->
+    <script src="js/data.js"></script>
+
+    <!-- Utility Modules (load first) -->
+    <script src="js/modules/utils.js"></script>
+    <script src="js/modules/toast.js"></script>
+    <script src="js/modules/modals.js"></script>
+
+    <!-- Feature Modules -->
+    <script src="js/modules/notifications.js"></script>
+    <script src="js/modules/settings.js"></script>
+    <script src="js/modules/auditlog.js"></script>
+    <script src="js/modules/reports.js"></script>
+    <script src="js/modules/runbooks.js"></script>
+    <script src="js/modules/knowledge.js"></script>
+    <script src="js/modules/incidents.js"></script>
+    <script src="js/modules/changes.js"></script>
+    <script src="js/modules/assets.js"></script>
+
+    <!-- New Enhanced Modules -->
+    <script src="js/modules/sla.js"></script>
+    <script src="js/modules/customers.js"></script>
+    <script src="js/modules/assignment.js"></script>
+    <script src="js/modules/linking.js"></script>
+    <script src="js/modules/problems.js"></script>
+    <script src="js/modules/catalog.js"></script>
+    <script src="js/modules/email.js"></script>
+    <script src="js/modules/bulk.js"></script>
+
+    <!-- Main Application (load last) -->
+    <script src="js/app.js"></script>
+</body>
+</html>

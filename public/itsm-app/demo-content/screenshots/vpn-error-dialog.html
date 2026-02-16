@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco AnyConnect - Connection Error</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .dialog-container {
+            width: 450px;
+        }
+        .vpn-window {
+            background: #f0f0f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .title-bar {
+            background: linear-gradient(180deg, #4a90d9, #3a7fc4);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .title-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .app-icon {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #3a7fc4;
+        }
+        .title-bar-text {
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .window-controls {
+            display: flex;
+            gap: 5px;
+        }
+        .window-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-minimize { background: #febd2e; }
+        .btn-maximize { background: #28c940; }
+        .btn-close { background: #fe5f57; }
+        .vpn-content {
+            padding: 20px;
+            background: white;
+        }
+        .vpn-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        .cisco-logo {
+            width: 60px;
+            height: 60px;
+            background: #049fd9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .vpn-title h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        .vpn-title p {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .error-section {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .error-icon {
+            width: 24px;
+            height: 24px;
+            background: #e53e3e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .error-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #c53030;
+        }
+        .error-message {
+            font-size: 13px;
+            color: #742a2a;
+            line-height: 1.5;
+        }
+        .error-code {
+            font-family: 'Courier New', monospace;
+            background: #fed7d7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .connection-details {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 13px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #718096;
+        }
+        .detail-value {
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .status-disconnected {
+            color: #e53e3e;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-retry {
+            background: #049fd9;
+            color: white;
+        }
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .btn-diagnostics {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        .status-bar {
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #718096;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="dialog-container">
+        <div class="vpn-window">
+            <div class="title-bar">
+                <div class="title-bar-left">
+                    <div class="app-icon">C</div>
+                    <span class="title-bar-text">Cisco AnyConnect Secure Mobility Client</span>
+                </div>
+                <div class="window-controls">
+                    <button class="window-btn btn-minimize"></button>
+                    <button class="window-btn btn-maximize"></button>
+                    <button class="window-btn btn-close"></button>
+                </div>
+            </div>
+
+            <div class="vpn-content">
+                <div class="vpn-header">
+                    <div class="cisco-logo">CISCO</div>
+                    <div class="vpn-title">
+                        <h2>AnyConnect Secure Mobility Client</h2>
+                        <p>Version 4.10.07073</p>
+                    </div>
+                </div>
+
+                <div class="error-section">
+                    <div class="error-header">
+                        <div class="error-icon">!</div>
+                        <span class="error-title">Connection Failed</span>
+                    </div>
+                    <div class="error-message">
+                        The remote connection was denied because the user name and password
+                        combination you provided is not recognized, or the selected authentication
+                        protocol is not permitted on the remote access server.
+                        <br><br>
+                        <span class="error-code">Error Code: 691</span>
+                        <span class="error-code">RADIUS Error: 18</span>
+                    </div>
+                </div>
+
+                <div class="connection-details">
+                    <div class="detail-row">
+                        <span class="detail-label">VPN Server:</span>
+                        <span class="detail-value">vpn.acme-corp.com</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Server IP:</span>
+                        <span class="detail-value">203.45.67.89</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">User:</span>
+                        <span class="detail-value">mwilliams@acme-corp.com</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Protocol:</span>
+                        <span class="detail-value">SSL/TLS (Fallback)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value status-disconnected">Authentication Failed</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Attempt Time:</span>
+                        <span class="detail-value">2025-02-13 14:32:21</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-diagnostics">Run Diagnostics</button>
+                    <button class="btn btn-cancel">Cancel</button>
+                    <button class="btn btn-retry">Retry Connection</button>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Disconnected</span>
+                </div>
+                <span>LAPTOP-SALES-089</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

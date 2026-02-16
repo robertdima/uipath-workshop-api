@@ -1,0 +1,228 @@
+================================================================================
+                    WINDOWS EVENT VIEWER EXPORT
+================================================================================
+Export Date: 2025-02-13 11:15:00
+Computer: WEBSRV-03.acme-corp.local
+Export Filter: System Log, Last 24 Hours, Error/Warning Only
+================================================================================
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Service Control Manager
+Date:          2025-02-13 10:58:47
+Event ID:      7031
+Task Category: None
+Level:         Error
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The Print Spooler service terminated unexpectedly. It has done this 5 time(s).
+The following corrective action will be taken in 60000 milliseconds:
+Restart the service.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Service Control Manager
+Date:          2025-02-13 10:57:32
+Event ID:      7031
+Task Category: None
+Level:         Error
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The Print Spooler service terminated unexpectedly. It has done this 4 time(s).
+The following corrective action will be taken in 60000 milliseconds:
+Restart the service.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Service Control Manager
+Date:          2025-02-13 10:55:18
+Event ID:      7034
+Task Category: None
+Level:         Error
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The Print Spooler service terminated unexpectedly. It has done this 3 time(s).
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Microsoft-Windows-WER-SystemErrorReporting
+Date:          2025-02-13 10:55:17
+Event ID:      1001
+Task Category: None
+Level:         Error
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The computer has rebooted from a bugcheck. The bugcheck was: 0x0000007e
+(0xffffffffc0000005, 0xfffff8067a234560, 0xffffd0012bc8f5a8, 0xffffd0012bc8ee00).
+A dump was saved in: C:\Windows\MEMORY.DMP.
+Report Id: 12345678-abcd-1234-efgh-567890abcdef
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Service Control Manager
+Date:          2025-02-13 10:32:15
+Event ID:      7043
+Task Category: None
+Level:         Error
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The World Wide Web Publishing Service service did not shut down properly after
+receiving a preshutdown control.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Microsoft-Windows-IIS-W3SVC
+Date:          2025-02-13 10:32:14
+Event ID:      5011
+Task Category: None
+Level:         Warning
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+A process serving application pool 'DefaultAppPool' exceeded time limits
+during shut down. The process id was '8456'.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Microsoft-Windows-WAS
+Date:          2025-02-13 10:30:45
+Event ID:      5010
+Task Category: None
+Level:         Warning
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+A process serving application pool 'DefaultAppPool' failed to respond to a
+ping. The process id was '8456'.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Microsoft-Windows-Resource-Exhaustion-Detector
+Date:          2025-02-13 10:28:33
+Event ID:      2004
+Task Category: Resource Exhaustion Detection and Recovery
+Level:         Warning
+Keywords:      Events related to exhaustion of system commit limit (virtual memory).
+User:          SYSTEM
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+Windows successfully diagnosed a low virtual memory condition. The following
+programs consumed the most virtual memory: w3wp.exe (8456) consumed
+4,234,567,890 bytes, sqlservr.exe (3456) consumed 2,567,890,123 bytes, and
+svchost.exe (1234) consumed 567,890,123 bytes.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      System
+Source:        Microsoft-Windows-Kernel-Processor-Power
+Date:          2025-02-13 10:15:22
+Event ID:      37
+Task Category: (7)
+Level:         Warning
+Keywords:
+User:          SYSTEM
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+The speed of processor 0 in group 0 is being limited by system firmware.
+The processor has been in this reduced performance state for 847 seconds
+since the last report.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Log Name:      Application
+Source:        ASP.NET 4.0.30319.0
+Date:          2025-02-13 10:30:42
+Event ID:      1309
+Task Category: Web Event
+Level:         Warning
+Keywords:      Classic
+User:          N/A
+Computer:      WEBSRV-03.acme-corp.local
+Description:
+Event code: 3005
+Event message: An unhandled exception has occurred.
+Event time: 2/13/2025 10:30:42 AM
+Event time (UTC): 2/13/2025 3:30:42 PM
+Event ID: 7bc4a1238f2c4d7eb7f9a0c1d2e3f4a5
+Event sequence: 234
+Event occurrence: 12
+Event detail code: 0
+
+Application information:
+    Application domain: /LM/W3SVC/1/ROOT/InternalApp-1-133123456789012345
+    Trust level: Full
+    Application Virtual Path: /InternalApp
+    Application Path: C:\inetpub\wwwroot\InternalApp\
+    Machine name: WEBSRV-03
+
+Process information:
+    Process ID: 8456
+    Process name: w3wp.exe
+    Account name: IIS APPPOOL\DefaultAppPool
+
+Exception information:
+    Exception type: System.OutOfMemoryException
+    Exception message: Exception of type 'System.OutOfMemoryException' was thrown.
+   at System.String.Concat(String[] values)
+   at InternalApp.DataProcessor.ProcessLargeDataSet(DataTable dt)
+   at InternalApp.Reports.GenerateMonthlyReport()
+   at InternalApp.Controllers.ReportController.Monthly()
+--------------------------------------------------------------------------------
+
+================================================================================
+                         SUMMARY ANALYSIS
+================================================================================
+
+CRITICAL ISSUES DETECTED:
+
+1. PRINT SPOOLER CRASH LOOP (5 occurrences in 4 minutes)
+   - Service repeatedly crashing and restarting
+   - Possible cause: Corrupt print driver or KB5034441 issue
+   - Action: Review VA-2025-001 for printing issues
+
+2. OUT OF MEMORY CONDITION
+   - w3wp.exe consuming 4+ GB memory
+   - System approaching virtual memory limit
+   - Application throwing OutOfMemoryException
+   - Action: Investigate memory leak in InternalApp
+
+3. IIS WORKER PROCESS UNRESPONSIVE
+   - DefaultAppPool not responding to pings
+   - Improper shutdown detected
+   - Correlated with memory exhaustion
+   - Action: Recycle app pool, investigate code
+
+4. CPU THERMAL THROTTLING
+   - Processor speed being limited by firmware
+   - 847 seconds in reduced state
+   - Possible cooling issue or high ambient temp
+   - Action: Check datacenter cooling, server fans
+
+RECOMMENDED ACTIONS:
+1. Immediate: Recycle DefaultAppPool
+2. Short-term: Investigate InternalApp memory leak
+3. Schedule: Windows Update for printer fix
+4. Monitor: CPU temperatures
+
+================================================================================
+                              END OF EXPORT
+================================================================================

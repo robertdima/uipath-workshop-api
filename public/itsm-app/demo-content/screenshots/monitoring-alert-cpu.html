@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Monitoring Alert - CPU Critical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #16213e;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .timestamp {
+            color: #888;
+            font-size: 14px;
+        }
+        .alert-banner {
+            background: linear-gradient(135deg, #ff4757, #c0392b);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .alert-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .alert-content h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .alert-content p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-critical {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        .status-warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        .status-ok {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+        .metric-value {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .metric-value.critical {
+            color: #ff4757;
+        }
+        .metric-value.warning {
+            color: #ffc107;
+        }
+        .metric-value.ok {
+            color: #2ed573;
+        }
+        .metric-label {
+            color: #888;
+            font-size: 14px;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #0f3460;
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .progress-fill.critical {
+            background: linear-gradient(90deg, #ff4757, #ff6b81);
+            width: 98%;
+        }
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #ffdb4d);
+            width: 78%;
+        }
+        .progress-fill.ok {
+            background: linear-gradient(90deg, #2ed573, #7bed9f);
+            width: 45%;
+        }
+        .server-details {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .server-details h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .detail-item {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .detail-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .process-list {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .process-list h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #0f3460;
+        }
+        th {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        td {
+            font-size: 14px;
+        }
+        .cpu-high {
+            color: #ff4757;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        .btn-secondary {
+            background: #0f3460;
+            color: #eee;
+        }
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">SM</div>
+            <div class="logo-text">ServerMonitor Pro</div>
+        </div>
+        <div class="timestamp">Last Updated: 2025-02-13 10:47:23 UTC</div>
+    </div>
+
+    <div class="alert-banner">
+        <div class="alert-icon">⚠</div>
+        <div class="alert-content">
+            <h2>CRITICAL ALERT: CPU Usage Exceeds Threshold</h2>
+            <p>Server WEBSRV-03.acme-corp.local has exceeded 95% CPU utilization for more than 15 minutes</p>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">CPU Usage</span>
+                <span class="status-badge status-critical">CRITICAL</span>
+            </div>
+            <div class="metric-value critical">98.2%</div>
+            <div class="metric-label">Threshold: 85%</div>
+            <div class="progress-bar">
+                <div class="progress-fill critical"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Memory Usage</span>
+                <span class="status-badge status-warning">WARNING</span>
+            </div>
+            <div class="metric-value warning">78.4%</div>
+            <div class="metric-label">15.2 GB / 32 GB Used</div>
+            <div class="progress-bar">
+                <div class="progress-fill warning"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Disk I/O</span>
+                <span class="status-badge status-ok">OK</span>
+            </div>
+            <div class="metric-value ok">45%</div>
+            <div class="metric-label">Read: 125 MB/s | Write: 89 MB/s</div>
+            <div class="progress-bar">
+                <div class="progress-fill ok"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Network</span>
+                <span class="status-badge status-ok">OK</span>
+            </div>
+            <div class="metric-value ok">234 Mbps</div>
+            <div class="metric-label">In: 156 Mbps | Out: 78 Mbps</div>
+            <div class="progress-bar">
+                <div class="progress-fill ok" style="width: 23%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="server-details">
+        <h3>Server Information</h3>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Hostname</div>
+                <div class="detail-value">WEBSRV-03.acme-corp.local</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">IP Address</div>
+                <div class="detail-value">10.20.30.103</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Operating System</div>
+                <div class="detail-value">Windows Server 2022</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Uptime</div>
+                <div class="detail-value">45 days, 12:34:56</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">CPU Cores</div>
+                <div class="detail-value">8 cores (16 threads)</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Total Memory</div>
+                <div class="detail-value">32 GB DDR4</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Role</div>
+                <div class="detail-value">Web Server (IIS)</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Environment</div>
+                <div class="detail-value">Production</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="process-list">
+        <h3>Top CPU Consuming Processes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Process Name</th>
+                    <th>PID</th>
+                    <th>CPU %</th>
+                    <th>Memory</th>
+                    <th>User</th>
+                    <th>Runtime</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>w3wp.exe (DefaultAppPool)</td>
+                    <td>8456</td>
+                    <td class="cpu-high">67.3%</td>
+                    <td>4.2 GB</td>
+                    <td>IIS APPPOOL\DefaultAppPool</td>
+                    <td>2h 34m</td>
+                </tr>
+                <tr>
+                    <td>sqlservr.exe</td>
+                    <td>3456</td>
+                    <td class="cpu-high">18.7%</td>
+                    <td>2.4 GB</td>
+                    <td>NT SERVICE\MSSQLSERVER</td>
+                    <td>45d 12h</td>
+                </tr>
+                <tr>
+                    <td>MsMpEng.exe</td>
+                    <td>1892</td>
+                    <td>8.2%</td>
+                    <td>512 MB</td>
+                    <td>SYSTEM</td>
+                    <td>45d 12h</td>
+                </tr>
+                <tr>
+                    <td>svchost.exe</td>
+                    <td>1234</td>
+                    <td>2.1%</td>
+                    <td>156 MB</td>
+                    <td>SYSTEM</td>
+                    <td>45d 12h</td>
+                </tr>
+                <tr>
+                    <td>System</td>
+                    <td>4</td>
+                    <td>1.9%</td>
+                    <td>24 MB</td>
+                    <td>SYSTEM</td>
+                    <td>45d 12h</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="actions">
+            <button class="btn btn-primary">Create Incident</button>
+            <button class="btn btn-secondary">View Process Details</button>
+            <button class="btn btn-secondary">Export Report</button>
+            <button class="btn btn-danger">Restart IIS App Pool</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,127 @@
+# KB-003: Server High CPU Utilization Troubleshooting
+
+**Category:** Infrastructure
+**Applies To:** Windows Server 2019, Windows Server 2022
+**Last Updated:** 2025-02-05
+**Author:** Server Operations Team
+
+## Overview
+
+High CPU utilization (>85% sustained for >5 minutes) on production servers can impact application performance and user experience. This guide covers identification, diagnosis, and resolution.
+
+## Alert Thresholds
+
+| Severity | CPU % | Duration | Action |
+|----------|-------|----------|--------|
+| Warning | 75-85% | 5 min | Monitor |
+| High | 85-95% | 5 min | Investigate |
+| Critical | >95% | 2 min | Immediate action |
+
+## Identification
+
+### Monitoring Alert Format
+```
+ALERT: High CPU on WEBSRV-03
+Threshold: 85% exceeded
+Current: 94.7%
+Duration: 8 minutes
+Top Process: w3wp.exe (67%)
+```
+
+### Quick Check Commands
+```powershell
+# Get current CPU usage
+Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 2 -MaxSamples 5
+
+# Top 10 CPU consuming processes
+Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 Name, CPU, Id
+```
+
+## Common Causes
+
+1. **Runaway Process** - Single process consuming excessive CPU
+2. **Memory Pressure** - High memory causing excessive paging
+3. **Scheduled Tasks** - Backup, antivirus scan, Windows Update
+4. **Application Bug** - Infinite loop or inefficient code
+5. **DDoS/Attack** - Malicious traffic overwhelming server
+6. **Database Queries** - Inefficient queries causing high CPU on SQL
+
+## Troubleshooting Steps
+
+### Step 1: Identify Top Processes
+```powershell
+Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 | Format-Table Name, Id, CPU, WorkingSet64
+```
+
+### Step 2: Check for Scheduled Tasks
+```powershell
+Get-ScheduledTask | Where-Object {$_.State -eq 'Running'} | Format-Table TaskName, State
+```
+
+### Step 3: Review Recent Changes
+- Check change management for deployments in last 24 hours
+- Review Windows Update history
+- Check for configuration changes
+
+### Step 4: Analyze Process Details
+```powershell
+# For IIS worker process
+Get-WebAppPoolState
+Get-Process w3wp | Select-Object Id, CPU, WorkingSet64
+
+# Get IIS request queue
+Get-Counter '\ASP.NET\Requests Queued'
+```
+
+### Step 5: Check for Memory Pressure
+```powershell
+Get-Counter '\Memory\Available MBytes'
+Get-Counter '\Memory\Pages/sec'
+```
+If Available MBytes < 500MB, memory pressure may be causing CPU spikes.
+
+### Step 6: Review Application Logs
+```powershell
+Get-WinEvent -LogName Application -MaxEvents 50 | Where-Object {$_.LevelDisplayName -eq 'Error'}
+```
+
+## Resolution Actions
+
+### Immediate Mitigation
+```powershell
+# Restart specific application pool (IIS)
+Restart-WebAppPool -Name "DefaultAppPool"
+
+# Restart specific service
+Restart-Service -Name "ServiceName" -Force
+
+# As last resort - recycle worker process
+Stop-Process -Id <PID> -Force
+```
+
+### Long-term Fixes
+1. Scale out - add more servers to load balancer
+2. Scale up - increase CPU allocation (if VM)
+3. Code optimization - work with development team
+4. Query optimization - engage DBA team
+
+## Escalation Matrix
+
+| Condition | Team | Priority |
+|-----------|------|----------|
+| Single server, recovers after restart | Server Ops | P3 |
+| Multiple servers affected | Infrastructure Lead | P2 |
+| Customer-facing impact | Incident Manager | P1 |
+| Suspected security event | Security Team | P1 |
+
+## Related Articles
+- KB-007: IIS Application Pool Management
+- KB-012: Windows Server Performance Baseline
+- KB-018: Load Balancer Health Checks
+
+## Automation Available
+Runbook RB-003 provides automated diagnostics:
+- Process identification
+- Scheduled task check
+- Service restart (with approval)
+- Performance data collection

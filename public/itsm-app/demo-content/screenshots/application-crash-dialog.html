@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Error - ACME CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2d2d30;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+        }
+        .error-dialog {
+            width: 500px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 10;
+        }
+        .dialog-header {
+            background: #e81123;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .error-shield {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .shield-x {
+            color: #e81123;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .dialog-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .dialog-close {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .dialog-body {
+            padding: 20px;
+            background: white;
+        }
+        .error-summary {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .error-icon-large {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+        .error-icon-large svg {
+            width: 100%;
+            height: 100%;
+        }
+        .error-text h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .error-text p {
+            font-size: 13px;
+            color: #444;
+            line-height: 1.5;
+        }
+        .details-section {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .details-header {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .details-header span {
+            font-size: 12px;
+            color: #0066cc;
+            font-weight: 500;
+        }
+        .details-toggle {
+            font-size: 10px;
+            color: #666;
+        }
+        .details-content {
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 11px;
+            color: #333;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+        .info-label {
+            width: 140px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .info-value {
+            color: #333;
+        }
+        .stack-trace {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            color: #c00;
+        }
+        .dialog-footer {
+            padding: 15px 20px;
+            background: #f0f0f0;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 8px 20px;
+            border: 1px solid #999;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #e1e1e1;
+            color: #333;
+        }
+        .btn:hover {
+            background: #d4d4d4;
+        }
+        .btn-primary {
+            background: #0078d4;
+            border-color: #0078d4;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #106ebe;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .checkbox-row input {
+            width: 16px;
+            height: 16px;
+        }
+        .checkbox-row label {
+            font-size: 13px;
+            color: #333;
+        }
+        .link {
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="dialog-overlay"></div>
+    <div class="error-dialog">
+        <div class="dialog-header">
+            <div class="error-shield">
+                <span class="shield-x">X</span>
+            </div>
+            <span class="dialog-title">ACME CRM has stopped working</span>
+            <button class="dialog-close">&times;</button>
+        </div>
+
+        <div class="dialog-body">
+            <div class="error-summary">
+                <div class="error-icon-large">
+                    <svg viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="22" fill="#FEE2E2"/>
+                        <circle cx="24" cy="24" r="18" fill="#EF4444"/>
+                        <path d="M24 14V26M24 30V34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="error-text">
+                    <h3>ACME CRM encountered a problem and needs to close</h3>
+                    <p>
+                        We're sorry for the inconvenience. The application has encountered
+                        an unexpected error and cannot continue. Your unsaved work may have
+                        been lost.
+                    </p>
+                </div>
+            </div>
+
+            <div class="details-section">
+                <div class="details-header">
+                    <span>Show technical details</span>
+                    <span class="details-toggle">▼</span>
+                </div>
+                <div class="details-content">
+<div class="info-row"><span class="info-label">Application:</span><span class="info-value">ACME_CRM.exe</span></div>
+<div class="info-row"><span class="info-label">Version:</span><span class="info-value">4.2.1.156</span></div>
+<div class="info-row"><span class="info-label">Exception Code:</span><span class="info-value">0xc0000005 (EXCEPTION_ACCESS_VIOLATION)</span></div>
+<div class="info-row"><span class="info-label">Faulting Module:</span><span class="info-value">ntdll.dll</span></div>
+<div class="info-row"><span class="info-label">Fault Offset:</span><span class="info-value">0x000000000004f4f0</span></div>
+<div class="info-row"><span class="info-label">Process ID:</span><span class="info-value">14532 (0x38c4)</span></div>
+<div class="info-row"><span class="info-label">Time:</span><span class="info-value">2025-02-13 09:47:23 UTC</span></div>
+
+<div class="stack-trace">
+Stack Trace:
+  ntdll.dll!RtlReportCriticalFailure+0x40
+  ntdll.dll!RtlpHeapHandleError+0x12
+  ntdll.dll!RtlpHpHeapHandleError+0x7f
+  ntdll.dll!RtlpLogHeapFailure+0x44
+  ntdll.dll!RtlpFreeHeapInternal+0x87c
+  ntdll.dll!RtlFreeHeap+0x4b
+  ucrtbase.dll!free+0x22
+  ACME_CRM.exe!CRM::DataManager::FreeBuffer+0x38
+  ACME_CRM.exe!CRM::DataManager::ProcessRecord+0x244
+  ACME_CRM.exe!CRM::SyncEngine::ProcessBatch+0xd7
+</div>
+                </div>
+            </div>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="sendReport" checked>
+                <label for="sendReport">Send error report to ACME IT Support</label>
+            </div>
+
+            <a href="#" class="link">View error log location</a>
+        </div>
+
+        <div class="dialog-footer">
+            <button class="btn">Debug</button>
+            <button class="btn">Don't Send</button>
+            <button class="btn btn-primary">Send and Close</button>
+        </div>
+    </div>
+</body>
+</html>

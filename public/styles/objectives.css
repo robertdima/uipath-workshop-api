@@ -1,0 +1,388 @@
+/* Learning Objectives Display Styles */
+
+/* Objectives Banner */
+.objectives-banner {
+  background: linear-gradient(135deg, rgba(250, 70, 22, 0.1), rgba(0, 103, 223, 0.1));
+  border: 2px solid var(--uipath-orange);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.objectives-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--uipath-orange), var(--uipath-blue));
+}
+
+.objectives-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.objectives-icon {
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--uipath-orange), var(--uipath-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.objectives-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.objectives-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Objectives List */
+.objectives-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.objective-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.objective-item:hover {
+  border-color: var(--uipath-orange);
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(250, 70, 22, 0.1);
+}
+
+.objective-item.completed {
+  background: rgba(82, 196, 26, 0.05);
+  border-color: var(--success);
+}
+
+.objective-item.active {
+  background: rgba(250, 70, 22, 0.05);
+  border-color: var(--uipath-orange);
+  box-shadow: 0 4px 12px rgba(250, 70, 22, 0.15);
+}
+
+.objective-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-default);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.objective-item.completed .objective-checkbox {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.objective-item.active .objective-checkbox {
+  border-color: var(--uipath-orange);
+  background: rgba(250, 70, 22, 0.1);
+}
+
+.objective-checkbox-icon {
+  color: white;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.objective-item.completed .objective-checkbox-icon {
+  opacity: 1;
+}
+
+.objective-content {
+  flex: 1;
+}
+
+.objective-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.objective-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.objective-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.objective-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.objective-tag.difficulty-basic {
+  background: rgba(82, 196, 26, 0.1);
+  color: var(--success);
+}
+
+.objective-tag.difficulty-intermediate {
+  background: rgba(250, 173, 20, 0.1);
+  color: var(--warning);
+}
+
+.objective-tag.difficulty-advanced {
+  background: rgba(245, 34, 45, 0.1);
+  color: var(--danger);
+}
+
+/* Floating Objectives Widget */
+.objectives-widget {
+  position: fixed;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 2px solid var(--uipath-orange);
+  border-radius: 12px;
+  padding: 1rem;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 500;
+  transition: all 0.3s ease;
+}
+
+.objectives-widget.collapsed {
+  width: 60px;
+  padding: 0.5rem;
+}
+
+.objectives-widget.collapsed .objective-content,
+.objectives-widget.collapsed .objectives-header {
+  display: none;
+}
+
+.objectives-widget-toggle {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+}
+
+.objectives-widget-toggle:hover {
+  color: var(--uipath-orange);
+}
+
+/* Objectives Progress Bar */
+.objectives-progress {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.objectives-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.objectives-progress-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.objectives-progress-value {
+  font-weight: 600;
+  color: var(--uipath-orange);
+}
+
+.objectives-progress-bar {
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.objectives-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--uipath-orange), var(--uipath-blue));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Objectives Spotlight */
+.objectives-spotlight {
+  background: linear-gradient(135deg, rgba(250, 70, 22, 0.15), rgba(0, 103, 223, 0.15));
+  border: 2px solid var(--uipath-orange);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.objectives-spotlight::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(250, 70, 22, 0.1) 0%, transparent 70%);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.objectives-spotlight-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.objectives-spotlight-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--uipath-orange), var(--uipath-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.objectives-spotlight-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Quick Objectives Card */
+.quick-objectives {
+  position: sticky;
+  top: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.quick-objectives-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.quick-objectives-title {
+  font-weight: 600;
+  color: var(--uipath-orange);
+  font-size: 0.95rem;
+}
+
+.quick-objectives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quick-objective {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.quick-objective:hover {
+  background: rgba(250, 70, 22, 0.1);
+  color: var(--text-primary);
+}
+
+.quick-objective.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .objectives-widget {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .objectives-banner {
+    padding: 1rem;
+  }
+
+  .objectives-title {
+    font-size: 1.1rem;
+  }
+
+  .objective-item {
+    padding: 0.75rem;
+  }
+
+  .objectives-spotlight {
+    padding: 1.5rem;
+  }
+
+  .objectives-spotlight-title {
+    font-size: 1.4rem;
+  }
+
+  .objectives-spotlight-description {
+    font-size: 1rem;
+  }
+}

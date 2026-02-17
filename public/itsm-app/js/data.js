@@ -201,124 +201,223 @@ const ITSMData = {
 
     // Service Catalog Items
     catalogItems: [
-        {
-            id: 'CAT-001',
-            name: 'New Laptop Request',
-            category: 'Hardware',
-            description: 'Request a new laptop for a new hire or replacement',
-            icon: '💻',
-            approvalRequired: true,
-            fulfillmentTime: '5 business days',
-            cost: '$1,200 - $2,500',
-            fields: [
-                { name: 'employee_name', label: 'Employee Name', type: 'text', required: true },
-                { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR'], required: true },
-                { name: 'laptop_type', label: 'Laptop Type', type: 'select', options: ['Standard', 'Developer', 'Executive'], required: true },
-                { name: 'justification', label: 'Business Justification', type: 'textarea', required: true }
-            ]
-        },
-        {
-            id: 'CAT-002',
-            name: 'Software Installation',
-            category: 'Software',
-            description: 'Request installation of approved software',
-            icon: '📦',
-            approvalRequired: false,
-            fulfillmentTime: '1 business day',
-            cost: 'Varies',
-            fields: [
-                { name: 'software_name', label: 'Software Name', type: 'text', required: true },
-                { name: 'version', label: 'Version (if specific)', type: 'text', required: false },
-                { name: 'asset_id', label: 'Target Computer Asset ID', type: 'text', required: true },
-                { name: 'reason', label: 'Business Reason', type: 'textarea', required: true }
-            ]
-        },
-        {
-            id: 'CAT-003',
-            name: 'VPN Access Request',
-            category: 'Access',
-            description: 'Request VPN access for remote work',
-            icon: '🔐',
-            approvalRequired: true,
-            fulfillmentTime: '2 business days',
-            cost: 'No cost',
-            fields: [
-                { name: 'employee_email', label: 'Employee Email', type: 'email', required: true },
-                { name: 'start_date', label: 'Access Start Date', type: 'date', required: true },
-                { name: 'end_date', label: 'Access End Date (if temporary)', type: 'date', required: false },
-                { name: 'manager_approval', label: 'Manager Email for Approval', type: 'email', required: true }
-            ]
-        },
-        {
-            id: 'CAT-004',
-            name: 'New User Account',
-            category: 'Access',
-            description: 'Create accounts for a new employee',
-            icon: '👤',
-            approvalRequired: true,
-            fulfillmentTime: '1 business day',
-            cost: 'No cost',
-            fields: [
-                { name: 'first_name', label: 'First Name', type: 'text', required: true },
-                { name: 'last_name', label: 'Last Name', type: 'text', required: true },
-                { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR'], required: true },
-                { name: 'manager', label: 'Manager Email', type: 'email', required: true },
-                { name: 'start_date', label: 'Start Date', type: 'date', required: true }
-            ]
-        },
-        {
-            id: 'CAT-005',
-            name: 'Password Reset',
-            category: 'Access',
-            description: 'Reset password for locked account',
-            icon: '🔑',
-            approvalRequired: false,
-            fulfillmentTime: '15 minutes',
-            cost: 'No cost',
-            fields: [
-                { name: 'username', label: 'Username', type: 'text', required: true },
-                { name: 'verification', label: 'Verification Question Answer', type: 'text', required: true }
-            ]
-        }
+        { id: 'CAT-001', name: 'New Laptop Request', category: 'Hardware', description: 'Request a new laptop for a new hire or replacement', icon: 'desktop', approvalRequired: true, fulfillmentTime: '5 business days', cost: '$1,200 - $2,500', fields: [
+            { name: 'employee_name', label: 'Employee Name', type: 'text', required: true },
+            { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true },
+            { name: 'laptop_type', label: 'Laptop Type', type: 'select', options: ['Standard', 'Developer', 'Executive'], required: true },
+            { name: 'justification', label: 'Business Justification', type: 'textarea', required: true }
+        ]},
+        { id: 'CAT-002', name: 'Software Installation', category: 'Software', description: 'Request installation of approved software', icon: 'download', approvalRequired: false, fulfillmentTime: '1 business day', cost: 'Varies', fields: [
+            { name: 'software_name', label: 'Software Name', type: 'text', required: true },
+            { name: 'version', label: 'Version (if specific)', type: 'text', required: false },
+            { name: 'asset_id', label: 'Target Computer Asset ID', type: 'text', required: true },
+            { name: 'reason', label: 'Business Reason', type: 'textarea', required: true }
+        ]},
+        { id: 'CAT-003', name: 'VPN Access Request', category: 'Access', description: 'Request VPN access for remote work', icon: 'key', approvalRequired: true, fulfillmentTime: '2 business days', cost: 'No cost', fields: [
+            { name: 'employee_email', label: 'Employee Email', type: 'email', required: true },
+            { name: 'start_date', label: 'Access Start Date', type: 'date', required: true },
+            { name: 'end_date', label: 'Access End Date (if temporary)', type: 'date', required: false },
+            { name: 'manager_approval', label: 'Manager Email for Approval', type: 'email', required: true }
+        ]},
+        { id: 'CAT-004', name: 'New User Account', category: 'Access', description: 'Create accounts for a new employee', icon: 'user', approvalRequired: true, fulfillmentTime: '1 business day', cost: 'No cost', fields: [
+            { name: 'first_name', label: 'First Name', type: 'text', required: true },
+            { name: 'last_name', label: 'Last Name', type: 'text', required: true },
+            { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true },
+            { name: 'manager', label: 'Manager Email', type: 'email', required: true },
+            { name: 'start_date', label: 'Start Date', type: 'date', required: true }
+        ]},
+        { id: 'CAT-005', name: 'Password Reset', category: 'Access', description: 'Reset password for locked account', icon: 'key', approvalRequired: false, fulfillmentTime: '15 minutes', cost: 'No cost', fields: [
+            { name: 'username', label: 'Username', type: 'text', required: true },
+            { name: 'verification', label: 'Verification Question Answer', type: 'text', required: true }
+        ]},
+        { id: 'CAT-006', name: 'New Monitor/Peripheral', category: 'Hardware', description: 'Request a new monitor, keyboard, mouse, headset, or docking station', icon: 'desktop', approvalRequired: true, fulfillmentTime: '3 business days', cost: '$100 - $800', fields: [
+            { name: 'employee_name', label: 'Employee Name', type: 'text', required: true },
+            { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true },
+            { name: 'device_type', label: 'Device Type', type: 'select', options: ['Monitor', 'Keyboard', 'Mouse', 'Headset', 'Docking Station', 'Webcam'], required: true },
+            { name: 'quantity', label: 'Quantity', type: 'text', required: true },
+            { name: 'justification', label: 'Justification', type: 'textarea', required: true }
+        ]},
+        { id: 'CAT-007', name: 'Mobile Device Request', category: 'Hardware', description: 'Request a new mobile phone or tablet', icon: 'phone', approvalRequired: true, fulfillmentTime: '5 business days', cost: '$500 - $1,500', fields: [
+            { name: 'employee_name', label: 'Employee Name', type: 'text', required: true },
+            { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true },
+            { name: 'device_type', label: 'Device Type', type: 'select', options: ['iPhone', 'Android Phone', 'iPad', 'Android Tablet'], required: true },
+            { name: 'justification', label: 'Business Justification', type: 'textarea', required: true },
+            { name: 'manager_approval', label: 'Manager Email', type: 'email', required: true }
+        ]},
+        { id: 'CAT-008', name: 'Software License Request', category: 'Software', description: 'Request a new software license or subscription', icon: 'scroll', approvalRequired: true, fulfillmentTime: '2 business days', cost: 'Varies', fields: [
+            { name: 'employee_name', label: 'Employee Name', type: 'text', required: true },
+            { name: 'software_name', label: 'Software Name', type: 'text', required: true },
+            { name: 'license_type', label: 'License Type', type: 'select', options: ['Individual', 'Team', 'Enterprise'], required: true },
+            { name: 'duration', label: 'Duration', type: 'select', options: ['1 Month', '6 Months', '1 Year', 'Perpetual'], required: true },
+            { name: 'justification', label: 'Business Justification', type: 'textarea', required: true }
+        ]},
+        { id: 'CAT-009', name: 'Shared Mailbox / Distribution List', category: 'Access', description: 'Create a shared mailbox or distribution list', icon: 'email', approvalRequired: true, fulfillmentTime: '1 business day', cost: 'No cost', fields: [
+            { name: 'mailbox_name', label: 'Mailbox/List Name', type: 'text', required: true },
+            { name: 'type', label: 'Type', type: 'select', options: ['Shared Mailbox', 'Distribution List'], required: true },
+            { name: 'owner_email', label: 'Owner Email', type: 'email', required: true },
+            { name: 'members', label: 'Members (one email per line)', type: 'textarea', required: true },
+            { name: 'justification', label: 'Justification', type: 'textarea', required: true }
+        ]},
+        { id: 'CAT-010', name: 'Shipping & Delivery Request', category: 'Logistics', description: 'Request shipping of equipment or documents between locations', icon: 'delivery', approvalRequired: false, fulfillmentTime: '3 business days', cost: 'Varies', fields: [
+            { name: 'sender_name', label: 'Sender Name', type: 'text', required: true },
+            { name: 'sender_location', label: 'Pickup Location', type: 'text', required: true },
+            { name: 'recipient_name', label: 'Recipient Name', type: 'text', required: true },
+            { name: 'recipient_location', label: 'Delivery Location', type: 'text', required: true },
+            { name: 'package_description', label: 'Package Description', type: 'textarea', required: true },
+            { name: 'urgency', label: 'Urgency', type: 'select', options: ['Standard', 'Express', 'Next Day'], required: true }
+        ]},
+        { id: 'CAT-011', name: 'Office Supplies Request', category: 'Facilities', description: 'Request office supplies and consumables', icon: 'edit', approvalRequired: false, fulfillmentTime: '1 business day', cost: '$10 - $200', fields: [
+            { name: 'requester_name', label: 'Requester Name', type: 'text', required: true },
+            { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true },
+            { name: 'items_needed', label: 'Items Needed (describe)', type: 'textarea', required: true },
+            { name: 'delivery_location', label: 'Delivery Location', type: 'text', required: true }
+        ]},
+        { id: 'CAT-012', name: 'Meeting Room AV Setup', category: 'Facilities', description: 'Request AV equipment setup for a meeting', icon: 'slideshow', approvalRequired: false, fulfillmentTime: 'Same day', cost: 'No cost', fields: [
+            { name: 'meeting_room', label: 'Meeting Room', type: 'select', options: ['Conference Room A', 'Conference Room B', 'Boardroom', 'Training Room 1', 'Training Room 2'], required: true },
+            { name: 'date', label: 'Meeting Date', type: 'date', required: true },
+            { name: 'time_start', label: 'Start Time', type: 'text', required: true },
+            { name: 'time_end', label: 'End Time', type: 'text', required: true },
+            { name: 'requirements', label: 'AV Requirements (describe what you need)', type: 'textarea', required: true }
+        ]}
     ],
 
-    // Service Requests
+    // Service Requests (enriched first-class ticket type)
     serviceRequests: [
         {
-            id: 'REQ-001',
-            catalogItem: 'CAT-001',
-            requestedBy: 'jane.doe@acme.com',
-            requestedFor: 'new.hire@acme.com',
+            id: 'REQ-001', catalogItem: 'CAT-001', catalogItemName: 'New Laptop Request',
+            title: 'New Laptop Request - New Hire Employee', description: 'New sales representative starting on Monday needs standard laptop',
+            requestedBy: 'jane.doe@acme.com', requestedByName: 'Jane Doe',
+            requestedFor: 'new.hire@acme.com', requestedForName: 'New Hire Employee',
+            requestedForDepartment: 'Sales', requestedForLocation: 'Building A, Floor 2', requestedForVip: false,
+            category: 'Hardware', priority: 'Normal', impact: 2, urgency: 2,
             status: 'Pending Approval',
-            priority: 'Normal',
-            formData: {
-                employee_name: 'New Hire Employee',
-                department: 'Sales',
-                laptop_type: 'Standard',
-                justification: 'New sales representative starting on Monday'
-            },
-            approver: 'lisa.wong@acme.com',
-            assignedTo: null,
-            createdAt: '2025-02-13T09:30:00Z',
-            updatedAt: '2025-02-13T09:30:00Z'
+            formData: { employee_name: 'New Hire Employee', department: 'Sales', laptop_type: 'Standard', justification: 'New sales representative starting on Monday' },
+            approvalRequired: true, approver: 'lisa.wong@acme.com', approverName: 'Lisa Wong',
+            approvalDate: null, approvalComments: null, rejectionReason: null,
+            assignmentGroup: 'Service Desk', assignedTo: null, assigneeName: null,
+            slaTarget: '2025-02-18T09:30:00Z', slaMet: null, expectedFulfillment: '5 business days', estimatedCost: '$1,200 - $2,500', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-13T09:30:00Z', updatedAt: '2025-02-13T09:30:00Z', submittedAt: '2025-02-13T09:30:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-13T09:30:00Z' }, { type: 'customer', visibility: 'customer-visible', author: 'jane.doe@acme.com', content: 'Needs to be ready by Monday morning', timestamp: '2025-02-13T09:35:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: ['jane.doe@acme.com'], additionalCommentsNotify: ['new.hire@acme.com']
         },
         {
-            id: 'REQ-002',
-            catalogItem: 'CAT-003',
-            requestedBy: 'david.wilson@acme.com',
-            requestedFor: 'david.wilson@acme.com',
+            id: 'REQ-002', catalogItem: 'CAT-003', catalogItemName: 'VPN Access Request',
+            title: 'VPN Access Request - David Wilson', description: 'Need VPN access for permanent remote work arrangement',
+            requestedBy: 'david.wilson@acme.com', requestedByName: 'David Wilson',
+            requestedFor: 'david.wilson@acme.com', requestedForName: 'David Wilson',
+            requestedForDepartment: 'Engineering', requestedForLocation: 'Remote', requestedForVip: false,
+            category: 'Access', priority: 'Normal', impact: 3, urgency: 2,
+            status: 'In Progress',
+            formData: { employee_email: 'david.wilson@acme.com', start_date: '2025-02-14', end_date: null, manager_approval: 'tom.baker@acme.com' },
+            approvalRequired: true, approver: 'tom.baker@acme.com', approverName: 'Tom Baker',
+            approvalDate: '2025-02-13T08:00:00Z', approvalComments: 'Approved for permanent remote', rejectionReason: null,
+            assignmentGroup: 'Identity Team', assignedTo: 'USR-006', assigneeName: 'Emily Davis',
+            slaTarget: '2025-02-15T14:00:00Z', slaMet: null, expectedFulfillment: '2 business days', estimatedCost: 'No cost', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-12T14:00:00Z', updatedAt: '2025-02-13T10:00:00Z', submittedAt: '2025-02-12T14:00:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-12T14:00:00Z' }, { type: 'system', visibility: 'customer-visible', author: 'Tom Baker', content: 'Approved for permanent remote', timestamp: '2025-02-13T08:00:00Z' }, { type: 'internal', visibility: 'technicians-only', author: 'emily.davis@acme.com', content: 'Configuring VPN profile in Azure AD', timestamp: '2025-02-13T10:00:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: ['KB-001'], watchList: [], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-003', catalogItem: 'CAT-006', catalogItemName: 'New Monitor/Peripheral',
+            title: 'New Monitor/Peripheral - Susan Brown', description: 'Need dual monitor setup for new workstation',
+            requestedBy: 'susan.brown@acme.com', requestedByName: 'Susan Brown',
+            requestedFor: 'susan.brown@acme.com', requestedForName: 'Susan Brown',
+            requestedForDepartment: 'Operations', requestedForLocation: 'Building B, Floor 2', requestedForVip: false,
+            category: 'Hardware', priority: 'Low', impact: 3, urgency: 3,
             status: 'Approved',
-            priority: 'Normal',
-            formData: {
-                employee_email: 'david.wilson@acme.com',
-                start_date: '2025-02-14',
-                end_date: null,
-                manager_approval: 'tom.baker@acme.com'
-            },
-            approver: 'tom.baker@acme.com',
-            assignedTo: 'Identity Team',
-            createdAt: '2025-02-12T14:00:00Z',
-            updatedAt: '2025-02-13T08:00:00Z'
+            formData: { employee_name: 'Susan Brown', department: 'Operations', device_type: 'Monitor', quantity: '2', justification: 'Dual monitor setup for improved productivity' },
+            approvalRequired: true, approver: 'tom.baker@acme.com', approverName: 'Tom Baker',
+            approvalDate: '2025-02-14T09:00:00Z', approvalComments: 'Approved', rejectionReason: null,
+            assignmentGroup: 'Service Desk', assignedTo: null, assigneeName: null,
+            slaTarget: '2025-02-17T10:00:00Z', slaMet: null, expectedFulfillment: '3 business days', estimatedCost: '$100 - $800', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-14T10:00:00Z', updatedAt: '2025-02-14T09:00:00Z', submittedAt: '2025-02-14T10:00:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-14T10:00:00Z' }, { type: 'system', visibility: 'customer-visible', author: 'Tom Baker', content: 'Approved', timestamp: '2025-02-14T09:00:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: [], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-004', catalogItem: 'CAT-010', catalogItemName: 'Shipping & Delivery Request',
+            title: 'Shipping & Delivery Request - Michael Taylor', description: 'Ship replacement laptop to remote employee',
+            requestedBy: 'michael.taylor@acme.com', requestedByName: 'Michael Taylor',
+            requestedFor: 'michael.taylor@acme.com', requestedForName: 'Michael Taylor',
+            requestedForDepartment: 'Legal', requestedForLocation: 'Remote', requestedForVip: true,
+            category: 'Logistics', priority: 'High', impact: 2, urgency: 1,
+            status: 'In Progress',
+            formData: { sender_name: 'IT Department', sender_location: 'Building A, IT Storage', recipient_name: 'Michael Taylor', recipient_location: '456 Oak Ave, Chicago IL 60601', package_description: 'Dell Latitude 5540 laptop with accessories', urgency: 'Express' },
+            approvalRequired: false, approver: null, approverName: null,
+            approvalDate: null, approvalComments: null, rejectionReason: null,
+            assignmentGroup: 'Service Desk', assignedTo: 'USR-002', assigneeName: 'Maria Garcia',
+            slaTarget: '2025-02-16T11:00:00Z', slaMet: null, expectedFulfillment: '3 business days', estimatedCost: 'Varies', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-13T11:00:00Z', updatedAt: '2025-02-13T14:30:00Z', submittedAt: '2025-02-13T11:00:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-13T11:00:00Z' }, { type: 'internal', visibility: 'technicians-only', author: 'maria.garcia@acme.com', content: 'Laptop prepared. Shipping label created via FedEx Express.', timestamp: '2025-02-13T14:30:00Z' }],
+            attachments: [{ name: 'shipping_label.pdf', type: 'document', size: '85KB' }], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: ['michael.taylor@acme.com'], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-005', catalogItem: 'CAT-008', catalogItemName: 'Software License Request',
+            title: 'Software License Request - Amanda White', description: 'Need Adobe Creative Suite license for marketing materials',
+            requestedBy: 'amanda.white@acme.com', requestedByName: 'Amanda White',
+            requestedFor: 'amanda.white@acme.com', requestedForName: 'Amanda White',
+            requestedForDepartment: 'Sales', requestedForLocation: 'Building A, Floor 2', requestedForVip: false,
+            category: 'Software', priority: 'Normal', impact: 3, urgency: 2,
+            status: 'Rejected',
+            formData: { employee_name: 'Amanda White', software_name: 'Adobe Creative Suite', license_type: 'Individual', duration: '1 Year', justification: 'Need for creating marketing presentations and collateral' },
+            approvalRequired: true, approver: 'lisa.wong@acme.com', approverName: 'Lisa Wong',
+            approvalDate: null, approvalComments: null, rejectionReason: 'Budget not available this quarter. Please use Canva as alternative or re-submit in Q2.',
+            assignmentGroup: 'Application Support', assignedTo: null, assigneeName: null,
+            slaTarget: '2025-02-17T09:00:00Z', slaMet: null, expectedFulfillment: '2 business days', estimatedCost: 'Varies', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-13T09:00:00Z', updatedAt: '2025-02-14T11:00:00Z', submittedAt: '2025-02-13T09:00:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-13T09:00:00Z' }, { type: 'system', visibility: 'customer-visible', author: 'Lisa Wong', content: 'Rejected: Budget not available this quarter. Please use Canva as alternative or re-submit in Q2.', timestamp: '2025-02-14T11:00:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: [], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-006', catalogItem: 'CAT-011', catalogItemName: 'Office Supplies Request',
+            title: 'Office Supplies Request - Chris Anderson', description: 'Restock printer paper and toner for IT lab',
+            requestedBy: 'chris.anderson@acme.com', requestedByName: 'Chris Anderson',
+            requestedFor: 'chris.anderson@acme.com', requestedForName: 'Chris Anderson',
+            requestedForDepartment: 'IT', requestedForLocation: 'Building C, Floor 1', requestedForVip: false,
+            category: 'Facilities', priority: 'Low', impact: 3, urgency: 3,
+            status: 'Fulfilled',
+            formData: { requester_name: 'Chris Anderson', department: 'IT', items_needed: '5x A4 Paper Reams\n2x HP 26A Toner Cartridges\n1x Pack of Whiteboard Markers', delivery_location: 'Building C, Floor 1, IT Lab' },
+            approvalRequired: false, approver: null, approverName: null,
+            approvalDate: null, approvalComments: null, rejectionReason: null,
+            assignmentGroup: 'Service Desk', assignedTo: 'USR-007', assigneeName: 'Robert Wilson',
+            slaTarget: '2025-02-14T15:00:00Z', slaMet: true, expectedFulfillment: '1 business day', estimatedCost: '$10 - $200', actualCost: '$127', fulfillmentDate: '2025-02-14T10:30:00Z',
+            createdAt: '2025-02-13T15:00:00Z', updatedAt: '2025-02-14T10:30:00Z', submittedAt: '2025-02-13T15:00:00Z', closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-13T15:00:00Z' }, { type: 'internal', visibility: 'technicians-only', author: 'robert.wilson@acme.com', content: 'Supplies ordered from vendor. Expected delivery tomorrow morning.', timestamp: '2025-02-13T16:00:00Z' }, { type: 'system', visibility: 'customer-visible', author: 'System', content: 'Request fulfilled. Supplies delivered to IT Lab.', timestamp: '2025-02-14T10:30:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: [], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-007', catalogItem: 'CAT-012', catalogItemName: 'Meeting Room AV Setup',
+            title: 'Meeting Room AV Setup - Karen Thomas', description: 'AV setup needed for all-hands meeting',
+            requestedBy: 'karen.thomas@acme.com', requestedByName: 'Karen Thomas',
+            requestedFor: 'karen.thomas@acme.com', requestedForName: 'Karen Thomas',
+            requestedForDepartment: 'Engineering', requestedForLocation: 'Building C, Floor 2', requestedForVip: false,
+            category: 'Facilities', priority: 'Normal', impact: 2, urgency: 2,
+            status: 'Closed',
+            formData: { meeting_room: 'Boardroom', date: '2025-02-12', time_start: '14:00', time_end: '16:00', requirements: 'Video conference setup with Zoom, projector for slides, recording enabled' },
+            approvalRequired: false, approver: null, approverName: null,
+            approvalDate: null, approvalComments: null, rejectionReason: null,
+            assignmentGroup: 'Service Desk', assignedTo: 'USR-001', assigneeName: 'Alex Thompson',
+            slaTarget: '2025-02-12T14:00:00Z', slaMet: true, expectedFulfillment: 'Same day', estimatedCost: 'No cost', actualCost: 'No cost', fulfillmentDate: '2025-02-12T13:30:00Z',
+            createdAt: '2025-02-12T09:00:00Z', updatedAt: '2025-02-12T16:30:00Z', submittedAt: '2025-02-12T09:00:00Z', closedAt: '2025-02-12T16:30:00Z',
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Request submitted', timestamp: '2025-02-12T09:00:00Z' }, { type: 'internal', visibility: 'technicians-only', author: 'alex.thompson@acme.com', content: 'AV equipment checked and configured. Zoom room tested.', timestamp: '2025-02-12T13:30:00Z' }, { type: 'system', visibility: 'customer-visible', author: 'System', content: 'Request fulfilled and closed.', timestamp: '2025-02-12T16:30:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: [], additionalCommentsNotify: []
+        },
+        {
+            id: 'REQ-008', catalogItem: 'CAT-009', catalogItemName: 'Shared Mailbox / Distribution List',
+            title: 'Shared Mailbox / Distribution List - Jennifer Lee', description: 'Create new distribution list for HR announcements',
+            requestedBy: 'jennifer.lee@acme.com', requestedByName: 'Jennifer Lee',
+            requestedFor: 'jennifer.lee@acme.com', requestedForName: 'Jennifer Lee',
+            requestedForDepartment: 'HR', requestedForLocation: 'Building A, Floor 1', requestedForVip: false,
+            category: 'Access', priority: 'Low', impact: 3, urgency: 3,
+            status: 'Draft',
+            formData: { mailbox_name: 'hr-announcements@acme.com', type: 'Distribution List', owner_email: 'jennifer.lee@acme.com', members: 'all-employees@acme.com', justification: 'Need dedicated DL for HR policy updates and announcements' },
+            approvalRequired: true, approver: null, approverName: null,
+            approvalDate: null, approvalComments: null, rejectionReason: null,
+            assignmentGroup: 'Identity Team', assignedTo: null, assigneeName: null,
+            slaTarget: null, slaMet: null, expectedFulfillment: '1 business day', estimatedCost: 'No cost', actualCost: null, fulfillmentDate: null,
+            createdAt: '2025-02-14T16:00:00Z', updatedAt: '2025-02-14T16:00:00Z', submittedAt: null, closedAt: null,
+            notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: 'Draft created', timestamp: '2025-02-14T16:00:00Z' }],
+            attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [], watchList: [], additionalCommentsNotify: []
         }
     ],
 
@@ -1072,6 +1171,15 @@ Coordinate maintenance window for server restart.
             scheduled: 1,
             implemented: 1,
             successRate: 95
+        },
+        requests: {
+            total: 8,
+            open: 4,
+            pendingApproval: 1,
+            inProgress: 2,
+            fulfilled: 1,
+            closed: 1,
+            rejected: 1
         },
         assets: {
             total: 10,

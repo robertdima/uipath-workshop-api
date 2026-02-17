@@ -1226,14 +1226,7 @@ const LinkingModule = {
      * @param {string} details - Details of the action
      */
     addAuditLog: function(action, target, details) {
-        const entry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: action,
-            target: target,
-            details: details
-        };
-        ITSMData.auditLog.unshift(entry);
+        // Audit logging handled server-side
     },
 
     /**

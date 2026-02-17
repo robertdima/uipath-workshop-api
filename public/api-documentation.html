@@ -43,11 +43,11 @@
                 </div>
                 <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
                     <div class="text-sm text-zinc-500 mb-1">Total Endpoints</div>
-                    <div class="text-base font-semibold text-deepblue">87</div>
+                    <div class="text-base font-semibold text-deepblue">145+</div>
                 </div>
                 <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
                     <div class="text-sm text-zinc-500 mb-1">Collections</div>
-                    <div class="text-base font-semibold text-deepblue">26</div>
+                    <div class="text-base font-semibold text-deepblue">42</div>
                 </div>
                 <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-4">
                     <div class="text-sm text-zinc-500 mb-1">Authentication</div>
@@ -59,7 +59,7 @@
         <!-- Navigation -->
         <nav class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="navigation">
             <h2 class="text-xl font-semibold text-deepblue mb-4">Quick Navigation</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
                     <h3 class="text-sm font-semibold text-orange mb-2">👥 HR Management</h3>
                     <ul class="space-y-1">
@@ -94,6 +94,19 @@
                         <li><a href="#iot-telemetry" class="text-sm text-zinc-600 hover:text-orange transition-colors">Telemetry</a></li>
                         <li><a href="#iot-alerts" class="text-sm text-zinc-600 hover:text-orange transition-colors">Alerts</a></li>
                         <li><a href="#iot-maintenance" class="text-sm text-zinc-600 hover:text-orange transition-colors">Maintenance</a></li>
+                    </ul>
+                </div>
+                <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
+                    <h3 class="text-sm font-semibold text-orange mb-2">🎫 ITSM</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#itsm-incidents" class="text-sm text-zinc-600 hover:text-orange transition-colors">Incidents</a></li>
+                        <li><a href="#itsm-changes" class="text-sm text-zinc-600 hover:text-orange transition-colors">Changes</a></li>
+                        <li><a href="#itsm-requests" class="text-sm text-zinc-600 hover:text-orange transition-colors">Service Requests</a></li>
+                        <li><a href="#itsm-problems" class="text-sm text-zinc-600 hover:text-orange transition-colors">Problems</a></li>
+                        <li><a href="#itsm-assets" class="text-sm text-zinc-600 hover:text-orange transition-colors">Assets / CMDB</a></li>
+                        <li><a href="#itsm-knowledge" class="text-sm text-zinc-600 hover:text-orange transition-colors">Knowledge Base</a></li>
+                        <li><a href="#itsm-reports" class="text-sm text-zinc-600 hover:text-orange transition-colors">Reports</a></li>
+                        <li><a href="#itsm-audit" class="text-sm text-zinc-600 hover:text-orange transition-colors">Audit / Config</a></li>
                     </ul>
                 </div>
                 <div class="bg-zinc-50 rounded-lg p-4 hover:bg-zinc-100 transition-colors">
@@ -894,6 +907,657 @@
             </div>
         </section>
 
+        <!-- ITSM Incident Management -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-incidents">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🎫</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Incident Management</h2>
+                    <p class="text-zinc-600">IT incident tracking, assignment, escalation, and resolution workflows. <a href="/itsm-app/" target="_blank" class="text-orange hover:underline font-semibold">Open ITSM Console &rarr;</a></p>
+                </div>
+            </div>
+
+            <div class="bg-lightblue border-l-4 border-teal rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-teal mb-2">💼 Business Context</h3>
+                <p class="text-sm text-zinc-700 mb-2">The ITSM Incident endpoints enable automation of IT support workflows, including:</p>
+                <ul class="text-sm text-zinc-700 space-y-1 ml-4 list-disc">
+                    <li>Automated incident creation from monitoring systems</li>
+                    <li>Intelligent ticket routing based on category and team skills</li>
+                    <li>SLA monitoring and escalation automation</li>
+                    <li>Knowledge-base-driven auto-resolution</li>
+                </ul>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Retrieve all incidents in the ITSM system with full details including caller info, assignment, SLA targets, and work notes</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get specific incident details by ID (e.g., INC-001)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new incident with auto-priority calculation from impact and urgency scores</p>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Request Body</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{
+  "summary": "Email service unavailable",
+  "description": "Users reporting inability to send/receive emails since 9am",
+  "impact": 2,
+  "urgency": 1,
+  "category": "Email",
+  "callerName": "John Smith",
+  "callerEmail": "john.smith@acme.com"
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/status</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update incident status (enforces valid workflow transitions: New &rarr; Open &rarr; In Progress &rarr; Pending &rarr; Resolved &rarr; Closed)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/notes</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Add a work note to an incident for tracking investigation progress and communication</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/assign</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Assign incident to a team or technician</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/escalate</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Escalate an incident to a higher priority level or management tier</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/resolve</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Resolve incident with resolution code and notes</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id/link</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Link an incident to other records (problems, changes, or other incidents) for cross-referencing</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/stats</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get incident statistics: counts by status/priority, SLA compliance rates, average resolution times</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build an intelligent incident triage bot that auto-classifies incoming incidents, searches the knowledge base for matching solutions, and either auto-resolves with KB articles or routes to the appropriate team based on category and skill matching.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Change Management -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-changes">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🔄</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Change Management</h2>
+                    <p class="text-zinc-600">Change request lifecycle, CAB approvals, and implementation tracking</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all change requests with full details including risk assessment, implementation plans, and approval status</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new change request (Standard, Normal, or Emergency)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/:id/status</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update the status of a change request (enforces valid workflow transitions)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/:id/approve</span>
+                </div>
+                <p class="text-zinc-700 mb-4">CAB approve a change request with approver and comments</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/:id/reject</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Reject a change request with reason and comments from a CAB reviewer</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/:id/implement</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Start implementation of an approved change request, transitioning it to active work</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/:id/complete</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Mark a change request as completed after successful implementation</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/calendar</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get change calendar grouped by scheduled date for conflict detection</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/changes/stats</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get change management statistics: counts by type/status, approval rates, and success metrics</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Automate change approval workflows by checking policies, risk levels, and scheduling conflicts. Auto-approve low-risk standard changes and route high-risk changes to CAB for approval.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Service Requests -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-requests">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📝</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Service Requests</h2>
+                    <p class="text-zinc-600">Service request submission, approval workflows, and fulfillment tracking with 12 catalog items</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all service requests with full lifecycle details (submission, approval, fulfillment, closure)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new service request from the catalog (laptops, software, VPN access, peripherals, etc.)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/status</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update service request status (enforces valid workflow transitions)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/approve</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Approve a pending service request</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/reject</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Reject a service request with reason and comments</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/fulfill</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Mark a service request as fulfilled after completing the requested work</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/assign</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Assign a service request to a team or technician for fulfillment</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/:id/notes</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Add a work note to a service request for tracking progress and communication</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/stats</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get service request statistics: counts by status/category, average fulfillment times</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/requests/pending-approval</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all service requests that are waiting for approval</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/catalog</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all 12 service catalog items with form fields, approval requirements, fulfillment times, and costs</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build a self-service request automation that reads the service catalog, creates requests with proper form data, routes for approval, and tracks fulfillment status.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Problem Management -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-problems">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🔍</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Problem Management</h2>
+                    <p class="text-zinc-600">Root cause analysis, known error tracking, and incident-to-problem linking</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all problem records with root cause analysis details and linked incidents</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new problem record for root cause investigation</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/:id/status</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update problem status (enforces valid workflow transitions)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/:id/root-cause</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update the root cause analysis for a problem record</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/:id/link-incident</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Link an incident to a problem record for tracking related occurrences</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/known-errors</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all known errors with documented workarounds for self-service resolution</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Automate problem identification by analyzing recurring incidents, creating problem records, linking related incidents, and tracking root cause analysis through to resolution.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Asset Management -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-assets">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">🖥️</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Asset Management / CMDB</h2>
+                    <p class="text-zinc-600">Configuration management database, asset lifecycle tracking, and inventory management</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all CMDB assets (workstations, servers, network devices, printers, mobile devices)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new asset record in the CMDB</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets/:id/status</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Update asset status (e.g., Active, In Maintenance, Retired, Decommissioned)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets/by-type/:type</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Filter assets by type (e.g., workstation, server, network, printer, mobile)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets/:id/history</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get the change history and audit trail for a specific asset</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/assets/stats</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get asset statistics: counts by type/status, warranty expiration summaries</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Automate asset lifecycle management by tracking inventory, monitoring warranty expirations, and linking assets to incidents for impact analysis.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Knowledge Base -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-knowledge">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📚</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Knowledge Base</h2>
+                    <p class="text-zinc-600">Knowledge article management, search, publishing workflows, and usage analytics</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get all knowledge base articles for context grounding and self-service automation</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Create a new knowledge base article (draft status by default)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge/:id/publish</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Publish a draft knowledge base article, making it available for search and self-service</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge/:id/archive</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Archive an outdated knowledge base article</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge/:id/helpful</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Mark a knowledge article as helpful (increments helpfulness counter for ranking)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge/:id/view</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Track a view on a knowledge article (increments view counter for analytics)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/knowledge/search?q=keyword</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Search knowledge base by keyword (searches titles, content, and tags)</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build an AI-powered IT support agent that uses knowledge base search for context grounding, checks asset details from the CMDB, and provides intelligent responses to user queries with relevant articles and troubleshooting steps.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Reports -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-reports">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">📊</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Reports & Analytics</h2>
+                    <p class="text-zinc-600">Cross-module reporting for incidents, SLA compliance, team performance, changes, and request fulfillment</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reports/incident-summary</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get incident summary report with breakdowns by status, priority, category, and trends</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reports/sla-compliance</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get SLA compliance report with response/resolution metrics and breach analysis</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reports/team-performance</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get team performance report with workload distribution, resolution rates, and response times per team</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reports/change-success-rate</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get change success rate report with implementation outcomes and rollback statistics</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reports/request-fulfillment</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get request fulfillment report with average fulfillment times, approval rates, and catalog item popularity</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build an executive dashboard that aggregates ITSM reports into actionable insights, highlighting SLA breaches, team bottlenecks, and change failure trends for management review.</p>
+            </div>
+        </section>
+
+        <!-- ITSM Audit, Notifications & Configuration -->
+        <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6" id="itsm-audit">
+            <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
+                <div class="text-4xl">⚙️</div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-deepblue mb-2">ITSM Audit, Notifications & Configuration</h2>
+                    <p class="text-zinc-600">Audit trail, notification management, runbook execution, dashboard stats, teams, and demo reset</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/dashboard/stats</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get aggregate dashboard statistics across all ITSM modules (incidents, changes, requests, assets)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/audit-log/recent</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get recent audit log entries showing all actions performed across ITSM modules</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/audit-log/by-target/:targetId</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get audit log entries for a specific target record (e.g., INC-001, CHG-002)</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/audit-log/by-actor/:actor</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get audit log entries for a specific actor (user or system) to track their actions</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/notifications/:id/read</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Mark a specific notification as read</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/notifications/mark-all-read</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Mark all notifications as read in bulk</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/runbooks/:id/execute</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Execute a runbook (predefined automated procedure) for incident remediation or maintenance tasks</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-teal-100 text-teal-700 border border-teal-200">GET</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/teams</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/technicians</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/policies</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Get support teams, technicians with skills/workload, and IT governance policies</p>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/reset</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Reset all ITSM demo data back to its initial state (useful for workshop resets between sessions)</p>
+            </div>
+
+            <div class="bg-orange-50 border-l-4 border-orange rounded-lg p-4">
+                <p class="text-sm text-zinc-700"><strong class="text-orange">Workshop Use Case:</strong> Build compliance and audit automation that tracks all ITSM changes, monitors notification delivery, and executes runbooks for automated remediation workflows.</p>
+            </div>
+        </section>
+
         <!-- Quick Reference -->
         <section class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm mb-6">
             <div class="flex items-start gap-4 mb-6 pb-6 border-b border-zinc-200">
@@ -921,7 +1585,9 @@
                     <li><strong>Invoice Approval Automation:</strong> Route invoices based on amounts and vendor risk scores</li>
                     <li><strong>Customer Health Monitoring:</strong> Calculate risk scores using support tickets, engagement metrics, and renewal dates</li>
                     <li><strong>IoT Predictive Maintenance:</strong> Monitor device telemetry and create maintenance tickets before failures</li>
-                    <li><strong>Executive KPI Dashboard:</strong> Aggregate data from all modules for C-level reporting</li>
+                    <li><strong>IT Incident Automation:</strong> Triage incidents, search knowledge base, auto-resolve or route to teams based on skills</li>
+                    <li><strong>Change Approval Workflow:</strong> Check risk levels, validate against policies, auto-approve or escalate to CAB</li>
+                    <li><strong>AI IT Support Agent:</strong> Use knowledge search for context grounding, CMDB for asset details, and incident APIs for ticket management</li>
                 </ol>
             </div>
         </section>

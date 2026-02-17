@@ -86,7 +86,7 @@ const RunbooksModule = {
     render() {
         return `
             <div class="page-header">
-                <div class="page-title">📖 Runbooks</div>
+                <div class="page-title"><img class="page-icon" src="icons/book.png" alt=""> Runbooks</div>
                 <div class="page-subtitle">Standard Operating Procedures</div>
             </div>
             <div class="toolbar">
@@ -166,7 +166,7 @@ const RunbooksModule = {
 
         Modals.show(`
             <div class="modal-header">
-                <span>📖 ${rb.id}: ${rb.title}</span>
+                <span><img class="modal-icon" src="icons/book.png" alt=""> ${rb.id}: ${rb.title}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="max-width: 700px; max-height: 70vh; overflow-y: auto;">

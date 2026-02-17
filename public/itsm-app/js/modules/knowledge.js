@@ -165,8 +165,9 @@ const KnowledgeModule = {
             return;
         }
 
-        // Increment view count
+        // Increment view count (fire-and-forget API call)
         kb.views = (kb.views || 0) + 1;
+        ITSMApi.viewKBArticle(kbId).catch(() => {});
 
         const formattedContent = this.formatContent(kb.content);
 
@@ -283,7 +284,7 @@ const KnowledgeModule = {
 
         const modalContent = `
             <div class="modal-header">
-                <span>📚 Create New Knowledge Article</span>
+                <span><img class="modal-icon" src="icons/book-open.png" alt=""> Create New Knowledge Article</span>
                 <button class="panel-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" style="max-width: 700px; max-height: 75vh; overflow-y: auto;">
@@ -349,80 +350,40 @@ const KnowledgeModule = {
     /**
      * Submit the new KB article form
      */
-    submitKBArticle: function() {
+    submitKBArticle: async function() {
         const title = document.getElementById('kb-title')?.value?.trim();
         const category = document.getElementById('kb-category')?.value;
         const status = document.getElementById('kb-status')?.value;
         const content = document.getElementById('kb-content')?.value || '';
         const tagsInput = document.getElementById('kb-tags')?.value || '';
-        const prerequisitesInput = document.getElementById('kb-prerequisites')?.value || '';
 
-        // Validation
-        if (!title) {
-            if (typeof showToast === 'function') {
-                showToast('Please enter a title', 'error');
-            }
-            return;
-        }
+        if (!title) { showToast('Please enter a title', 'error'); return; }
 
-        // Parse tags
-        const tags = tagsInput
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
-
-        // Parse prerequisites
-        const prerequisites = prerequisitesInput
-            .split('\n')
-            .map(prereq => prereq.trim())
-            .filter(prereq => prereq.length > 0);
-
-        // Get selected applicability options
+        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
         const applicabilityCheckboxes = document.querySelectorAll('input[name="kb-applicability"]:checked');
         const applicability = Array.from(applicabilityCheckboxes).map(cb => cb.value);
 
-        // Generate new ID
-        const existingIds = ITSMData.knowledgeArticles.map(kb => {
-            const match = kb.id.match(/KB-(\d+)/);
-            return match ? parseInt(match[1]) : 0;
-        });
-        const maxId = Math.max(...existingIds, 0);
-        const newId = `KB-${String(maxId + 1).padStart(3, '0')}`;
-
-        // Create new article
-        const newArticle = {
-            id: newId,
-            title: title,
-            category: category,
-            applicability: applicability.length > 0 ? applicability : ['General'],
-            status: status,
-            author: ITSMData.currentUser?.username || 'unknown',
-            createdAt: new Date().toISOString().split('T')[0],
-            updatedAt: new Date().toISOString().split('T')[0],
-            views: 0,
-            helpful: 0,
-            content: content,
-            tags: tags.length > 0 ? tags : [category],
-            prerequisites: prerequisites,
-            automationId: null
-        };
-
-        // Add to data
-        ITSMData.knowledgeArticles.push(newArticle);
-
-        // Close modal and show success
-        if (typeof closeModal === 'function') {
-            closeModal();
-        }
-        if (typeof showToast === 'function') {
-            showToast(`Knowledge article ${newId} created successfully`, 'success');
-        }
-
-        // Refresh the KB view if we're on that module
-        if (typeof currentModule !== 'undefined' && currentModule === 'knowledge-base') {
-            if (typeof renderModule === 'function') {
-                renderModule('knowledge-base');
+        try {
+            const result = await ITSMApi.createKBArticle({
+                title, category, content,
+                tags: tags.length > 0 ? tags : [category],
+                applicability: applicability.length > 0 ? applicability : ['General']
+            });
+            if (result.success) {
+                // If status is Published, publish it
+                if (status === 'Published' && result.data?.id) {
+                    await ITSMApi.publishKBArticle(result.data.id);
+                }
+                closeModal();
+                showToast(`Knowledge article ${result.data.id} created successfully`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'knowledge-base') {
+                    renderModule('knowledge-base');
+                }
+            } else {
+                showToast(result.error || 'Failed to create article', 'error');
             }
+        } catch (err) {
+            showToast('Failed to create article: ' + err.message, 'error');
         }
     },
 
@@ -521,68 +482,39 @@ const KnowledgeModule = {
     /**
      * Save changes to an edited KB article
      */
-    saveKBArticle: function() {
+    saveKBArticle: async function() {
         const kbId = document.getElementById('kb-edit-id')?.value;
-        const kb = ITSMData.knowledgeArticles.find(k => k.id === kbId);
-
-        if (!kb) {
-            if (typeof showToast === 'function') {
-                showToast('Article not found', 'error');
-            }
-            return;
-        }
-
         const title = document.getElementById('kb-edit-title')?.value?.trim();
 
-        // Validation
-        if (!title) {
-            if (typeof showToast === 'function') {
-                showToast('Please enter a title', 'error');
-            }
-            return;
-        }
+        if (!title) { showToast('Please enter a title', 'error'); return; }
 
-        // Parse tags
         const tagsInput = document.getElementById('kb-edit-tags')?.value || '';
-        const tags = tagsInput
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
-
-        // Parse prerequisites
+        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
         const prerequisitesInput = document.getElementById('kb-edit-prerequisites')?.value || '';
-        const prerequisites = prerequisitesInput
-            .split('\n')
-            .map(prereq => prereq.trim())
-            .filter(prereq => prereq.length > 0);
-
-        // Get selected applicability options
+        const prerequisites = prerequisitesInput.split('\n').map(p => p.trim()).filter(p => p.length > 0);
         const applicabilityCheckboxes = document.querySelectorAll('input[name="kb-edit-applicability"]:checked');
         const applicability = Array.from(applicabilityCheckboxes).map(cb => cb.value);
 
-        // Update article
-        kb.title = title;
-        kb.category = document.getElementById('kb-edit-category')?.value || kb.category;
-        kb.status = document.getElementById('kb-edit-status')?.value || kb.status;
-        kb.content = document.getElementById('kb-edit-content')?.value || kb.content;
-        kb.tags = tags.length > 0 ? tags : kb.tags;
-        kb.applicability = applicability.length > 0 ? applicability : kb.applicability;
-        kb.prerequisites = prerequisites;
-        kb.updatedAt = new Date().toISOString().split('T')[0];
+        const data = {
+            title,
+            category: document.getElementById('kb-edit-category')?.value,
+            status: document.getElementById('kb-edit-status')?.value,
+            content: document.getElementById('kb-edit-content')?.value,
+            tags: tags.length > 0 ? tags : undefined,
+            applicability: applicability.length > 0 ? applicability : undefined,
+            prerequisites,
+            updatedAt: new Date().toISOString().split('T')[0]
+        };
 
-        // Close modal and show success
-        if (typeof closeModal === 'function') {
+        try {
+            await ITSMApi.saveEntity('knowledgeArticles', kbId, data);
             closeModal();
-        }
-        if (typeof showToast === 'function') {
             showToast(`Knowledge article ${kbId} updated successfully`, 'success');
-        }
-
-        // Refresh the KB view if we're on that module
-        if (typeof currentModule !== 'undefined' && currentModule === 'knowledge-base') {
-            if (typeof renderModule === 'function') {
+            if (typeof currentModule !== 'undefined' && currentModule === 'knowledge-base') {
                 renderModule('knowledge-base');
             }
+        } catch (err) {
+            showToast('Failed to update article: ' + err.message, 'error');
         }
     },
 
@@ -590,28 +522,20 @@ const KnowledgeModule = {
      * Delete a KB article
      * @param {string} kbId - Knowledge article ID to delete
      */
-    deleteKBArticle: function(kbId) {
+    deleteKBArticle: async function(kbId) {
         if (!confirm(`Are you sure you want to delete article ${kbId}? This action cannot be undone.`)) {
             return;
         }
 
-        const index = ITSMData.knowledgeArticles.findIndex(k => k.id === kbId);
-        if (index !== -1) {
-            ITSMData.knowledgeArticles.splice(index, 1);
-
-            if (typeof closeModal === 'function') {
-                closeModal();
-            }
-            if (typeof showToast === 'function') {
-                showToast(`Knowledge article ${kbId} deleted`, 'success');
-            }
-
-            // Refresh the KB view if we're on that module
+        try {
+            await ITSMApi.archiveKBArticle(kbId);
+            closeModal();
+            showToast(`Knowledge article ${kbId} deleted`, 'success');
             if (typeof currentModule !== 'undefined' && currentModule === 'knowledge-base') {
-                if (typeof renderModule === 'function') {
-                    renderModule('knowledge-base');
-                }
+                renderModule('knowledge-base');
             }
+        } catch (err) {
+            showToast('Failed to delete article: ' + err.message, 'error');
         }
     },
 
@@ -622,39 +546,27 @@ const KnowledgeModule = {
      */
     markKBHelpful: function(kbId, isHelpful) {
         const kb = ITSMData.knowledgeArticles.find(k => k.id === kbId);
-        if (!kb) {
-            if (typeof showToast === 'function') {
-                showToast('Article not found', 'error');
-            }
-            return;
-        }
+        if (!kb) { showToast('Article not found', 'error'); return; }
 
-        // Increment views (to track total feedback responses)
+        // Update locally for immediate feedback
         kb.views = (kb.views || 0) + 1;
-
-        // Adjust helpful percentage
-        // Formula: new_percentage = (old_percentage * (views-1) + vote) / views
-        // Where vote is 100 for helpful, 0 for not helpful
         const previousViews = kb.views - 1;
         const voteValue = isHelpful ? 100 : 0;
-
         if (previousViews > 0) {
             kb.helpful = Math.round(((kb.helpful * previousViews) + voteValue) / kb.views);
         } else {
             kb.helpful = voteValue;
         }
-
-        // Ensure helpful is within bounds
         kb.helpful = Math.max(0, Math.min(100, kb.helpful));
 
-        if (typeof showToast === 'function') {
-            showToast(isHelpful ? 'Thank you for your feedback!' : 'Thank you for your feedback. We will work to improve this article.', 'success');
-        }
+        // Fire-and-forget API call
+        ITSMApi.markKBHelpful(kbId).catch(() => {});
 
-        // Update the modal if it's still open
+        showToast(isHelpful ? 'Thank you for your feedback!' : 'Thank you for your feedback. We will work to improve this article.', 'success');
+
         const helpfulDisplay = document.querySelector('.kb-metadata');
         if (helpfulDisplay) {
-            this.viewKBArticle(kbId); // Re-render the modal to show updated stats
+            this.viewKBArticle(kbId);
         }
     },
 
@@ -800,7 +712,7 @@ const KnowledgeModule = {
 
         return `
             <div class="page-header">
-                <div class="page-title">📚 Knowledge Base</div>
+                <div class="page-title"><img class="page-icon" src="icons/book-open.png" alt=""> Knowledge Base</div>
                 <div class="page-subtitle">Search and browse knowledge articles for issue resolution</div>
             </div>
             <div class="toolbar">

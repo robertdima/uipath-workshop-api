@@ -152,14 +152,7 @@ const CustomersModule = {
             </div>
         `);
 
-        // Log to audit
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Customer Called',
-            target: customerId,
-            details: `Called ${customer.name} at ${customer.phone}`
-        });
+        // Audit logging handled server-side
 
         showToast(`Calling ${customer.name}...`, 'info');
     },
@@ -219,14 +212,7 @@ const CustomersModule = {
             return;
         }
 
-        // Log to audit
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Email Sent',
-            target: incidentId || customerId,
-            details: `Sent email to ${customer.email}: ${subject}`
-        });
+        // Audit logging handled server-side
 
         // Add note to incident if applicable
         if (incidentId) {
@@ -295,14 +281,7 @@ const CustomersModule = {
             return;
         }
 
-        // Log to audit
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Escalated to Manager',
-            target: incidentId,
-            details: `Escalated to ${manager.name} (${manager.email}). Reason: ${reason}`
-        });
+        // Audit logging handled server-side
 
         // Add note to incident
         const incident = ITSMData.incidents.find(i => i.id === incidentId);

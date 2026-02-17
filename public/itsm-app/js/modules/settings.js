@@ -31,7 +31,7 @@ const SettingsModule = {
 
         return `
             <div class="page-header">
-                <div class="page-title">⚙️ Settings</div>
+                <div class="page-title"><img class="page-icon" src="icons/settings.png" alt=""> Settings</div>
                 <div class="page-subtitle">System Configuration</div>
             </div>
             <div class="page-content">

@@ -158,7 +158,7 @@
         <!-- Header -->
         <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
             <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
-            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 87 endpoints</p>
+            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 116 endpoints</p>
             <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
                 View Complete API Documentation →
             </a>
@@ -228,6 +228,14 @@
 
                 <div class="mb-6">
                     <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">ITSM</h3>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-incidents">🎫 Incidents</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-changes">🔄 Changes</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-requests">📝 Requests</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-problems">🔍 Problems</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-assets">🖥️ Assets</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-knowledge">📚 Knowledge</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-reports">📊 Reports</a>
+                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-config">⚙️ Config</a>
                     <a href="/itsm-app/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🖥️ ITSM Console ↗</a>
                 </div>
             </aside>
@@ -246,7 +254,7 @@
 
     <script>
         const API_BASE = window.location.origin + '/api';
-        let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null };
+        let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null, itsm_incident: null, itsm_change: null, itsm_request: null, itsm_problem: null, itsm_asset: null, itsm_knowledge: null };
         let apiHealth = { isOnline: false, responseTime: 0 };
         let onboardingData = [];
         let updatedByMap = {};
@@ -259,7 +267,7 @@
                     <div class="text-center py-16 px-8">
                         <div class="text-6xl mb-6">🚀</div>
                         <h2 class="text-4xl font-bold text-deepblue mb-4">UiPath Workshop API</h2>
-                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 87 endpoints across all business modules!</p>
+                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 116 endpoints across all business modules!</p>
                         <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -291,15 +299,15 @@
                 content: `
                     <div class="grid grid-cols-4 gap-6 mb-8">
                         <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">87</div>
+                            <div class="text-5xl font-bold mb-2">116</div>
                             <div class="text-xs uppercase tracking-wide">API Endpoints</div>
                         </div>
                         <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">26</div>
+                            <div class="text-5xl font-bold mb-2">42</div>
                             <div class="text-xs uppercase tracking-wide">Collections</div>
                         </div>
                         <div class="rounded-xl bg-gradient-to-br from-deepblue to-zinc-700 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">728</div>
+                            <div class="text-5xl font-bold mb-2">900+</div>
                             <div class="text-xs uppercase tracking-wide">Records</div>
                         </div>
                         <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-6 text-center shadow-sm">
@@ -492,6 +500,141 @@
                     { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
                     { method: 'GET', path: '/workflows/triggers/active', description: 'Get active workflow triggers (filtered in UiPath)' },
                     { method: 'GET', path: '/workflows/triggers/errors', description: 'Get failed workflow triggers (filtered in UiPath)' }
+                ]
+            },
+            // ═══ ITSM MODULES ═══
+            'itsm-incidents': {
+                title: 'ITSM Incident Management',
+                icon: '🎫',
+                description: 'IT incident tracking, assignment, escalation, and resolution workflows',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/incidents', description: 'Get all incidents in the ITSM system' },
+                    { method: 'GET', path: '/itsm/incidents/:id', description: 'Get specific incident details', needsId: 'itsm_incident' },
+                    { method: 'POST', path: '/itsm/incidents', description: 'Create new incident with auto-priority calculation',
+                        body: {summary: 'Email service unavailable', description: 'Users reporting inability to send/receive emails since 9am', impact: 2, urgency: 1} },
+                    { method: 'PATCH', path: '/itsm/incidents/:id/status', description: 'Update incident status (enforces workflow transitions)', needsId: 'itsm_incident',
+                        body: {status: 'Open'} },
+                    { method: 'POST', path: '/itsm/incidents/:id/notes', description: 'Add work note or customer comment to incident', needsId: 'itsm_incident',
+                        body: {content: 'Investigating the root cause', type: 'comment', visibility: 'technicians-only'} },
+                    { method: 'POST', path: '/itsm/incidents/:id/assign', description: 'Assign incident to team/technician', needsId: 'itsm_incident',
+                        body: {team: 'Network Team'} },
+                    { method: 'POST', path: '/itsm/incidents/:id/resolve', description: 'Resolve incident with resolution details', needsId: 'itsm_incident',
+                        body: {resolutionCode: 'Fixed', notes: 'Restarted email relay service, confirmed emails flowing'} },
+                    { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics (counts by status/priority, SLA compliance)' }
+                ]
+            },
+            'itsm-changes': {
+                title: 'ITSM Change Management',
+                icon: '🔄',
+                description: 'Change request lifecycle, CAB approvals, and implementation tracking',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/changes', description: 'Get all change requests' },
+                    { method: 'GET', path: '/itsm/changes/:id', description: 'Get specific change request details', needsId: 'itsm_change' },
+                    { method: 'POST', path: '/itsm/changes', description: 'Create new change request',
+                        body: {title: 'Upgrade mail server to v12.5', type: 'Normal', risk: 'Medium', description: 'Scheduled upgrade of primary mail server during maintenance window'} },
+                    { method: 'PATCH', path: '/itsm/changes/:id/status', description: 'Update change request status (enforces workflow)', needsId: 'itsm_change',
+                        body: {status: 'Approved'} },
+                    { method: 'POST', path: '/itsm/changes/:id/approve', description: 'CAB approve a change request', needsId: 'itsm_change',
+                        body: {approver: 'CAB Board', comments: 'Approved - low risk, proceed as scheduled'} },
+                    { method: 'GET', path: '/itsm/changes/stats', description: 'Get change statistics (success rate, by status/type/risk)' },
+                    { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar grouped by scheduled date' }
+                ]
+            },
+            'itsm-requests': {
+                title: 'ITSM Service Requests',
+                icon: '📝',
+                description: 'Service request submission, approval workflows, and fulfillment tracking',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/requests', description: 'Get all service requests' },
+                    { method: 'GET', path: '/itsm/requests/:id', description: 'Get specific service request details', needsId: 'itsm_request' },
+                    { method: 'POST', path: '/itsm/requests', description: 'Create new service request from catalog',
+                        body: {catalogItem: 'CAT-002', title: 'Software Installation Request', requestedBy: 'john.doe@acme.com', requestedFor: 'john.doe@acme.com', priority: 'Normal', formData: {software_name: 'Visual Studio Code', justification: 'Development work'}} },
+                    { method: 'PATCH', path: '/itsm/requests/:id/status', description: 'Update service request status', needsId: 'itsm_request',
+                        body: {status: 'In Progress'} },
+                    { method: 'POST', path: '/itsm/requests/:id/approve', description: 'Approve a pending service request', needsId: 'itsm_request',
+                        body: {approver: 'manager@acme.com', comments: 'Approved for department budget'} },
+                    { method: 'POST', path: '/itsm/requests/:id/fulfill', description: 'Mark service request as fulfilled', needsId: 'itsm_request',
+                        body: {notes: 'Software installed and configured'} },
+                    { method: 'POST', path: '/itsm/requests/:id/assign', description: 'Assign service request to team', needsId: 'itsm_request',
+                        body: {team: 'Application Support'} },
+                    { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics (by status/category)' },
+                    { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
+                ]
+            },
+            'itsm-problems': {
+                title: 'ITSM Problem Management',
+                icon: '🔍',
+                description: 'Root cause analysis, known error database, and problem-incident linking',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/problems', description: 'Get all problem records' },
+                    { method: 'GET', path: '/itsm/problems/:id', description: 'Get specific problem details', needsId: 'itsm_problem' },
+                    { method: 'POST', path: '/itsm/problems', description: 'Create new problem record',
+                        body: {title: 'Recurring VPN disconnections', description: 'Multiple incidents reported for VPN drops during peak hours', category: 'Network', priority: 'P2'} },
+                    { method: 'PATCH', path: '/itsm/problems/:id/root-cause', description: 'Update root cause analysis', needsId: 'itsm_problem',
+                        body: {rootCause: 'VPN concentrator running outdated firmware with known memory leak', workaround: 'Restart VPN service every 4 hours until patched'} },
+                    { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link an incident to this problem', needsId: 'itsm_problem',
+                        body: {incidentId: 'INC-001'} },
+                    { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get all known errors with workarounds' }
+                ]
+            },
+            'itsm-assets': {
+                title: 'ITSM Assets / CMDB',
+                icon: '🖥️',
+                description: 'Configuration management database, asset tracking, and lifecycle management',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/assets', description: 'Get all assets in the CMDB' },
+                    { method: 'GET', path: '/itsm/assets/:id', description: 'Get specific asset details', needsId: 'itsm_asset' },
+                    { method: 'POST', path: '/itsm/assets', description: 'Register new asset in CMDB',
+                        body: {name: 'Dell Latitude 5540', type: 'Workstation', status: 'Active', owner: 'John Doe', location: 'Building A, Floor 2'} },
+                    { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
+                        body: {status: 'Maintenance'} },
+                    { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset statistics (count by type/status)' },
+                    { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history from audit log', needsId: 'itsm_asset' }
+                ]
+            },
+            'itsm-knowledge': {
+                title: 'ITSM Knowledge Base',
+                icon: '📚',
+                description: 'Knowledge articles, runbooks, and self-service documentation',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/knowledge', description: 'Get all knowledge base articles' },
+                    { method: 'GET', path: '/itsm/knowledge/:id', description: 'Get specific knowledge article', needsId: 'itsm_knowledge' },
+                    { method: 'POST', path: '/itsm/knowledge', description: 'Create new knowledge article',
+                        body: {title: 'How to Reset VPN Configuration', category: 'Network', content: 'Step 1: Open VPN client settings...', tags: ['vpn', 'network', 'connectivity']} },
+                    { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge',
+                        body: {} },
+                    { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful (increment counter)', needsId: 'itsm_knowledge',
+                        body: {} },
+                    { method: 'GET', path: '/itsm/knowledge/search', description: 'Search knowledge base articles (use ?q=keyword)' },
+                    { method: 'GET', path: '/itsm/runbooks', description: 'Get all runbooks / standard operating procedures' }
+                ]
+            },
+            'itsm-reports': {
+                title: 'ITSM Reports & Dashboard',
+                icon: '📊',
+                description: 'Operational dashboards, SLA compliance, and team performance analytics',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/dashboard/stats', description: 'Get aggregate dashboard statistics across all ITSM modules' },
+                    { method: 'GET', path: '/itsm/reports/incident-summary', description: 'Incident summary report (by priority, top categories)' },
+                    { method: 'GET', path: '/itsm/reports/sla-compliance', description: 'SLA compliance report (compliance %, breached tickets)' },
+                    { method: 'GET', path: '/itsm/reports/team-performance', description: 'Team performance report (tickets per team, resolution rate)' },
+                    { method: 'GET', path: '/itsm/reports/change-success-rate', description: 'Change success rate report (by type, avg implementation time)' },
+                    { method: 'GET', path: '/itsm/reports/request-fulfillment', description: 'Request fulfillment report (avg time by category)' },
+                    { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get most recent audit log entries (last 50)' }
+                ]
+            },
+            'itsm-config': {
+                title: 'ITSM Configuration & Admin',
+                icon: '⚙️',
+                description: 'Teams, technicians, service catalog, policies, and SLA configurations',
+                endpoints: [
+                    { method: 'GET', path: '/itsm/teams', description: 'Get all support teams and their members' },
+                    { method: 'GET', path: '/itsm/technicians', description: 'Get all technicians with skills and availability' },
+                    { method: 'GET', path: '/itsm/catalog', description: 'Get service catalog items' },
+                    { method: 'GET', path: '/itsm/customers', description: 'Get ITSM customer records' },
+                    { method: 'GET', path: '/itsm/policies', description: 'Get IT governance policies' },
+                    { method: 'GET', path: '/itsm/sla/configs', description: 'Get SLA configurations by priority' },
+                    { method: 'GET', path: '/itsm/email-templates', description: 'Get notification email templates' }
                 ]
             }
         };
@@ -1163,7 +1306,13 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
                 customer: '/crm/customers',
                 device: '/iot/devices',
                 opportunity: '/crm/opportunities',
-                onboarding: '/hr/onboarding'
+                onboarding: '/hr/onboarding',
+                itsm_incident: '/itsm/incidents',
+                itsm_change: '/itsm/changes',
+                itsm_request: '/itsm/requests',
+                itsm_problem: '/itsm/problems',
+                itsm_asset: '/itsm/assets',
+                itsm_knowledge: '/itsm/knowledge'
             };
 
             const endpoint = endpoints[type];
@@ -1208,7 +1357,7 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
             }
         }
 
-        console.log('🚀 UiPath Workshop API Interface - All 87 endpoints ready!');
+        console.log('🚀 UiPath Workshop API Interface - All 116 endpoints ready!');
     </script>
 </body>
 </html>

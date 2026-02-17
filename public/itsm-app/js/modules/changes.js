@@ -23,14 +23,7 @@ const ChangesModule = {
      * Add an audit log entry
      */
     addAuditLog(action, target, details) {
-        const entry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: action,
-            target: target,
-            details: details
-        };
-        ITSMData.auditLog.unshift(entry);
+        // No-op: audit logging is now handled server-side by the API
     },
 
     /**
@@ -262,7 +255,7 @@ const ChangesModule = {
 
         showModal(`
             <div class="modal-header">
-                <span>+ Create New Change Request</span>
+                <span><img class="modal-icon" src="icons/refresh.png" alt=""> Create New Change Request</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
             <div class="modal-body" style="width: 750px; max-height: 75vh; overflow-y: auto;">
@@ -593,7 +586,7 @@ const ChangesModule = {
     /**
      * Submit new change request
      */
-    submitNewChange() {
+    async submitNewChange() {
         // Requester Information
         const requestedBy = document.getElementById('chg-requested-by').value;
         const requesterName = document.getElementById('chg-requester-name').value;
@@ -671,80 +664,41 @@ const ChangesModule = {
             return;
         }
 
-        const newId = this.getNextChangeId();
-        const newChange = {
-            id: newId,
-            // Requester Info
-            requestedBy: requestedBy,
-            requesterName: requesterName,
-            requesterEmail: requesterEmail,
-            requesterPhone: requesterPhone,
-            requesterDept: requesterDept,
-            requestedFor: requestedFor,
-            // Change Details
-            title: title,
-            description: description,
-            category: category,
-            subcategory: subcategory,
-            type: type,
-            risk: risk,
-            // Business Justification
-            justification: justification,
-            relatedIncident: relatedIncident || null,
-            policyReference: policyReference || null,
-            // Impact Assessment
-            impact: parseInt(impact),
-            affectedUsers: affectedUsers,
-            affectedServices: affectedServices,
-            affectedAssets: affectedAssets,
-            outageRequired: outageRequired,
-            outageDuration: outageDuration ? parseInt(outageDuration) : null,
-            // Planning
-            implementationPlan: implementationPlan,
-            testPlan: testPlan,
-            rollbackPlan: rollbackPlan,
-            // Schedule
-            scheduledStart: scheduledStart ? new Date(scheduledStart).toISOString() : null,
-            scheduledEnd: scheduledEnd ? new Date(scheduledEnd).toISOString() : null,
-            changeWindow: changeWindow,
-            actualStart: null,
-            actualEnd: null,
-            // Assignment & Approval
-            assignedTo: assignmentGroup || 'Change Team',
-            assignee: assignee || null,
-            implementer: implementer || null,
-            cabRequired: cabRequired,
-            cabApproval: null,
-            // Communication
-            notifyRecipients: notifyRecipients,
-            communicationNotes: communicationNotes,
-            // Status & Metadata
-            status: cabRequired ? 'Pending Approval' : 'Scheduled',
-            priority: type === 'Emergency' ? 'High' : 'Normal',
-            createdAt: new Date().toISOString(),
-            notes: []
-        };
+        try {
+            const result = await ITSMApi.createChange({
+                title, description, type, risk,
+                priority: type === 'Emergency' ? 'High' : 'Normal',
+                category, subcategory,
+                requestedBy, requesterName: requesterName, requesterEmail,
+                requesterDept,
+                requestedFor,
+                assignedTo: assignmentGroup || 'Change Team',
+                assignee: assignee || null,
+                implementer: implementer || null,
+                impact: parseInt(impact),
+                affectedUsers, affectedServices, affectedAssets,
+                outageRequired,
+                outageDuration: outageDuration ? parseInt(outageDuration) : null,
+                justification, implementationPlan, testPlan, rollbackPlan,
+                relatedIncident: relatedIncident || null,
+                scheduledStart: scheduledStart ? new Date(scheduledStart).toISOString() : null,
+                scheduledEnd: scheduledEnd ? new Date(scheduledEnd).toISOString() : null,
+                changeWindow,
+                notifyRecipients, communicationNotes
+            });
 
-        ITSMData.changes.unshift(newChange);
-
-        this.addAuditLog('Change Created', newId, `New ${type} change request created: ${title}`);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            ITSMData.dashboardStats.changes.total++;
-            if (cabRequired) {
-                ITSMData.dashboardStats.changes.pending++;
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${result.data.id} created successfully`, 'success');
+                ITSMApi.computeDashboardStats();
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
             } else {
-                ITSMData.dashboardStats.changes.scheduled++;
+                showToast(result.error || 'Failed to create change', 'error');
             }
-        }
-
-        closeModal();
-        showToast(`Change ${newId} created successfully`, 'success');
-
-        // Refresh the changes view if currently displayed
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        } catch (err) {
+            showToast('Failed to create change: ' + err.message, 'error');
         }
     },
 
@@ -1066,42 +1020,22 @@ const ChangesModule = {
     /**
      * Confirm approval
      */
-    confirmApproval(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
+    async confirmApproval(changeId) {
         const notes = document.getElementById('approve-notes').value.trim();
-        const now = new Date().toISOString();
-
-        change.cabApproval = now;
-        change.status = 'Scheduled';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: `Change approved by CAB.${notes ? ' Notes: ' + notes : ''}`
-        });
-
-        this.addAuditLog('Change Approved', changeId, `Change approved by ${ITSMData.currentUser.username}`);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            if (ITSMData.dashboardStats.changes.pending > 0) {
-                ITSMData.dashboardStats.changes.pending--;
+        try {
+            const result = await ITSMApi.approveChange(changeId, ITSMData.currentUser.name, notes);
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} has been approved`, 'success');
+                ITSMApi.computeDashboardStats();
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to approve change', 'error');
             }
-            ITSMData.dashboardStats.changes.scheduled++;
-        }
-
-        closeModal();
-        showToast(`Change ${changeId} has been approved`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        } catch (err) {
+            showToast('Failed to approve change: ' + err.message, 'error');
         }
     },
 
@@ -1148,44 +1082,26 @@ const ChangesModule = {
     /**
      * Confirm rejection
      */
-    confirmRejection(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
+    async confirmRejection(changeId) {
         const reason = document.getElementById('reject-reason').value.trim();
         if (!reason) {
             showToast('Rejection reason is required', 'error');
             return;
         }
-
-        const now = new Date().toISOString();
-        change.status = 'Rejected';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: `Change rejected. Reason: ${reason}`
-        });
-
-        this.addAuditLog('Change Rejected', changeId, `Change rejected: ${reason}`);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            if (ITSMData.dashboardStats.changes.pending > 0) {
-                ITSMData.dashboardStats.changes.pending--;
+        try {
+            const result = await ITSMApi.rejectChange(changeId, reason, ITSMData.currentUser.name);
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} has been rejected`, 'warning');
+                ITSMApi.computeDashboardStats();
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to reject change', 'error');
             }
-        }
-
-        closeModal();
-        showToast(`Change ${changeId} has been rejected`, 'warning');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        } catch (err) {
+            showToast('Failed to reject change: ' + err.message, 'error');
         }
     },
 
@@ -1251,75 +1167,45 @@ const ChangesModule = {
     /**
      * Start implementation
      */
-    startImplementation(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
-        const actualStart = document.getElementById('impl-start').value;
-        const notes = document.getElementById('impl-notes').value.trim();
-        const now = new Date().toISOString();
-
-        change.actualStart = actualStart ? new Date(actualStart).toISOString() : now;
-        change.status = 'Implementing';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: `Implementation started.${notes ? ' Notes: ' + notes : ''}`
-        });
-
-        this.addAuditLog('Change Implementation Started', changeId, `Implementation started by ${ITSMData.currentUser.username}`);
-
-        closeModal();
-        showToast(`Implementation of ${changeId} has started`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+    async startImplementation(changeId) {
+        try {
+            // First need to transition to Scheduled if currently Approved
+            const change = ITSMData.changes.find(c => c.id === changeId);
+            if (change && change.status === 'Approved') {
+                await ITSMApi.updateChangeStatus(changeId, 'Scheduled');
+            }
+            const result = await ITSMApi.implementChange(changeId);
+            if (result.success) {
+                closeModal();
+                showToast(`Implementation of ${changeId} has started`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to start implementation', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to start implementation: ' + err.message, 'error');
         }
     },
 
     /**
      * Complete implementation
      */
-    completeImplementation(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
-        const now = new Date().toISOString();
-        change.actualEnd = now;
-        change.status = 'Implemented';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: 'Implementation completed successfully.'
-        });
-
-        this.addAuditLog('Change Implemented', changeId, `Change implemented successfully by ${ITSMData.currentUser.username}`);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            if (ITSMData.dashboardStats.changes.scheduled > 0) {
-                ITSMData.dashboardStats.changes.scheduled--;
+    async completeImplementation(changeId) {
+        try {
+            const result = await ITSMApi.completeChange(changeId, true);
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} has been implemented successfully`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to complete implementation', 'error');
             }
-            ITSMData.dashboardStats.changes.implemented++;
-        }
-
-        closeModal();
-        showToast(`Change ${changeId} has been implemented successfully`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        } catch (err) {
+            showToast('Failed to complete implementation: ' + err.message, 'error');
         }
     },
 
@@ -1360,13 +1246,7 @@ const ChangesModule = {
     /**
      * Confirm implementation failure
      */
-    confirmFailure(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
+    async confirmFailure(changeId) {
         const reason = document.getElementById('fail-reason').value.trim();
         const rollbackPerformed = document.getElementById('fail-rollback').checked;
 
@@ -1375,25 +1255,20 @@ const ChangesModule = {
             return;
         }
 
-        const now = new Date().toISOString();
-        change.actualEnd = now;
-        change.status = 'Failed';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: `Implementation failed. Reason: ${reason}. Rollback ${rollbackPerformed ? 'was' : 'was NOT'} performed.`
-        });
-
-        this.addAuditLog('Change Failed', changeId, `Implementation failed: ${reason}`);
-
-        closeModal();
-        showToast(`Change ${changeId} marked as failed`, 'error');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        try {
+            const fullReason = `${reason}. Rollback ${rollbackPerformed ? 'was' : 'was NOT'} performed.`;
+            const result = await ITSMApi.completeChange(changeId, false, fullReason);
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} marked as failed`, 'error');
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to mark as failed', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to mark as failed: ' + err.message, 'error');
         }
     },
 
@@ -1440,81 +1315,46 @@ const ChangesModule = {
     /**
      * Confirm cancellation
      */
-    confirmCancellation(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
+    async confirmCancellation(changeId) {
         const reason = document.getElementById('cancel-reason').value.trim();
         if (!reason) {
             showToast('Cancellation reason is required', 'error');
             return;
         }
 
-        const previousStatus = change.status;
-        const now = new Date().toISOString();
-        change.status = 'Cancelled';
-
-        // Add note
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: `Change cancelled from status "${previousStatus}". Reason: ${reason}`
-        });
-
-        this.addAuditLog('Change Cancelled', changeId, `Change cancelled: ${reason}`);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            if (previousStatus === 'Pending Approval' && ITSMData.dashboardStats.changes.pending > 0) {
-                ITSMData.dashboardStats.changes.pending--;
-            } else if ((previousStatus === 'Scheduled' || previousStatus === 'Approved') && ITSMData.dashboardStats.changes.scheduled > 0) {
-                ITSMData.dashboardStats.changes.scheduled--;
+        try {
+            const result = await ITSMApi.updateChangeStatus(changeId, 'Cancelled');
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} has been cancelled`, 'warning');
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to cancel change', 'error');
             }
-        }
-
-        closeModal();
-        showToast(`Change ${changeId} has been cancelled`, 'warning');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+        } catch (err) {
+            showToast('Failed to cancel change: ' + err.message, 'error');
         }
     },
 
     /**
      * Submit for approval (from Draft status)
      */
-    submitForApproval(changeId) {
-        const change = ITSMData.changes.find(c => c.id === changeId);
-        if (!change) {
-            showToast('Change not found', 'error');
-            return;
-        }
-
-        const now = new Date().toISOString();
-        change.status = 'Pending Approval';
-
-        if (!change.notes) change.notes = [];
-        change.notes.unshift({
-            timestamp: now,
-            author: ITSMData.currentUser.username,
-            content: 'Change submitted for CAB approval.'
-        });
-
-        this.addAuditLog('Change Submitted', changeId, 'Change submitted for approval');
-
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.changes) {
-            ITSMData.dashboardStats.changes.pending++;
-        }
-
-        closeModal();
-        showToast(`Change ${changeId} submitted for approval`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
-            renderModule('changes');
+    async submitForApproval(changeId) {
+        try {
+            const result = await ITSMApi.updateChangeStatus(changeId, 'Pending Approval');
+            if (result.success) {
+                closeModal();
+                showToast(`Change ${changeId} submitted for approval`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'changes') {
+                    renderModule('changes');
+                }
+            } else {
+                showToast(result.error || 'Failed to submit for approval', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to submit for approval: ' + err.message, 'error');
         }
     },
 
@@ -1630,7 +1470,7 @@ window.viewChange = function(changeId) {
 window.renderChangesWithModule = function() {
     return `
         <div class="page-header">
-            <div class="page-title">🔄 Change Requests</div>
+            <div class="page-title"><img class="page-icon" src="icons/refresh.png" alt=""> Change Requests</div>
             <div class="page-subtitle">Manage change requests and approvals</div>
         </div>
         <div class="toolbar">

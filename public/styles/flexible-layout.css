@@ -1,0 +1,460 @@
+/* Flexible and Responsive Layout System */
+
+/* Layout Mode Variables */
+:root {
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 60px;
+  --learning-panel-width: 450px;
+  --content-max-width: 1400px;
+}
+
+/* Flexible Container */
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 1.5rem;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+/* Flexible Grid System */
+.main-grid {
+  display: grid;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+/* Default: Three column layout */
+.main-grid.layout-default {
+  grid-template-columns: var(--sidebar-width) 1fr var(--learning-panel-width);
+  grid-template-areas: "sidebar content learning";
+}
+
+/* Two column: Sidebar + Content (Learning panel hidden) */
+.main-grid.layout-focused {
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-areas: "sidebar content";
+}
+
+/* Single column: Content only (maximized view) */
+.main-grid.layout-fullscreen {
+  grid-template-columns: 1fr;
+  grid-template-areas: "content";
+}
+
+/* Collapsed sidebar layout */
+.main-grid.sidebar-collapsed {
+  grid-template-columns: var(--sidebar-collapsed-width) 1fr var(--learning-panel-width);
+}
+
+.main-grid.sidebar-collapsed.layout-focused {
+  grid-template-columns: var(--sidebar-collapsed-width) 1fr;
+}
+
+/* Grid Area Assignments */
+.sidebar {
+  grid-area: sidebar;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.content-area {
+  grid-area: content;
+  transition: all 0.3s ease;
+  min-width: 0; /* Prevent overflow */
+}
+
+.learning-panel {
+  grid-area: learning;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar Collapse Behavior */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .nav-heading,
+.sidebar.collapsed .nav-item span {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 1rem;
+  font-size: 1.2rem;
+}
+
+/* Learning Panel Toggle */
+.learning-panel.hidden {
+  display: none;
+}
+
+/* Layout Controls */
+.layout-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1000;
+  background: var(--bg-card);
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+}
+
+.layout-btn {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.layout-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--uipath-orange);
+  color: var(--uipath-orange);
+}
+
+.layout-btn.active {
+  background: var(--uipath-orange);
+  color: white;
+  border-color: var(--uipath-orange);
+}
+
+/* Special styling for focus mode button when active */
+#focus-mode-btn.active {
+  background: var(--uipath-blue);
+  color: white;
+  border-color: var(--uipath-blue);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--uipath-orange);
+}
+
+.sidebar-toggle-icon {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Learning Panel Toggle Button */
+.learning-panel-toggle {
+  position: absolute;
+  left: -12px;
+  top: 2rem;
+  width: 24px;
+  height: 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 6px 0 0 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.learning-panel-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--uipath-orange);
+}
+
+/* Responsive Breakpoints */
+
+/* Extra large screens (1600px+) */
+@media (min-width: 1600px) {
+  :root {
+    --sidebar-width: 320px;
+    --learning-panel-width: 500px;
+  }
+
+  .container {
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+}
+
+/* Large screens (1400px-1599px) */
+@media (max-width: 1599px) and (min-width: 1400px) {
+  :root {
+    --sidebar-width: 280px;
+    --learning-panel-width: 450px;
+  }
+}
+
+/* Medium screens (1200px-1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+  :root {
+    --sidebar-width: 260px;
+    --learning-panel-width: 400px;
+  }
+
+  .main-grid.layout-default {
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-areas:
+      "sidebar content"
+      "sidebar learning";
+  }
+
+  .learning-panel {
+    grid-column: 2;
+    max-height: 300px;
+  }
+}
+
+/* Tablet landscape (1024px-1199px) */
+@media (max-width: 1199px) and (min-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 250px 1fr;
+    grid-template-areas: "sidebar content";
+  }
+
+  .learning-panel {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 400px;
+    max-height: 80vh;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
+
+  .learning-panel.hidden {
+    transform: translateX(100%) translateY(-50%);
+  }
+}
+
+/* Tablet portrait (768px-1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "content";
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    z-index: 1001;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .learning-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 50vh;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(calc(100% - 60px));
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+
+  .learning-panel:hover,
+  .learning-panel:focus-within {
+    transform: translateY(0);
+  }
+
+  /* Mobile menu button */
+  .mobile-menu-btn {
+    display: block;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1002;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+}
+
+/* Mobile (320px-767px) */
+@media (max-width: 767px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "content";
+    gap: 1rem;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 300px;
+    transform: translateX(-100%);
+    z-index: 1001;
+    background: var(--bg-card);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .learning-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 70vh;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(calc(100% - 50px));
+    transition: transform 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .learning-panel.expanded {
+    transform: translateY(0);
+  }
+
+  .content-area {
+    padding: 1.5rem;
+    margin-bottom: 60px; /* Space for collapsed learning panel */
+  }
+
+  .layout-controls {
+    top: auto;
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  /* Mobile-specific elements */
+  .mobile-menu-btn {
+    display: block;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1002;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+}
+
+/* Focus Mode Styles */
+.focus-mode .sidebar,
+.focus-mode .learning-panel,
+.focus-mode .layout-controls {
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.focus-mode .layout-controls:hover {
+  opacity: 1;
+}
+
+/* Always allow clicking the focus mode button */
+.focus-mode .layout-controls #focus-mode-btn {
+  pointer-events: auto !important;
+  opacity: 1;
+}
+
+.focus-mode .content-area {
+  box-shadow: 0 0 40px rgba(250, 70, 22, 0.1);
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Smooth transitions */
+.layout-transition * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -343,6 +343,8 @@ const NotificationsModule = {
         if (notification && !notification.read) {
             notification.read = true;
             this.updateBadge();
+            // Fire-and-forget API call
+            ITSMApi.markNotificationRead(notificationId).catch(() => {});
         }
     },
 
@@ -358,6 +360,9 @@ const NotificationsModule = {
         ITSMData.notifications.forEach(n => n.read = true);
         this.updateBadge();
         this.closePanel();
+
+        // Fire-and-forget API call
+        ITSMApi.markAllNotificationsRead().catch(() => {});
 
         if (typeof showToast === 'function') {
             showToast('All notifications marked as read', 'success');

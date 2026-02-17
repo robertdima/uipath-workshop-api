@@ -44,14 +44,7 @@ const ProblemsModule = {
      * Add an audit log entry
      */
     addAuditLog(action, target, details) {
-        const entry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: action,
-            target: target,
-            details: details
-        };
-        ITSMData.auditLog.unshift(entry);
+        // No-op: audit logging is now handled server-side by the API
     },
 
     /**
@@ -293,7 +286,7 @@ const ProblemsModule = {
     /**
      * Submit new problem
      */
-    submitNewProblem() {
+    async submitNewProblem() {
         const title = document.getElementById('prb-title').value.trim();
         const description = document.getElementById('prb-description').value.trim();
         const priority = document.getElementById('prb-priority').value;
@@ -302,46 +295,27 @@ const ProblemsModule = {
         const workaround = document.getElementById('prb-workaround').value.trim();
         const affectedAssets = this.getSelectedAssets();
 
-        // Validation
-        if (!title) {
-            showToast('Title is required', 'error');
-            return;
-        }
-        if (!description) {
-            showToast('Description is required', 'error');
-            return;
-        }
+        if (!title) { showToast('Title is required', 'error'); return; }
+        if (!description) { showToast('Description is required', 'error'); return; }
 
-        const newId = this.getNextProblemId();
-        const now = new Date().toISOString();
-
-        const newProblem = {
-            id: newId,
-            title: title,
-            description: description,
-            status: 'Open',
-            priority: priority,
-            category: category,
-            rootCause: null,
-            workaround: workaround || null,
-            linkedIncidents: [],
-            affectedAssets: affectedAssets,
-            assignedTo: assignedTo,
-            assignee: null,
-            createdAt: now,
-            updatedAt: now
-        };
-
-        ITSMData.problems.unshift(newProblem);
-
-        this.addAuditLog('Problem Created', newId, `New problem created: ${title}`);
-
-        closeModal();
-        showToast(`Problem ${newId} created successfully`, 'success');
-
-        // Refresh the view if on problems page
-        if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
-            renderModule('problems');
+        try {
+            const result = await ITSMApi.createProblem({
+                title, description, priority, category,
+                linkedIncidents: [],
+                affectedAssets,
+                assignedTo
+            });
+            if (result.success) {
+                closeModal();
+                showToast(`Problem ${result.data.id} created successfully`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
+                    renderModule('problems');
+                }
+            } else {
+                showToast(result.error || 'Failed to create problem', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to create problem: ' + err.message, 'error');
         }
     },
 
@@ -418,51 +392,33 @@ const ProblemsModule = {
     /**
      * Submit problem created from incident
      */
-    submitProblemFromIncident(incidentId) {
+    async submitProblemFromIncident(incidentId) {
         const title = document.getElementById('prb-title').value.trim();
         const description = document.getElementById('prb-description').value.trim();
         const priority = document.getElementById('prb-priority').value;
         const category = document.getElementById('prb-category').value;
         const assignedTo = document.getElementById('prb-assigned-to').value;
-        const workaround = document.getElementById('prb-workaround').value.trim();
         const affectedAssets = this.getSelectedAssets();
 
-        // Validation
-        if (!title) {
-            showToast('Title is required', 'error');
-            return;
+        if (!title) { showToast('Title is required', 'error'); return; }
+        if (!description) { showToast('Description is required', 'error'); return; }
+
+        try {
+            const result = await ITSMApi.createProblem({
+                title, description, priority, category,
+                linkedIncidents: [incidentId],
+                affectedAssets,
+                assignedTo
+            });
+            if (result.success) {
+                closeModal();
+                showToast(`Problem ${result.data.id} created from ${incidentId}`, 'success');
+            } else {
+                showToast(result.error || 'Failed to create problem', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to create problem: ' + err.message, 'error');
         }
-        if (!description) {
-            showToast('Description is required', 'error');
-            return;
-        }
-
-        const newId = this.getNextProblemId();
-        const now = new Date().toISOString();
-
-        const newProblem = {
-            id: newId,
-            title: title,
-            description: description,
-            status: 'Under Investigation',
-            priority: priority,
-            category: category,
-            rootCause: null,
-            workaround: workaround || null,
-            linkedIncidents: [incidentId],
-            affectedAssets: affectedAssets,
-            assignedTo: assignedTo,
-            assignee: null,
-            createdAt: now,
-            updatedAt: now
-        };
-
-        ITSMData.problems.unshift(newProblem);
-
-        this.addAuditLog('Problem Created', newId, `Problem created from incident ${incidentId}: ${title}`);
-
-        closeModal();
-        showToast(`Problem ${newId} created from ${incidentId}`, 'success');
     },
 
     /**
@@ -688,23 +644,20 @@ const ProblemsModule = {
     /**
      * Start investigation on a problem
      */
-    startInvestigation(problemId) {
-        const problem = ITSMData.problems.find(p => p.id === problemId);
-        if (!problem) {
-            showToast('Problem not found', 'error');
-            return;
-        }
-
-        problem.status = 'Under Investigation';
-        problem.updatedAt = new Date().toISOString();
-
-        this.addAuditLog('Problem Status Changed', problemId, `Status changed to Under Investigation`);
-
-        closeModal();
-        showToast(`${problemId} is now under investigation`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
-            renderModule('problems');
+    async startInvestigation(problemId) {
+        try {
+            const result = await ITSMApi.updateProblemStatus(problemId, 'Under Investigation');
+            if (result.success) {
+                closeModal();
+                showToast(`${problemId} is now under investigation`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
+                    renderModule('problems');
+                }
+            } else {
+                showToast(result.error || 'Failed to start investigation', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to start investigation: ' + err.message, 'error');
         }
     },
 
@@ -759,37 +712,26 @@ const ProblemsModule = {
     /**
      * Confirm conversion to Known Error
      */
-    confirmKnownError(problemId) {
-        const problem = ITSMData.problems.find(p => p.id === problemId);
-        if (!problem) {
-            showToast('Problem not found', 'error');
-            return;
-        }
-
+    async confirmKnownError(problemId) {
         const rootCause = document.getElementById('ke-root-cause').value.trim();
         const workaround = document.getElementById('ke-workaround').value.trim();
 
-        if (!rootCause) {
-            showToast('Root cause is required', 'error');
-            return;
-        }
-        if (!workaround) {
-            showToast('Workaround is required', 'error');
-            return;
-        }
+        if (!rootCause) { showToast('Root cause is required', 'error'); return; }
+        if (!workaround) { showToast('Workaround is required', 'error'); return; }
 
-        problem.status = 'Known Error';
-        problem.rootCause = rootCause;
-        problem.workaround = workaround;
-        problem.updatedAt = new Date().toISOString();
-
-        this.addAuditLog('Problem Converted', problemId, `Problem converted to Known Error`);
-
-        closeModal();
-        showToast(`${problemId} converted to Known Error`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
-            renderModule('problems');
+        try {
+            const result = await ITSMApi.updateProblemRootCause(problemId, rootCause, workaround, true);
+            if (result.success) {
+                closeModal();
+                showToast(`${problemId} converted to Known Error`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
+                    renderModule('problems');
+                }
+            } else {
+                showToast(result.error || 'Failed to convert to Known Error', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to convert to Known Error: ' + err.message, 'error');
         }
     },
 
@@ -854,34 +796,31 @@ const ProblemsModule = {
     /**
      * Confirm problem resolution
      */
-    confirmResolve(problemId) {
-        const problem = ITSMData.problems.find(p => p.id === problemId);
-        if (!problem) {
-            showToast('Problem not found', 'error');
-            return;
-        }
-
+    async confirmResolve(problemId) {
         const resolveNotes = document.getElementById('resolve-notes').value.trim();
         const resolveCode = document.getElementById('resolve-code').value;
 
-        if (!resolveNotes) {
-            showToast('Resolution notes are required', 'error');
-            return;
-        }
+        if (!resolveNotes) { showToast('Resolution notes are required', 'error'); return; }
 
-        problem.status = 'Resolved';
-        problem.updatedAt = new Date().toISOString();
-        problem.resolvedAt = new Date().toISOString();
-        problem.resolutionCode = resolveCode;
-        problem.resolutionNotes = resolveNotes;
-
-        this.addAuditLog('Problem Resolved', problemId, `Problem resolved: ${resolveCode}`);
-
-        closeModal();
-        showToast(`${problemId} has been resolved`, 'success');
-
-        if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
-            renderModule('problems');
+        try {
+            const result = await ITSMApi.updateProblemStatus(problemId, 'Resolved');
+            if (result.success) {
+                // Also save resolution details
+                await ITSMApi.saveEntity('problems', problemId, {
+                    resolutionCode: resolveCode,
+                    resolutionNotes: resolveNotes,
+                    resolvedAt: new Date().toISOString()
+                });
+                closeModal();
+                showToast(`${problemId} has been resolved`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'problems') {
+                    renderModule('problems');
+                }
+            } else {
+                showToast(result.error || 'Failed to resolve problem', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to resolve problem: ' + err.message, 'error');
         }
     },
 
@@ -979,13 +918,7 @@ const ProblemsModule = {
     /**
      * Confirm linking selected incidents
      */
-    confirmLinkIncidents(problemId) {
-        const problem = ITSMData.problems.find(p => p.id === problemId);
-        if (!problem) {
-            showToast('Problem not found', 'error');
-            return;
-        }
-
+    async confirmLinkIncidents(problemId) {
         const checkboxes = document.querySelectorAll('.link-incident-checkbox:checked');
         const selectedIncidents = Array.from(checkboxes).map(cb => cb.value);
 
@@ -994,49 +927,37 @@ const ProblemsModule = {
             return;
         }
 
-        // Initialize linkedIncidents array if needed
-        if (!problem.linkedIncidents) {
-            problem.linkedIncidents = [];
-        }
-
-        // Add selected incidents
-        selectedIncidents.forEach(incId => {
-            if (!problem.linkedIncidents.includes(incId)) {
-                problem.linkedIncidents.push(incId);
+        try {
+            for (const incId of selectedIncidents) {
+                await ITSMApi.linkIncidentToProblem(problemId, incId);
             }
-        });
-
-        problem.updatedAt = new Date().toISOString();
-
-        this.addAuditLog('Incidents Linked', problemId, `Linked ${selectedIncidents.length} incident(s): ${selectedIncidents.join(', ')}`);
-
-        showToast(`${selectedIncidents.length} incident(s) linked to ${problemId}`, 'success');
-
-        // Refresh the view
-        this.viewProblem(problemId);
+            showToast(`${selectedIncidents.length} incident(s) linked to ${problemId}`, 'success');
+            this.viewProblem(problemId);
+        } catch (err) {
+            showToast('Failed to link incidents: ' + err.message, 'error');
+        }
     },
 
     /**
      * Unlink an incident from a problem
      */
-    unlinkIncident(problemId, incidentId) {
+    async unlinkIncident(problemId, incidentId) {
         const problem = ITSMData.problems.find(p => p.id === problemId);
         if (!problem || !problem.linkedIncidents) {
             showToast('Problem not found', 'error');
             return;
         }
 
-        const index = problem.linkedIncidents.indexOf(incidentId);
-        if (index > -1) {
-            problem.linkedIncidents.splice(index, 1);
-            problem.updatedAt = new Date().toISOString();
-
-            this.addAuditLog('Incident Unlinked', problemId, `Unlinked incident ${incidentId}`);
-
+        try {
+            const updatedLinks = problem.linkedIncidents.filter(id => id !== incidentId);
+            await ITSMApi.saveEntity('problems', problemId, {
+                linkedIncidents: updatedLinks,
+                updatedAt: new Date().toISOString()
+            });
             showToast(`${incidentId} unlinked from ${problemId}`, 'success');
-
-            // Refresh the view
             this.viewProblem(problemId);
+        } catch (err) {
+            showToast('Failed to unlink incident: ' + err.message, 'error');
         }
     }
 };

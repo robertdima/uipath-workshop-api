@@ -79,15 +79,9 @@ const Utils = {
         return `<span class="badge priority-${priority.toLowerCase()}">${priority}</span>`;
     },
 
-    // Add audit log entry
+    // Add audit log entry - no-op: audit logging is now handled server-side by the API
     addAuditLog(actor, action, target, details) {
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: actor,
-            action: action,
-            target: target,
-            details: details
-        });
+        // Server-side API creates audit entries automatically
     },
 
     // Escape HTML

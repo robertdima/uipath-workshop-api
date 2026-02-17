@@ -175,7 +175,7 @@ const AssetsModule = {
 
         const modalContent = `
             <div class="modal-header">
-                <span>🖥️ Asset Details: ${asset.id}</span>
+                <span><img class="modal-icon" src="icons/desktop.png" alt=""> Asset Details: ${asset.id}</span>
                 <button class="panel-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="width: 700px; max-height: 70vh; overflow-y: auto;">
@@ -309,7 +309,7 @@ const AssetsModule = {
 
         const modalContent = `
             <div class="modal-header">
-                <span>🖥️ Create New Asset</span>
+                <span><img class="modal-icon" src="icons/desktop.png" alt=""> Create New Asset</span>
                 <button class="panel-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="width: 500px;">
@@ -362,8 +362,7 @@ const AssetsModule = {
     /**
      * Submit the create asset form
      */
-    submitCreateAsset() {
-        const id = document.getElementById('new-asset-id').value.trim();
+    async submitCreateAsset() {
         const name = document.getElementById('new-asset-name').value.trim();
         const type = document.getElementById('new-asset-type').value;
         const status = document.getElementById('new-asset-status').value;
@@ -371,53 +370,25 @@ const AssetsModule = {
         const location = document.getElementById('new-asset-location').value.trim();
         const os = document.getElementById('new-asset-os').value.trim();
 
-        // Validate required fields
-        if (!name) {
-            showToast('Asset name is required', 'error');
-            return;
-        }
+        if (!name) { showToast('Asset name is required', 'error'); return; }
 
-        // Check for duplicate ID
-        if (ITSMData.assets.find(a => a.id === id)) {
-            showToast('An asset with this ID already exists', 'error');
-            return;
-        }
-
-        // Create new asset
-        const newAsset = {
-            id: id || this.generateAssetId(),
-            name: name,
-            type: type,
-            status: status,
-            owner: owner || 'Unassigned',
-            location: location || 'Unknown',
-            os: os || 'N/A',
-            lastSeen: new Date().toISOString()
-        };
-
-        // Add to data
-        ITSMData.assets.push(newAsset);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.assets) {
-            ITSMData.dashboardStats.assets.total = ITSMData.assets.length;
-            ITSMData.dashboardStats.assets.active = ITSMData.assets.filter(a => a.status === 'Active').length;
-            ITSMData.dashboardStats.assets.warning = ITSMData.assets.filter(a => a.status === 'Warning').length;
-            ITSMData.dashboardStats.assets.error = ITSMData.assets.filter(a => a.status === 'Error').length;
-        }
-
-        // Add audit log
-        if (typeof Utils !== 'undefined' && Utils.addAuditLog) {
-            Utils.addAuditLog(ITSMData.currentUser.username, 'Asset Created', newAsset.id, `New ${type} asset: ${name}`);
-        }
-
-        closeModal();
-        showToast(`Asset ${newAsset.id} created successfully`, 'success');
-
-        // Refresh the assets view if currently on that module
-        if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
-            renderModule('assets');
-            this.setupAssetSearch();
+        try {
+            const result = await ITSMApi.createAsset({
+                name, type, owner: owner || 'Unassigned',
+                location: location || 'Unknown', os: os || 'N/A'
+            });
+            if (result.success) {
+                closeModal();
+                showToast(`Asset ${result.data.id} created successfully`, 'success');
+                if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
+                    renderModule('assets');
+                    this.setupAssetSearch();
+                }
+            } else {
+                showToast(result.error || 'Failed to create asset', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to create asset: ' + err.message, 'error');
         }
     },
 
@@ -434,7 +405,7 @@ const AssetsModule = {
 
         const modalContent = `
             <div class="modal-header">
-                <span>🖥️ Edit Asset: ${asset.id}</span>
+                <span><img class="modal-icon" src="icons/desktop.png" alt=""> Edit Asset: ${asset.id}</span>
                 <button class="panel-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="width: 500px;">
@@ -491,13 +462,7 @@ const AssetsModule = {
      * Submit the edit asset form
      * @param {string} assetId - Asset ID being edited
      */
-    submitEditAsset(assetId) {
-        const asset = ITSMData.assets.find(a => a.id === assetId);
-        if (!asset) {
-            showToast('Asset not found', 'error');
-            return;
-        }
-
+    async submitEditAsset(assetId) {
         const name = document.getElementById('edit-asset-name').value.trim();
         const type = document.getElementById('edit-asset-type').value;
         const status = document.getElementById('edit-asset-status').value;
@@ -505,39 +470,23 @@ const AssetsModule = {
         const location = document.getElementById('edit-asset-location').value.trim();
         const os = document.getElementById('edit-asset-os').value.trim();
 
-        // Validate required fields
-        if (!name) {
-            showToast('Asset name is required', 'error');
-            return;
-        }
+        if (!name) { showToast('Asset name is required', 'error'); return; }
 
-        // Update asset
-        asset.name = name;
-        asset.type = type;
-        asset.status = status;
-        asset.owner = owner || 'Unassigned';
-        asset.location = location || 'Unknown';
-        asset.os = os || 'N/A';
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.assets) {
-            ITSMData.dashboardStats.assets.active = ITSMData.assets.filter(a => a.status === 'Active').length;
-            ITSMData.dashboardStats.assets.warning = ITSMData.assets.filter(a => a.status === 'Warning').length;
-            ITSMData.dashboardStats.assets.error = ITSMData.assets.filter(a => a.status === 'Error').length;
-        }
-
-        // Add audit log
-        if (typeof Utils !== 'undefined' && Utils.addAuditLog) {
-            Utils.addAuditLog(ITSMData.currentUser.username, 'Asset Updated', assetId, `Updated asset: ${name}`);
-        }
-
-        closeModal();
-        showToast(`Asset ${assetId} updated successfully`, 'success');
-
-        // Refresh the assets view if currently on that module
-        if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
-            renderModule('assets');
-            this.setupAssetSearch();
+        try {
+            await ITSMApi.saveEntity('assets', assetId, {
+                name, type, status,
+                owner: owner || 'Unassigned',
+                location: location || 'Unknown',
+                os: os || 'N/A'
+            });
+            closeModal();
+            showToast(`Asset ${assetId} updated successfully`, 'success');
+            if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
+                renderModule('assets');
+                this.setupAssetSearch();
+            }
+        } catch (err) {
+            showToast('Failed to update asset: ' + err.message, 'error');
         }
     },
 
@@ -598,55 +547,26 @@ const AssetsModule = {
      * Confirm and execute delete/retire action
      * @param {string} assetId - Asset ID to delete/retire
      */
-    confirmDeleteAsset(assetId) {
+    async confirmDeleteAsset(assetId) {
         const action = document.querySelector('input[name="delete-action"]:checked')?.value || 'retire';
-        const asset = ITSMData.assets.find(a => a.id === assetId);
 
-        if (!asset) {
-            showToast('Asset not found', 'error');
+        try {
+            if (action === 'retire') {
+                await ITSMApi.updateAssetStatus(assetId, 'Retired');
+                showToast(`Asset ${assetId} marked as Retired`, 'success');
+            } else {
+                // For permanent delete, set status to Decommissioned (no delete endpoint)
+                await ITSMApi.updateAssetStatus(assetId, 'Decommissioned');
+                showToast(`Asset ${assetId} permanently deleted`, 'success');
+            }
+
             closeModal();
-            return;
-        }
-
-        if (action === 'retire') {
-            // Mark as retired
-            asset.status = 'Retired';
-
-            // Add audit log
-            if (typeof Utils !== 'undefined' && Utils.addAuditLog) {
-                Utils.addAuditLog(ITSMData.currentUser.username, 'Asset Retired', assetId, `Asset marked as retired: ${asset.name}`);
+            if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
+                renderModule('assets');
+                this.setupAssetSearch();
             }
-
-            showToast(`Asset ${assetId} marked as Retired`, 'success');
-        } else {
-            // Permanently delete
-            const index = ITSMData.assets.findIndex(a => a.id === assetId);
-            if (index > -1) {
-                ITSMData.assets.splice(index, 1);
-            }
-
-            // Add audit log
-            if (typeof Utils !== 'undefined' && Utils.addAuditLog) {
-                Utils.addAuditLog(ITSMData.currentUser.username, 'Asset Deleted', assetId, `Asset permanently deleted: ${asset.name}`);
-            }
-
-            showToast(`Asset ${assetId} permanently deleted`, 'success');
-        }
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.assets) {
-            ITSMData.dashboardStats.assets.total = ITSMData.assets.length;
-            ITSMData.dashboardStats.assets.active = ITSMData.assets.filter(a => a.status === 'Active').length;
-            ITSMData.dashboardStats.assets.warning = ITSMData.assets.filter(a => a.status === 'Warning').length;
-            ITSMData.dashboardStats.assets.error = ITSMData.assets.filter(a => a.status === 'Error').length;
-        }
-
-        closeModal();
-
-        // Refresh the assets view if currently on that module
-        if (typeof currentModule !== 'undefined' && currentModule === 'assets') {
-            renderModule('assets');
-            this.setupAssetSearch();
+        } catch (err) {
+            showToast('Failed to delete/retire asset: ' + err.message, 'error');
         }
     },
 
@@ -717,7 +637,7 @@ const AssetsModule = {
     /**
      * Submit incident created for asset
      */
-    submitIncidentForAsset() {
+    async submitIncidentForAsset() {
         const summary = document.getElementById('asset-inc-summary').value.trim();
         const description = document.getElementById('asset-inc-description').value.trim();
         const category = document.getElementById('asset-inc-category').value;
@@ -729,46 +649,23 @@ const AssetsModule = {
             return;
         }
 
-        // Generate new incident ID
-        const newId = this.generateIncidentId();
-
-        // Create new incident
-        const newIncident = {
-            id: newId,
-            summary: summary,
-            description: description,
-            category: category,
-            subcategory: 'General',
-            priority: priority,
-            status: 'New',
-            assignedTo: 'Service Desk',
-            assignee: null,
-            reporter: ITSMData.currentUser.username,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            slaTarget: this.calculateSLATarget(priority),
-            affectedAsset: assetId,
-            attachments: [],
-            notes: [],
-            linkedKB: []
-        };
-
-        // Add to incidents array
-        ITSMData.incidents.unshift(newIncident);
-
-        // Update dashboard stats
-        if (ITSMData.dashboardStats && ITSMData.dashboardStats.incidents) {
-            ITSMData.dashboardStats.incidents.total = ITSMData.incidents.length;
-            ITSMData.dashboardStats.incidents.open++;
+        try {
+            const result = await ITSMApi.createIncident({
+                summary, description, category,
+                subcategory: 'General',
+                impact: 3, urgency: 3,
+                assignmentGroup: 'Service Desk',
+                configurationItem: assetId
+            });
+            if (result.success) {
+                closeModal();
+                showToast(`Incident ${result.data.id} created for asset ${assetId}`, 'success');
+            } else {
+                showToast(result.error || 'Failed to create incident', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to create incident: ' + err.message, 'error');
         }
-
-        // Add audit log
-        if (typeof Utils !== 'undefined' && Utils.addAuditLog) {
-            Utils.addAuditLog(ITSMData.currentUser.username, 'Incident Created', newId, `New incident for asset ${assetId}: ${summary}`);
-        }
-
-        closeModal();
-        showToast(`Incident ${newId} created for asset ${assetId}`, 'success');
     },
 
     /**
@@ -1028,7 +925,7 @@ const AssetsModule = {
     renderAssetsPage() {
         return `
             <div class="page-header">
-                <div class="page-title">🖥️ Assets / CMDB</div>
+                <div class="page-title"><img class="page-icon" src="icons/desktop.png" alt=""> Assets / CMDB</div>
                 <div class="page-subtitle">Configuration Management Database</div>
             </div>
             <div class="toolbar">

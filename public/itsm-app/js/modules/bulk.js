@@ -655,14 +655,7 @@ const BulkModule = {
             });
         }
 
-        // Add audit log entry
-        ITSMData.auditLog.unshift({
-            timestamp: timestamp,
-            actor: actor,
-            action: 'Bulk Assignment',
-            target: incident.id,
-            details: `Assigned from ${oldTeam} to ${params.team}${params.technician ? ` (${params.technician})` : ''}`
-        });
+        // Audit logging handled server-side
 
         return { success: true };
     },
@@ -694,14 +687,7 @@ const BulkModule = {
             timestamp: timestamp
         });
 
-        // Add audit log entry
-        ITSMData.auditLog.unshift({
-            timestamp: timestamp,
-            actor: actor,
-            action: 'Bulk Close',
-            target: incident.id,
-            details: `Status changed from ${oldStatus} to Closed. Code: ${params.resolutionCode}`
-        });
+        // Audit logging handled server-side
 
         return { success: true };
     },
@@ -729,14 +715,7 @@ const BulkModule = {
             });
         }
 
-        // Add audit log entry
-        ITSMData.auditLog.unshift({
-            timestamp: timestamp,
-            actor: actor,
-            action: 'Bulk Priority Update',
-            target: incident.id,
-            details: `Priority changed from ${oldPriority} to ${params.priority}${params.reason ? `. Reason: ${params.reason}` : ''}`
-        });
+        // Audit logging handled server-side
 
         return { success: true };
     },
@@ -757,14 +736,7 @@ const BulkModule = {
 
         incident.updatedAt = timestamp;
 
-        // Add audit log entry
-        ITSMData.auditLog.unshift({
-            timestamp: timestamp,
-            actor: actor,
-            action: 'Bulk Note Added',
-            target: incident.id,
-            details: params.isInternal ? 'Added internal note via bulk operation' : 'Added work note via bulk operation'
-        });
+        // Audit logging handled server-side
 
         return { success: true };
     },

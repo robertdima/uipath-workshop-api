@@ -8,13 +8,23 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "json-server": "^0.17.4",
-    "@faker-js/faker": "^8.0.0"
+    "@faker-js/faker": "^8.0.0",
+    "debug": "^4.4.3",
+    "json-server": "^0.17.4"
   },
   "engines": {
     "node": ">=14.0.0"
   },
-  "keywords": ["uipath", "api", "workshop", "demo", "json-server"],
+  "keywords": [
+    "uipath",
+    "api",
+    "workshop",
+    "demo",
+    "json-server"
+  ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
 }

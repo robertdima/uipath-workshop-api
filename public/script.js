@@ -12,7 +12,13 @@ const state = {
     invoice: null,
     customer: null,
     device: null,
-    opportunity: null
+    opportunity: null,
+    itsm_incident: null,
+    itsm_change: null,
+    itsm_request: null,
+    itsm_problem: null,
+    itsm_asset: null,
+    itsm_knowledge: null
   },
   apiHealth: {
     isOnline: false,
@@ -199,6 +205,140 @@ const modules = {
     endpoints: [
       { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
       { method: 'GET', path: '/workflows/triggers/active', description: 'Get active workflow triggers (filtered in UiPath)' }
+    ]
+  },
+
+  // ═══ ITSM MODULES ═══
+  'itsm-incidents': {
+    title: 'ITSM Incident Management',
+    icon: '🎫',
+    description: 'IT incident tracking, assignment, resolution, and SLA management',
+    endpoints: [
+      { method: 'GET', path: '/itsm/incidents', description: 'Get all incidents in the system' },
+      { method: 'GET', path: '/itsm/incidents/:id', description: 'Get specific incident details', needsId: 'itsm_incident' },
+      { method: 'POST', path: '/itsm/incidents', description: 'Create a new incident',
+        body: { summary: 'Email service unavailable', description: 'Users unable to access email since 9:00 AM', impact: 2, urgency: 2 } },
+      { method: 'PATCH', path: '/itsm/incidents/:id/status', description: 'Update incident status', needsId: 'itsm_incident',
+        body: { status: 'Open' } },
+      { method: 'POST', path: '/itsm/incidents/:id/notes', description: 'Add work note to incident', needsId: 'itsm_incident',
+        body: { content: 'Investigating root cause', type: 'comment', visibility: 'technicians-only' } },
+      { method: 'POST', path: '/itsm/incidents/:id/assign', description: 'Assign incident to team/tech', needsId: 'itsm_incident',
+        body: { team: 'Service Desk' } },
+      { method: 'POST', path: '/itsm/incidents/:id/resolve', description: 'Resolve an incident', needsId: 'itsm_incident',
+        body: { resolutionCode: 'Fixed', notes: 'Issue resolved by restarting mail service' } },
+      { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics and metrics' }
+    ]
+  },
+  'itsm-changes': {
+    title: 'ITSM Change Management',
+    icon: '🔄',
+    description: 'Change requests, approvals, CAB calendar, and risk assessment',
+    endpoints: [
+      { method: 'GET', path: '/itsm/changes', description: 'Get all change requests' },
+      { method: 'GET', path: '/itsm/changes/:id', description: 'Get specific change request', needsId: 'itsm_change' },
+      { method: 'POST', path: '/itsm/changes', description: 'Create a new change request',
+        body: { title: 'Upgrade firewall firmware', type: 'Normal', risk: 'Medium', description: 'Upgrade perimeter firewall to latest firmware version' } },
+      { method: 'PATCH', path: '/itsm/changes/:id/status', description: 'Update change request status', needsId: 'itsm_change',
+        body: { status: 'Approved' } },
+      { method: 'POST', path: '/itsm/changes/:id/approve', description: 'Approve a change request', needsId: 'itsm_change',
+        body: { approver: 'CAB Board', comments: 'Approved - low risk window' } },
+      { method: 'GET', path: '/itsm/changes/stats', description: 'Get change management statistics' },
+      { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar / freeze windows' }
+    ]
+  },
+  'itsm-requests': {
+    title: 'ITSM Service Requests',
+    icon: '📝',
+    description: 'Service catalog requests, approvals, fulfillment, and tracking',
+    endpoints: [
+      { method: 'GET', path: '/itsm/requests', description: 'Get all service requests' },
+      { method: 'GET', path: '/itsm/requests/:id', description: 'Get specific service request', needsId: 'itsm_request' },
+      { method: 'POST', path: '/itsm/requests', description: 'Create a new service request',
+        body: { catalogItem: 'CAT-002', title: 'Software Installation - Visual Studio', requestedBy: 'user@acme.com', requestedFor: 'user@acme.com', priority: 'Normal' } },
+      { method: 'PATCH', path: '/itsm/requests/:id/status', description: 'Update service request status', needsId: 'itsm_request',
+        body: { status: 'In Progress' } },
+      { method: 'POST', path: '/itsm/requests/:id/approve', description: 'Approve a service request', needsId: 'itsm_request',
+        body: { approver: 'manager@acme.com', comments: 'Approved' } },
+      { method: 'POST', path: '/itsm/requests/:id/fulfill', description: 'Mark request as fulfilled', needsId: 'itsm_request',
+        body: { notes: 'Software installed and configured' } },
+      { method: 'POST', path: '/itsm/requests/:id/assign', description: 'Assign request to team', needsId: 'itsm_request',
+        body: { team: 'Service Desk' } },
+      { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics' },
+      { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
+    ]
+  },
+  'itsm-problems': {
+    title: 'ITSM Problem Management',
+    icon: '🔍',
+    description: 'Problem investigation, root cause analysis, and known errors',
+    endpoints: [
+      { method: 'GET', path: '/itsm/problems', description: 'Get all problem records' },
+      { method: 'GET', path: '/itsm/problems/:id', description: 'Get specific problem details', needsId: 'itsm_problem' },
+      { method: 'POST', path: '/itsm/problems', description: 'Create a new problem record',
+        body: { title: 'Recurring VPN disconnections', description: 'Multiple users reporting VPN drops during peak hours', category: 'Network', priority: 'P2' } },
+      { method: 'PATCH', path: '/itsm/problems/:id/root-cause', description: 'Update root cause analysis', needsId: 'itsm_problem',
+        body: { rootCause: 'VPN concentrator memory leak', workaround: 'Restart VPN service during off-hours' } },
+      { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident to problem', needsId: 'itsm_problem',
+        body: { incidentId: 'INC-001' } },
+      { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get known error database' }
+    ]
+  },
+  'itsm-assets': {
+    title: 'ITSM Assets / CMDB',
+    icon: '🖥️',
+    description: 'IT asset inventory, lifecycle management, and configuration items',
+    endpoints: [
+      { method: 'GET', path: '/itsm/assets', description: 'Get all IT assets' },
+      { method: 'GET', path: '/itsm/assets/:id', description: 'Get specific asset details', needsId: 'itsm_asset' },
+      { method: 'POST', path: '/itsm/assets', description: 'Register a new IT asset',
+        body: { name: 'LAPTOP-NEW-001', type: 'Workstation', status: 'Active', owner: 'john.doe@acme.com', location: 'Building A - Floor 3' } },
+      { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
+        body: { status: 'Maintenance' } },
+      { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset inventory statistics' },
+      { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history', needsId: 'itsm_asset' }
+    ]
+  },
+  'itsm-knowledge': {
+    title: 'ITSM Knowledge Base',
+    icon: '📚',
+    description: 'Knowledge articles, runbooks, and self-service documentation',
+    endpoints: [
+      { method: 'GET', path: '/itsm/knowledge', description: 'Get all knowledge articles' },
+      { method: 'GET', path: '/itsm/knowledge/:id', description: 'Get specific knowledge article', needsId: 'itsm_knowledge' },
+      { method: 'POST', path: '/itsm/knowledge', description: 'Create a new knowledge article',
+        body: { title: 'How to reset MFA token', category: 'Security', content: 'Step 1: Navigate to security settings...', tags: ['mfa', 'security', 'authentication'] } },
+      { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge' },
+      { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful', needsId: 'itsm_knowledge' },
+      { method: 'GET', path: '/itsm/knowledge/search', description: 'Search knowledge base (append ?q=keyword)' },
+      { method: 'GET', path: '/itsm/runbooks', description: 'Get all operational runbooks' }
+    ]
+  },
+  'itsm-reports': {
+    title: 'ITSM Reports & Dashboard',
+    icon: '📊',
+    description: 'ITSM analytics, SLA compliance, and operational dashboards',
+    endpoints: [
+      { method: 'GET', path: '/itsm/dashboard/stats', description: 'Get dashboard aggregate statistics' },
+      { method: 'GET', path: '/itsm/reports/incident-summary', description: 'Get incident summary report' },
+      { method: 'GET', path: '/itsm/reports/sla-compliance', description: 'Get SLA compliance report' },
+      { method: 'GET', path: '/itsm/reports/team-performance', description: 'Get team performance metrics' },
+      { method: 'GET', path: '/itsm/reports/change-success-rate', description: 'Get change success rate report' },
+      { method: 'GET', path: '/itsm/reports/request-fulfillment', description: 'Get request fulfillment report' },
+      { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get recent audit log entries' }
+    ]
+  },
+  'itsm-config': {
+    title: 'ITSM Configuration & Admin',
+    icon: '⚙️',
+    description: 'Teams, technicians, SLA policies, catalog, and email templates',
+    endpoints: [
+      { method: 'GET', path: '/itsm/teams', description: 'Get all support teams' },
+      { method: 'GET', path: '/itsm/technicians', description: 'Get all technicians' },
+      { method: 'GET', path: '/itsm/catalog', description: 'Get service catalog items' },
+      { method: 'GET', path: '/itsm/customers', description: 'Get ITSM customer records' },
+      { method: 'GET', path: '/itsm/policies', description: 'Get IT policies' },
+      { method: 'GET', path: '/itsm/sla/configs', description: 'Get SLA configuration rules' },
+      { method: 'GET', path: '/itsm/email-templates', description: 'Get email notification templates' }
     ]
   }
 };
@@ -623,10 +763,16 @@ async function getSampleId(type) {
 
   const endpoints = {
     worker: '/hr/workers',
-    invoice: '/finance/invoices', 
+    invoice: '/finance/invoices',
     customer: '/crm/customers',
     device: '/iot/devices',
-    opportunity: '/crm/opportunities'
+    opportunity: '/crm/opportunities',
+    itsm_incident: '/itsm/incidents',
+    itsm_change: '/itsm/changes',
+    itsm_request: '/itsm/requests',
+    itsm_problem: '/itsm/problems',
+    itsm_asset: '/itsm/assets',
+    itsm_knowledge: '/itsm/knowledge'
   };
 
   try {

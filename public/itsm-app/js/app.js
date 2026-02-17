@@ -11,9 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
-function initializeApp() {
+async function initializeApp() {
     setupNavigation();
     setupClock();
+    // Load data from API (falls back to hardcoded data.js if unavailable)
+    const apiLoaded = await ITSMApi.loadAll();
+    if (!apiLoaded) {
+        showToast('Using offline data — API unavailable', 'warning');
+    }
     updateSidebarBadges();
     renderModule('dashboard');
     loadRecentActivity();
@@ -28,6 +33,26 @@ function updateSidebarBadges() {
     if (incidentsBadge) {
         incidentsBadge.textContent = openIncidents;
         incidentsBadge.style.display = openIncidents > 0 ? 'inline-block' : 'none';
+    }
+
+    // Update problems badge - count open problems
+    const openProblems = ITSMData.problems.filter(p =>
+        p.status !== 'Resolved' && p.status !== 'Closed'
+    ).length;
+    const problemsBadge = document.getElementById('problems-badge');
+    if (problemsBadge) {
+        problemsBadge.textContent = openProblems;
+        problemsBadge.style.display = openProblems > 0 ? 'inline-block' : 'none';
+    }
+
+    // Update service requests badge - count open requests (not Fulfilled, Closed, Cancelled, Rejected)
+    const openRequests = ITSMData.serviceRequests.filter(r =>
+        !['Fulfilled', 'Closed', 'Cancelled', 'Rejected'].includes(r.status)
+    ).length;
+    const requestsBadge = document.getElementById('requests-badge');
+    if (requestsBadge) {
+        requestsBadge.textContent = openRequests;
+        requestsBadge.style.display = openRequests > 0 ? 'inline-block' : 'none';
     }
 }
 
@@ -79,6 +104,7 @@ function renderModule(moduleKey) {
         'settings': renderSettings,
         'demo-reset': renderDemoReset,
         'problems': renderProblems,
+        'requests': renderRequests,
         'service-catalog': renderServiceCatalog,
         'my-requests': renderMyRequests
     };
@@ -110,7 +136,7 @@ function renderDashboard() {
 
     return `
         <div class="page-header">
-            <div class="page-title">📊 Service Desk Dashboard</div>
+            <div class="page-title"><img class="page-icon" src="icons/dashboard.png" alt=""> Service Desk Dashboard</div>
             <div class="page-subtitle">Real-time overview of IT service operations</div>
         </div>
         <div class="page-content">
@@ -144,12 +170,26 @@ function renderDashboard() {
                         <div class="widget-stat-label">Awaiting Approval</div>
                     </div>
                 </div>
+                <div class="widget">
+                    <div class="widget-header">Open Requests</div>
+                    <div class="widget-body widget-stat">
+                        <div class="widget-stat-value">${stats.requests ? stats.requests.open : 0}</div>
+                        <div class="widget-stat-label">Service Requests</div>
+                    </div>
+                </div>
+                <div class="widget">
+                    <div class="widget-header">Pending Approval</div>
+                    <div class="widget-body widget-stat">
+                        <div class="widget-stat-value" style="color: var(--accent-orange);">${stats.requests ? stats.requests.pendingApproval : 0}</div>
+                        <div class="widget-stat-label">Requests Awaiting</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Recent Incidents Table -->
             <div class="card" style="margin-top: var(--spacing-lg);">
                 <div class="card-header">
-                    <span>🎫 Recent Incidents</span>
+                    <span><img class="card-header-icon" src="icons/alert.png" alt=""> Recent Incidents</span>
                     <button class="btn btn-sm btn-secondary" onclick="setActiveModule('incidents')">View All</button>
                 </div>
                 <div class="card-body" style="padding: 0;">
@@ -182,10 +222,46 @@ function renderDashboard() {
                 </div>
             </div>
 
+            <!-- Recent Service Requests Table -->
+            <div class="card" style="margin-top: var(--spacing-lg);">
+                <div class="card-header">
+                    <span><img class="card-header-icon" src="icons/note.png" alt=""> Recent Service Requests</span>
+                    <button class="btn btn-sm btn-secondary" onclick="setActiveModule('requests')">View All</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Requested By</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ITSMData.serviceRequests.slice(0, 5).map(req => `
+                                    <tr class="clickable" onclick="setActiveModule('requests')">
+                                        <td class="cell-id">${req.id}</td>
+                                        <td>${req.title || req.catalogItemName || req.catalogItem}</td>
+                                        <td>${req.category || '-'}</td>
+                                        <td><span class="badge badge-${req.status.toLowerCase().replace(/ /g, '-')}">${req.status}</span></td>
+                                        <td>${req.requestedByName || req.requestedBy}</td>
+                                        <td class="cell-date">${formatDate(req.createdAt)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Asset Status -->
             <div class="card">
                 <div class="card-header">
-                    <span>🖥️ Asset Health</span>
+                    <span><img class="card-header-icon" src="icons/desktop.png" alt=""> Asset Health</span>
                 </div>
                 <div class="card-body">
                     <div style="display: flex; gap: var(--spacing-lg);">
@@ -482,7 +558,7 @@ function renderMyTickets() {
 
     return `
         <div class="page-header">
-            <div class="page-title">📋 My Assigned Tickets</div>
+            <div class="page-title"><img class="page-icon" src="icons/document.png" alt=""> My Assigned Tickets</div>
             <div class="page-subtitle">Incidents assigned to ${ITSMData.currentUser.name}</div>
         </div>
         <div class="page-content">
@@ -531,7 +607,7 @@ function renderKnowledgeBase() {
     // Fallback to basic rendering if module not loaded
     return `
         <div class="page-header">
-            <div class="page-title">📚 Knowledge Base</div>
+            <div class="page-title"><img class="page-icon" src="icons/book-open.png" alt=""> Knowledge Base</div>
             <div class="page-subtitle">Search and browse knowledge articles for issue resolution</div>
         </div>
         <div class="toolbar">
@@ -598,7 +674,7 @@ function renderChanges() {
     // Fallback to basic rendering
     return `
         <div class="page-header">
-            <div class="page-title">🔄 Change Requests</div>
+            <div class="page-title"><img class="page-icon" src="icons/refresh.png" alt=""> Change Requests</div>
             <div class="page-subtitle">Manage change requests and approvals</div>
         </div>
         <div class="toolbar">
@@ -653,7 +729,7 @@ function renderAssets() {
     // Fallback basic rendering
     return `
         <div class="page-header">
-            <div class="page-title">🖥️ Assets / CMDB</div>
+            <div class="page-title"><img class="page-icon" src="icons/desktop.png" alt=""> Assets / CMDB</div>
             <div class="page-subtitle">Configuration Management Database</div>
         </div>
         <div class="toolbar">
@@ -713,7 +789,7 @@ function renderAssets() {
 function renderPolicies() {
     return `
         <div class="page-header">
-            <div class="page-title">📜 Policies</div>
+            <div class="page-title"><img class="page-icon" src="icons/legal.png" alt=""> Policies</div>
             <div class="page-subtitle">IT Governance and Compliance Policies</div>
         </div>
         <div class="page-content">
@@ -749,7 +825,7 @@ function renderRunbooks() {
     }
     return `
         <div class="page-header">
-            <div class="page-title">📖 Runbooks</div>
+            <div class="page-title"><img class="page-icon" src="icons/book.png" alt=""> Runbooks</div>
             <div class="page-subtitle">Standard Operating Procedures</div>
         </div>
         <div class="page-content">
@@ -814,7 +890,7 @@ function renderCABCalendar() {
 
     return `
         <div class="page-header">
-            <div class="page-title">📅 CAB Calendar</div>
+            <div class="page-title"><img class="page-icon" src="icons/calendar.png" alt=""> CAB Calendar</div>
             <div class="page-subtitle">Change Advisory Board Schedule</div>
         </div>
         <div class="toolbar">
@@ -921,7 +997,7 @@ function renderReports() {
     }
     return `
         <div class="page-header">
-            <div class="page-title">📈 Reports</div>
+            <div class="page-title"><img class="page-icon" src="icons/chart.png" alt=""> Reports</div>
             <div class="page-subtitle">Service Desk Analytics and Reports</div>
         </div>
         <div class="page-content">
@@ -966,7 +1042,7 @@ function renderAuditLog() {
     }
     return `
         <div class="page-header">
-            <div class="page-title">📝 Audit Log</div>
+            <div class="page-title"><img class="page-icon" src="icons/audit.png" alt=""> Audit Log</div>
             <div class="page-subtitle">System activity and change history</div>
         </div>
         <div class="page-content">
@@ -1005,7 +1081,7 @@ function renderSettings() {
     }
     return `
         <div class="page-header">
-            <div class="page-title">⚙️ Settings</div>
+            <div class="page-title"><img class="page-icon" src="icons/settings.png" alt=""> Settings</div>
             <div class="page-subtitle">System Configuration</div>
         </div>
         <div class="page-content">
@@ -1038,7 +1114,7 @@ function renderSettings() {
 function renderDemoReset() {
     return `
         <div class="page-header">
-            <div class="page-title">🔃 Reset Demo Data</div>
+            <div class="page-title"><img class="page-icon" src="icons/refresh-alt.png" alt=""> Reset Demo Data</div>
             <div class="page-subtitle">Restore demo environment to initial state</div>
         </div>
         <div class="page-content">
@@ -1157,7 +1233,7 @@ function createNewIncident() {
 
     showModal(`
         <div class="modal-header">
-            <span>🎫 Create New Incident</span>
+            <span><img class="modal-icon" src="icons/alert.png" alt=""> Create New Incident</span>
             <button class="panel-close" onclick="closeModal()">×</button>
         </div>
         <div class="modal-body" style="width: 700px; max-height: 75vh; overflow-y: auto;">
@@ -1421,7 +1497,7 @@ function updateAssigneeOptions() {
         technicians.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 }
 
-function submitNewIncident() {
+async function submitNewIncident() {
     // Get all form values
     const callerEmail = document.getElementById('new-inc-caller-email').value.trim();
     const callerName = document.getElementById('new-inc-caller-name').value.trim();
@@ -1438,40 +1514,6 @@ function submitNewIncident() {
     const assignmentGroup = document.getElementById('new-inc-assignment-group').value;
     const assignee = document.getElementById('new-inc-assignee').value;
     const configItem = document.getElementById('new-inc-ci').value;
-    const callbackRequired = document.getElementById('new-inc-callback').value === 'yes';
-
-    // Process attachments
-    const attachmentsInput = document.getElementById('new-inc-attachments');
-    const attachments = [];
-    if (attachmentsInput && attachmentsInput.files && attachmentsInput.files.length > 0) {
-        const formatSize = (bytes) => {
-            if (bytes < 1024) return bytes + 'B';
-            if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + 'KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
-        };
-        const getFileType = (filename) => {
-            const ext = filename.split('.').pop().toLowerCase();
-            const typeMap = {
-                'pdf': 'document', 'doc': 'document', 'docx': 'document',
-                'txt': 'text', 'log': 'log',
-                'png': 'screenshot', 'jpg': 'screenshot', 'jpeg': 'screenshot', 'gif': 'screenshot', 'bmp': 'screenshot',
-                'zip': 'archive', 'rar': 'archive', '7z': 'archive',
-                'dmp': 'dump', 'mdmp': 'dump'
-            };
-            return typeMap[ext] || 'file';
-        };
-
-        for (let i = 0; i < attachmentsInput.files.length; i++) {
-            const file = attachmentsInput.files[i];
-            attachments.push({
-                name: file.name,
-                type: getFileType(file.name),
-                size: formatSize(file.size),
-                uploadedBy: ITSMData.currentUser.username,
-                uploadedAt: new Date().toISOString()
-            });
-        }
-    }
 
     // Validation
     if (!summary) {
@@ -1487,10 +1529,6 @@ function submitNewIncident() {
         return;
     }
 
-    // Calculate SLA based on priority
-    const slaHours = { 'P1': 1, 'P2': 4, 'P3': 8, 'P4': 24 };
-    const slaTarget = new Date(Date.now() + (slaHours[priority] || 8) * 3600000).toISOString();
-
     // Find assignee name if assigned
     let assigneeName = null;
     if (assignee) {
@@ -1502,102 +1540,50 @@ function submitNewIncident() {
     const customer = (ITSMData.customers || []).find(c => c.email === callerEmail);
     const isVip = customer ? customer.vip : false;
 
-    // Find customer ID if available
-    const callerCustomer = (ITSMData.customers || []).find(c => c.email === callerEmail);
-
-    // Create new incident
-    const newId = `INC-${String(ITSMData.incidents.length + 1).padStart(3, '0')}`;
-    const newIncident = {
-        id: newId,
-        summary: summary,
-        description: description,
-        // Caller Information
-        caller: callerCustomer ? callerCustomer.id : null,
-        callerName: callerName,
-        callerEmail: callerEmail,
-        callerPhone: callerPhone,
-        callerDepartment: callerCustomer ? callerCustomer.department : '',
-        callerLocation: location || (callerCustomer ? callerCustomer.location : ''),
-        callerVip: isVip,
-        // Opened By
-        openedBy: ITSMData.currentUser.username,
-        openedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
-        contactType: 'phone', // Default to phone
-        // Classification
-        category: category,
-        subcategory: subcategory,
-        businessService: service || null,
-        impact: parseInt(impact),
-        urgency: parseInt(urgency),
-        priority: priority,
-        // Status
-        status: 'New',
-        // Assignment
-        assignmentGroup: assignmentGroup,
-        assignedTo: assignmentGroup,
-        assignee: assigneeName,
-        assigneeName: assigneeName,
-        assigneeId: assignee || null,
-        // Configuration Item
-        configurationItem: configItem || null,
-        affectedAsset: configItem || null,
-        // Legacy fields for compatibility
-        reporter: callerEmail || callerName,
-        reporterName: callerName,
-        reporterPhone: callerPhone,
-        reporterEmail: callerEmail,
-        location: location,
-        isVip: isVip,
-        callbackRequired: callbackRequired,
-        configItem: configItem || null,
-        // Timestamps
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: ITSMData.currentUser.username,
-        slaTarget: slaTarget,
-        // Watch list and notifications
-        watchList: [],
-        additionalCommentsNotify: callerEmail ? [callerEmail] : [],
-        workNotesNotify: [],
-        // Attachments and notes
-        attachments: attachments,
-        notes: [],
-        linkedKB: [],
-        linkedChanges: [],
-        linkedProblems: []
-    };
-
-    ITSMData.incidents.unshift(newIncident);
-
-    // Add audit log entry
-    if (ITSMData.auditLog) {
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Created',
-            target: newId,
-            details: `Created ${priority} incident: ${summary}`
+    try {
+        const result = await ITSMApi.createIncident({
+            summary, description,
+            callerEmail, callerName, callerPhone,
+            callerDepartment: customer ? customer.department : '',
+            callerLocation: location || (customer ? customer.location : ''),
+            callerVip: isVip,
+            contactType: 'phone',
+            category, subcategory,
+            businessService: service || null,
+            impact: parseInt(impact),
+            urgency: parseInt(urgency),
+            assignmentGroup,
+            assigneeId: assignee || null,
+            assigneeName,
+            configurationItem: configItem || null
         });
-    }
 
-    // Add notification
-    if (typeof NotificationsModule !== 'undefined') {
-        NotificationsModule.add({
-            type: 'incident',
-            title: 'Incident Created',
-            message: `${newId}: ${summary}`,
-            relatedId: newId
-        });
-    }
+        if (result.success) {
+            const newId = result.data.id;
 
-    closeModal();
-    showToast(`Incident ${newId} created successfully`, 'success');
-    updateSidebarBadges();
+            // Add notification
+            if (typeof NotificationsModule !== 'undefined') {
+                NotificationsModule.add({
+                    type: 'incident',
+                    title: 'Incident Created',
+                    message: `${newId}: ${summary}`,
+                    relatedId: newId
+                });
+            }
 
-    if (currentModule === 'incidents') {
-        renderModule('incidents');
-        // Auto-select the new incident
-        setTimeout(() => selectIncident(newId), 100);
+            closeModal();
+            showToast(`Incident ${newId} created successfully`, 'success');
+            updateSidebarBadges();
+
+            if (currentModule === 'incidents') {
+                renderModule('incidents');
+                setTimeout(() => selectIncident(newId), 100);
+            }
+        } else {
+            showToast(result.error || 'Failed to create incident', 'error');
+        }
+    } catch (err) {
+        showToast('Failed to create incident: ' + err.message, 'error');
     }
 }
 
@@ -1653,6 +1639,53 @@ function createNewChange() {
     }
 }
 
+function createNewRequest() {
+    if (typeof CatalogModule === 'undefined') {
+        showToast('Service Catalog not available', 'error');
+        return;
+    }
+
+    const items = ITSMData.catalogItems || [];
+    if (items.length === 0) {
+        showToast('No catalog items available', 'warning');
+        return;
+    }
+
+    showModal(`
+        <div class="modal-header">
+            <span><img class="modal-icon" src="icons/cart.png" alt=""> New Service Request</span>
+            <button class="panel-close" onclick="closeModal()">x</button>
+        </div>
+        <div class="modal-body" style="width: 600px; max-height: 70vh; overflow-y: auto;">
+            <p style="margin-bottom: var(--spacing-md); color: var(--text-muted);">Select a service to request:</p>
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                ${items.map(item => `
+                    <div class="card" style="cursor: pointer; transition: background 0.15s;"
+                         onclick="closeModal(); CatalogModule.showRequestForm('${item.id}')"
+                         onmouseenter="this.style.background='var(--bg-hover)'"
+                         onmouseleave="this.style.background=''">
+                        <div class="card-body" style="padding: var(--spacing-sm) var(--spacing-md);">
+                            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                                <div><img class="catalog-icon" src="icons/${item.icon}.png" alt="" style="width:24px;height:24px;"></div>
+                                <div style="flex: 1;">
+                                    <strong>${item.name}</strong>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${item.category} · ${item.fulfillmentTime} · ${item.cost}</div>
+                                </div>
+                                ${item.approvalRequired
+                                    ? '<span class="badge badge-open" style="font-size: 10px;">Approval</span>'
+                                    : '<span class="badge badge-resolved" style="font-size: 10px;">Auto</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        </div>
+    `);
+}
+
 function viewChange(changeId) {
     if (typeof ChangesModule !== 'undefined' && ChangesModule.viewChange) {
         ChangesModule.viewChange(changeId);
@@ -1664,6 +1697,25 @@ function viewChange(changeId) {
 function openIncidentDetail(incidentId) {
     setActiveModule('incidents');
     setTimeout(() => selectIncident(incidentId), 100);
+}
+
+// ==================== SERVICE REQUESTS MODULE ====================
+
+function renderRequests() {
+    if (typeof RequestsModule !== 'undefined' && RequestsModule.renderRequestsPage) {
+        return RequestsModule.renderRequestsPage();
+    }
+    return `
+        <div class="page-header">
+            <h1 class="page-title">Service Requests</h1>
+        </div>
+        <div class="page-content">
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <div class="empty-state-title">Service Requests Module Loading...</div>
+            </div>
+        </div>
+    `;
 }
 
 // ==================== PROBLEMS MODULE ====================
@@ -1705,6 +1757,9 @@ function renderServiceCatalog() {
 }
 
 function renderMyRequests() {
+    if (typeof RequestsModule !== 'undefined' && RequestsModule.renderMyRequests) {
+        return RequestsModule.renderMyRequests();
+    }
     if (typeof CatalogModule !== 'undefined' && CatalogModule.renderMyRequests) {
         return CatalogModule.renderMyRequests();
     }
@@ -1721,10 +1776,20 @@ function renderMyRequests() {
     `;
 }
 
-function resetDemoData() {
+async function resetDemoData() {
     if (confirm('Are you sure you want to reset all demo data?')) {
-        showToast('Demo data has been reset', 'success');
-        location.reload();
+        try {
+            const result = await ITSMApi.resetDemoData();
+            if (result.success) {
+                showToast('Demo data has been reset', 'success');
+                updateSidebarBadges();
+                renderModule(currentModule);
+            } else {
+                showToast('Failed to reset demo data', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to reset: ' + err.message, 'error');
+        }
     }
 }
 

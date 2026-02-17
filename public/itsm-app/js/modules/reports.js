@@ -357,7 +357,7 @@ const ReportsModule = {
     render() {
         return `
             <div class="page-header">
-                <div class="page-title">📈 Reports</div>
+                <div class="page-title"><img class="page-icon" src="icons/chart.png" alt=""> Reports</div>
                 <div class="page-subtitle">Service Desk Analytics and Reports</div>
             </div>
             <div class="page-content">

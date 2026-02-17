@@ -139,7 +139,7 @@ const CatalogModule = {
             <div class="card catalog-item-card" style="cursor: pointer;" onclick="CatalogModule.viewCatalogItem('${item.id}')">
                 <div class="card-body">
                     <div style="display: flex; align-items: flex-start; gap: var(--spacing-md);">
-                        <div style="font-size: 32px;">${item.icon}</div>
+                        <div><img class="catalog-icon" src="icons/${item.icon}.png" alt=""></div>
                         <div style="flex: 1;">
                             <h4 style="margin: 0 0 var(--spacing-xs) 0;">${item.name}</h4>
                             <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 var(--spacing-sm) 0;">
@@ -210,7 +210,7 @@ const CatalogModule = {
 
         showModal(`
             <div class="modal-header">
-                <span>${item.icon} ${item.name}</span>
+                <span><img class="modal-icon" src="icons/${item.icon}.png" alt=""> ${item.name}</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
             <div class="modal-body" style="width: 600px;">
@@ -416,7 +416,7 @@ const CatalogModule = {
      * Save request as draft
      * @param {string} itemId - Catalog item ID
      */
-    saveAsDraft: function(itemId) {
+    saveAsDraft: async function(itemId) {
         const item = this.getCatalogItem(itemId);
         if (!item) {
             showToast('Catalog item not found', 'error');
@@ -435,40 +435,90 @@ const CatalogModule = {
             }
         });
 
+        // Find requester details
+        const requester = (ITSMData.customers || []).find(c => c.email === requestedFor);
+
         const newRequest = {
             id: this.generateRequestId(),
             catalogItem: itemId,
+            catalogItemName: item.name,
+            title: `${item.name} Request`,
+            description: item.description,
             requestedBy: ITSMData.currentUser.email,
+            requestedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
             requestedFor: requestedFor,
-            status: 'Draft',
+            requestedForName: requester ? requester.name : requestedFor,
+            requestedForDepartment: requester ? requester.department : '',
+            requestedForLocation: requester ? requester.location : '',
+            requestedForVip: requester ? requester.vip : false,
+            category: item.category,
             priority: priority,
+            impact: 'Low',
+            urgency: 'Low',
+            status: 'Draft',
             formData: formData,
+            approvalRequired: item.approvalRequired,
             approver: null,
+            approverName: null,
+            approvalDate: null,
+            approvalComments: '',
+            rejectionReason: null,
+            assignmentGroup: null,
             assignedTo: null,
+            assigneeName: null,
+            slaTarget: null,
+            slaMet: null,
+            expectedFulfillment: item.fulfillmentTime,
+            estimatedCost: item.cost,
+            actualCost: null,
+            fulfillmentDate: null,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            submittedAt: null,
+            closedAt: null,
+            notes: [],
+            attachments: [],
+            linkedIncidents: [],
+            linkedChanges: [],
+            linkedKB: [],
+            watchList: [],
+            additionalCommentsNotify: []
         };
 
-        ITSMData.serviceRequests.unshift(newRequest);
-
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Request Draft Created',
-            target: newRequest.id,
-            details: `Draft created for ${item.name}`
-        });
-
-        closeModal();
-        showToast(`Draft ${newRequest.id} saved`, 'success');
+        // Save via API - use createRequest which handles server-side storage
+        try {
+            const result = await ITSMApi.createRequest({
+                catalogItem: itemId,
+                requestedBy: newRequest.requestedBy,
+                requestedByName: newRequest.requestedByName,
+                requestedFor: newRequest.requestedFor,
+                requestedForName: newRequest.requestedForName,
+                requestedForDepartment: newRequest.requestedForDepartment,
+                requestedForLocation: newRequest.requestedForLocation,
+                requestedForVip: newRequest.requestedForVip,
+                description: newRequest.description,
+                priority: newRequest.priority,
+                formData: newRequest.formData
+            });
+            if (result.success) {
+                // Set status to Draft via update
+                await ITSMApi.updateRequestStatus(result.data.id, 'Draft');
+                closeModal();
+                showToast(`Draft ${result.data.id} saved`, 'success');
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            } else {
+                showToast(result.error || 'Failed to save draft', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to save draft: ' + err.message, 'error');
+        }
     },
 
     /**
      * Submit a new service request
      * @param {string} itemId - Catalog item ID
      */
-    submitRequest: function(itemId) {
+    submitRequest: async function(itemId) {
         const item = this.getCatalogItem(itemId);
         if (!item) {
             showToast('Catalog item not found', 'error');
@@ -489,34 +539,96 @@ const CatalogModule = {
         // Determine initial status and approver
         const status = item.approvalRequired ? 'Pending Approval' : 'Approved';
         const approver = item.approvalRequired ? this.determineApprover(requestedFor) : null;
+        const approverName = approver ? (ITSMData.customers || []).find(c => c.email === approver)?.name || approver : null;
 
+        // Find requester details
+        const requester = (ITSMData.customers || []).find(c => c.email === requestedFor);
+
+        // Calculate SLA target
+        const slaHours = { 'Critical': 4, 'High': 8, 'Normal': 24, 'Low': 48 };
+        const slaTarget = new Date(Date.now() + (slaHours[priority] || 24) * 3600000).toISOString();
+
+        const now = new Date().toISOString();
         const newRequest = {
             id: this.generateRequestId(),
             catalogItem: itemId,
+            catalogItemName: item.name,
+            title: `${item.name} Request`,
+            description: item.description,
             requestedBy: ITSMData.currentUser.email,
+            requestedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
             requestedFor: requestedFor,
-            status: status,
+            requestedForName: requester ? requester.name : requestedFor,
+            requestedForDepartment: requester ? requester.department : '',
+            requestedForLocation: requester ? requester.location : '',
+            requestedForVip: requester ? requester.vip : false,
+            category: item.category,
             priority: priority,
+            impact: 'Low',
+            urgency: 'Low',
+            status: status,
             formData: formData,
+            approvalRequired: item.approvalRequired,
             approver: approver,
-            assignedTo: item.approvalRequired ? null : this.determineAssignment(item),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            approverName: approverName,
+            approvalDate: item.approvalRequired ? null : now,
+            approvalComments: '',
+            rejectionReason: null,
+            assignmentGroup: item.approvalRequired ? null : this.determineAssignment(item),
+            assignedTo: null,
+            assigneeName: null,
+            slaTarget: slaTarget,
+            slaMet: null,
+            expectedFulfillment: item.fulfillmentTime,
+            estimatedCost: item.cost,
+            actualCost: null,
+            fulfillmentDate: null,
+            createdAt: now,
+            updatedAt: now,
+            submittedAt: now,
+            closedAt: null,
+            notes: [{
+                type: 'system',
+                visibility: 'customer',
+                author: 'System',
+                content: `Service request submitted for ${item.name}`,
+                timestamp: now
+            }],
+            attachments: [],
+            linkedIncidents: [],
+            linkedChanges: [],
+            linkedKB: [],
+            watchList: [requestedFor],
+            additionalCommentsNotify: [requestedFor]
         };
 
-        ITSMData.serviceRequests.unshift(newRequest);
-
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Service Request Submitted',
-            target: newRequest.id,
-            details: `Requested ${item.name} - Status: ${status}`
-        });
-
-        closeModal();
-        showToast(`Request ${newRequest.id} submitted successfully`, 'success');
+        try {
+            const result = await ITSMApi.createRequest({
+                catalogItem: itemId,
+                requestedBy: newRequest.requestedBy,
+                requestedByName: newRequest.requestedByName,
+                requestedFor: newRequest.requestedFor,
+                requestedForName: newRequest.requestedForName,
+                requestedForDepartment: newRequest.requestedForDepartment,
+                requestedForLocation: newRequest.requestedForLocation,
+                requestedForVip: newRequest.requestedForVip,
+                description: newRequest.description,
+                priority: newRequest.priority,
+                formData: newRequest.formData,
+                assignmentGroup: newRequest.assignmentGroup,
+                approver: newRequest.approver,
+                approverName: newRequest.approverName
+            });
+            if (result.success) {
+                closeModal();
+                showToast(`Request ${result.data.id} submitted successfully`, 'success');
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            } else {
+                showToast(result.error || 'Failed to submit request', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to submit request: ' + err.message, 'error');
+        }
     },
 
     /**
@@ -1025,14 +1137,7 @@ const CatalogModule = {
         request.formData = formData;
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Draft Updated',
-            target: request.id,
-            details: 'Draft request updated'
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Draft ${request.id} updated`, 'success');
@@ -1090,14 +1195,7 @@ const CatalogModule = {
         request.assignedTo = item.approvalRequired ? null : this.determineAssignment(item);
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Service Request Submitted',
-            target: request.id,
-            details: `Draft submitted - Status: ${request.status}`
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Request ${request.id} submitted successfully`, 'success');
@@ -1152,14 +1250,7 @@ const CatalogModule = {
         request.status = 'Cancelled';
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Request Cancelled',
-            target: requestId,
-            details: `Reason: ${reason}`
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Request ${requestId} has been cancelled`, 'success');
@@ -1218,14 +1309,7 @@ const CatalogModule = {
         request.assignedTo = this.determineAssignment(item);
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Request Approved',
-            target: requestId,
-            details: comments ? `Approved with comments: ${comments}` : 'Request approved'
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Request ${requestId} has been approved`, 'success');
@@ -1285,14 +1369,7 @@ const CatalogModule = {
         request.status = 'Cancelled';
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Request Rejected',
-            target: requestId,
-            details: `Rejected: ${reason}`
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Request ${requestId} has been rejected`, 'warning');
@@ -1315,14 +1392,7 @@ const CatalogModule = {
         request.status = 'In Progress';
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Fulfillment Started',
-            target: requestId,
-            details: 'Request fulfillment in progress'
-        });
+        // Audit logging handled server-side
 
         showToast(`Fulfillment started for ${requestId}`, 'success');
     },
@@ -1370,14 +1440,7 @@ const CatalogModule = {
         request.status = 'Fulfilled';
         request.updatedAt = new Date().toISOString();
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Request Fulfilled',
-            target: requestId,
-            details: notes ? `Fulfilled: ${notes}` : 'Request fulfilled'
-        });
+        // Audit logging handled server-side
 
         closeModal();
         showToast(`Request ${requestId} has been fulfilled`, 'success');

@@ -264,6 +264,68 @@ body {
     font-size: 14px;
     width: 20px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+.nav-item:hover .nav-icon img {
+    opacity: 1;
+}
+
+.nav-item.active .nav-icon img {
+    opacity: 1;
+    filter: invert(1);
+}
+
+.logo-icon img {
+    width: 22px;
+    height: 22px;
+}
+
+.quick-action-btn img.qa-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.page-title img.page-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.modal-header img.modal-icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+img.catalog-icon {
+    width: 32px;
+    height: 32px;
+}
+
+img.card-header-icon {
+    width: 17px;
+    height: 17px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.bell-icon img {
+    width: 18px;
+    height: 18px;
+    filter: invert(1);
 }
 
 .nav-text {

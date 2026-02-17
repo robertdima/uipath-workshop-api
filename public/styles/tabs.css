@@ -1,0 +1,318 @@
+/* Tabbed Interface Styles */
+
+.tabs-container {
+  background: var(--bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.tabs-header {
+  display: flex;
+  background: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-light);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-light) transparent;
+}
+
+.tabs-header::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-header::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs-header::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 2px;
+}
+
+.tab-button {
+  flex: 0 0 auto;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.tab-button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.tab-button.active {
+  background: var(--bg-card);
+  color: var(--uipath-orange);
+  border-bottom-color: var(--uipath-orange);
+}
+
+.tab-button .tab-icon {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+.tab-button .tab-badge {
+  margin-left: 0.5rem;
+  background: var(--uipath-orange);
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tabs-content {
+  padding: 2rem;
+  min-height: 400px;
+}
+
+.tab-panel {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab Categories */
+.tabs-category {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabs-category:first-child {
+  border-left: none;
+}
+
+/* Nested Tabs */
+.nested-tabs {
+  margin-top: 1rem;
+}
+
+.nested-tabs .tabs-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nested-tabs .tab-button {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  border-bottom-width: 2px;
+}
+
+.nested-tabs .tabs-content {
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 0 0 8px 8px;
+}
+
+/* Tab Content Layouts */
+.tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.tab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tab-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.tab-card:hover {
+  border-color: var(--uipath-orange);
+  box-shadow: 0 4px 12px rgba(250, 70, 22, 0.1);
+}
+
+/* Empty State */
+.tab-empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.tab-empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.tab-empty-state-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.tab-empty-state-description {
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tab Actions */
+.tab-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tab-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  flex: 0 0 300px;
+}
+
+.tab-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.tab-search input::placeholder {
+  color: var(--text-secondary);
+}
+
+.tab-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-filter-button {
+  padding: 0.5rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-filter-button:hover {
+  border-color: var(--uipath-orange);
+  color: var(--uipath-orange);
+}
+
+.tab-filter-button.active {
+  background: var(--uipath-orange);
+  color: white;
+  border-color: var(--uipath-orange);
+}
+
+/* Tab Tooltips */
+.tab-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-card);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.tab-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text-primary);
+}
+
+.tab-button:hover .tab-tooltip {
+  opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tabs-header {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-button {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tabs-content {
+    padding: 1.5rem;
+  }
+
+  .tab-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-search {
+    flex: 1;
+  }
+
+  .tab-actions {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .tab-filters {
+    flex-wrap: wrap;
+  }
+}

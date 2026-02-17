@@ -58,14 +58,15 @@ const IncidentsModule = {
      * Save incident changes from the form
      * @param {string} incidentId - The incident ID to save
      */
-    saveIncident: function(incidentId) {
+    saveIncident: async function(incidentId) {
         const incident = ITSMData.incidents.find(i => i.id === incidentId);
         if (!incident) {
             showToast('Incident not found', 'error');
             return;
         }
 
-        // Get form values
+        // Collect changed fields from form
+        const data = {};
         const statusSelect = document.getElementById('inc-status');
         const priorityInput = document.getElementById('inc-priority');
         const impactSelect = document.getElementById('inc-impact');
@@ -81,92 +82,45 @@ const IncidentsModule = {
         const watchListInput = document.getElementById('inc-watch-list');
         const workNotesNotifyInput = document.getElementById('inc-work-notes-notify');
 
-        // Store old values for audit
-        const oldValues = {
-            status: incident.status,
-            priority: incident.priority,
-            impact: incident.impact,
-            urgency: incident.urgency,
-            assignedTo: incident.assignedTo,
-            assignee: incident.assignee,
-            category: incident.category,
-            subcategory: incident.subcategory,
-            businessService: incident.businessService
-        };
-
-        // Update incident with form values
-        if (statusSelect) incident.status = statusSelect.value;
-        if (priorityInput) incident.priority = priorityInput.value;
-        if (impactSelect) incident.impact = parseInt(impactSelect.value);
-        if (urgencySelect) incident.urgency = parseInt(urgencySelect.value);
+        if (statusSelect) data.status = statusSelect.value;
+        if (priorityInput) data.priority = priorityInput.value;
+        if (impactSelect) data.impact = parseInt(impactSelect.value);
+        if (urgencySelect) data.urgency = parseInt(urgencySelect.value);
         if (assignedToSelect) {
-            incident.assignedTo = assignedToSelect.value;
-            incident.assignmentGroup = assignedToSelect.value;
+            data.assignedTo = assignedToSelect.value;
+            data.assignmentGroup = assignedToSelect.value;
         }
         if (assigneeSelect) {
-            incident.assignee = assigneeSelect.value || null;
+            data.assignee = assigneeSelect.value || null;
             const tech = ITSMData.technicians?.find(t => t.id === assigneeSelect.value);
-            incident.assigneeName = tech ? tech.name : null;
+            data.assigneeName = tech ? tech.name : null;
         }
-        if (categorySelect) incident.category = categorySelect.value;
-        if (subcategorySelect) incident.subcategory = subcategorySelect.value;
-        if (businessServiceSelect) incident.businessService = businessServiceSelect.value || null;
+        if (categorySelect) data.category = categorySelect.value;
+        if (subcategorySelect) data.subcategory = subcategorySelect.value;
+        if (businessServiceSelect) data.businessService = businessServiceSelect.value || null;
         if (assetSelect) {
-            incident.affectedAsset = assetSelect.value || null;
-            incident.configurationItem = assetSelect.value || null;
+            data.affectedAsset = assetSelect.value || null;
+            data.configurationItem = assetSelect.value || null;
         }
-        if (summaryInput) incident.summary = summaryInput.value;
-        if (descriptionInput) incident.description = descriptionInput.value;
+        if (summaryInput) data.summary = summaryInput.value;
+        if (descriptionInput) data.description = descriptionInput.value;
         if (watchListInput) {
-            incident.watchList = watchListInput.value.split(',').map(e => e.trim()).filter(e => e);
+            data.watchList = watchListInput.value.split(',').map(e => e.trim()).filter(e => e);
         }
         if (workNotesNotifyInput) {
-            incident.workNotesNotify = workNotesNotifyInput.value.split(',').map(e => e.trim()).filter(e => e);
+            data.workNotesNotify = workNotesNotifyInput.value.split(',').map(e => e.trim()).filter(e => e);
         }
+        data.updatedAt = new Date().toISOString();
 
-        // Update timestamp
-        incident.updatedAt = new Date().toISOString();
-
-        // Build audit details
-        const changes = [];
-        if (oldValues.status !== incident.status) {
-            changes.push(`Status: ${oldValues.status} -> ${incident.status}`);
+        try {
+            await ITSMApi.saveEntity('incidents', incidentId, data);
+            this.refreshIncidentDetail(incidentId);
+            this.refreshIncidentList();
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast(`Incident ${incidentId} saved successfully`, 'success');
+        } catch (err) {
+            showToast('Failed to save incident: ' + err.message, 'error');
         }
-        if (oldValues.priority !== incident.priority) {
-            changes.push(`Priority: ${oldValues.priority} -> ${incident.priority}`);
-        }
-        if (oldValues.impact !== incident.impact) {
-            changes.push(`Impact: ${oldValues.impact} -> ${incident.impact}`);
-        }
-        if (oldValues.urgency !== incident.urgency) {
-            changes.push(`Urgency: ${oldValues.urgency} -> ${incident.urgency}`);
-        }
-        if (oldValues.assignedTo !== incident.assignedTo) {
-            changes.push(`Assignment Group: ${oldValues.assignedTo} -> ${incident.assignedTo}`);
-        }
-        if (oldValues.assignee !== incident.assignee) {
-            changes.push(`Assigned To: ${oldValues.assignee || 'Unassigned'} -> ${incident.assigneeName || 'Unassigned'}`);
-        }
-        if (oldValues.category !== incident.category) {
-            changes.push(`Category: ${oldValues.category} -> ${incident.category}`);
-        }
-
-        // Add audit log entry
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Updated',
-            target: incidentId,
-            details: changes.length > 0 ? changes.join(', ') : 'Incident details updated'
-        };
-        ITSMData.auditLog.unshift(auditEntry);
-
-        // Refresh UI
-        this.refreshIncidentDetail(incidentId);
-        this.refreshIncidentList();
-        if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
-
-        showToast(`Incident ${incidentId} saved successfully`, 'success');
     },
 
     /**
@@ -213,7 +167,7 @@ const IncidentsModule = {
      * Confirm and process incident resolution
      * @param {string} incidentId - The incident ID to resolve
      */
-    confirmResolve: function(incidentId) {
+    confirmResolve: async function(incidentId) {
         const resolutionNotes = document.getElementById('resolution-notes').value;
         const resolutionCode = document.getElementById('resolution-code').value;
 
@@ -222,56 +176,20 @@ const IncidentsModule = {
             return;
         }
 
-        const incident = ITSMData.incidents.find(i => i.id === incidentId);
-        if (!incident) {
-            showToast('Incident not found', 'error');
-            return;
+        try {
+            const result = await ITSMApi.resolveIncident(incidentId, resolutionCode, resolutionNotes);
+            if (result.success) {
+                closeModal();
+                this.refreshIncidentDetail(incidentId);
+                this.refreshIncidentList();
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Incident ${incidentId} has been resolved`, 'success');
+            } else {
+                showToast(result.error || 'Failed to resolve incident', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to resolve incident: ' + err.message, 'error');
         }
-
-        const oldStatus = incident.status;
-
-        // Update incident
-        incident.status = 'Resolved';
-        incident.resolvedAt = new Date().toISOString();
-        incident.updatedAt = new Date().toISOString();
-        incident.resolutionCode = resolutionCode;
-
-        // Add resolution note
-        const noteEntry = {
-            type: 'note',
-            author: ITSMData.currentUser.username,
-            content: `[Resolution - ${resolutionCode}] ${resolutionNotes}`,
-            timestamp: new Date().toISOString()
-        };
-        incident.notes.push(noteEntry);
-
-        // Add system note
-        const systemNote = {
-            type: 'system',
-            author: 'System',
-            content: `Incident resolved. Resolution time: ${this.calculateResolutionTime(incident.createdAt)}`,
-            timestamp: new Date().toISOString()
-        };
-        incident.notes.push(systemNote);
-
-        // Add audit log entry
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Resolved',
-            target: incidentId,
-            details: `Status changed from ${oldStatus} to Resolved. Code: ${resolutionCode}`
-        };
-        ITSMData.auditLog.unshift(auditEntry);
-
-        closeModal();
-
-        // Refresh UI
-        this.refreshIncidentDetail(incidentId);
-        this.refreshIncidentList();
-        if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
-
-        showToast(`Incident ${incidentId} has been resolved`, 'success');
     },
 
     /**
@@ -355,7 +273,7 @@ const IncidentsModule = {
      * Confirm and process incident escalation
      * @param {string} incidentId - The incident ID to escalate
      */
-    confirmEscalate: function(incidentId) {
+    confirmEscalate: async function(incidentId) {
         const escalationTeam = document.getElementById('escalation-team').value;
         const escalationReason = document.getElementById('escalation-reason').value;
         const escalationNotes = document.getElementById('escalation-notes').value;
@@ -367,56 +285,40 @@ const IncidentsModule = {
             return;
         }
 
-        const oldAssignedTo = incident.assignedTo;
-        const oldPriority = incident.priority;
+        try {
+            // Use assign to change the team
+            await ITSMApi.assignIncident(incidentId, {
+                assignmentGroup: escalationTeam,
+                assignee: null,
+                assigneeName: null
+            });
 
-        // Update assignment
-        incident.assignedTo = escalationTeam;
-        incident.assignee = null; // Unassign specific person
-        incident.updatedAt = new Date().toISOString();
-
-        // Increase priority if requested
-        if (increasePriority) {
-            const currentIndex = this.priorityLevels.indexOf(incident.priority);
-            if (currentIndex > 0) {
-                incident.priority = this.priorityLevels[currentIndex - 1];
+            // If increasing priority, also save the new priority
+            if (increasePriority) {
+                const currentIndex = this.priorityLevels.indexOf(incident.priority);
+                if (currentIndex > 0) {
+                    const newPriority = this.priorityLevels[currentIndex - 1];
+                    await ITSMApi.saveEntity('incidents', incidentId, { priority: newPriority });
+                }
             }
+
+            // Add escalation note via API
+            let noteContent = `[ESCALATED] Reason: ${escalationReason}. Transferred to ${escalationTeam}.`;
+            if (escalationNotes.trim()) {
+                noteContent += ` Notes: ${escalationNotes}`;
+            }
+            await ITSMApi.addIncidentNote(incidentId, {
+                content: noteContent,
+                type: 'note'
+            });
+
+            closeModal();
+            this.refreshIncidentDetail(incidentId);
+            this.refreshIncidentList();
+            showToast(`Incident ${incidentId} escalated to ${escalationTeam}`, 'warning');
+        } catch (err) {
+            showToast('Failed to escalate incident: ' + err.message, 'error');
         }
-
-        // Add escalation note
-        let noteContent = `[ESCALATED] Reason: ${escalationReason}. Transferred from ${oldAssignedTo} to ${escalationTeam}.`;
-        if (increasePriority && oldPriority !== incident.priority) {
-            noteContent += ` Priority increased from ${oldPriority} to ${incident.priority}.`;
-        }
-        if (escalationNotes.trim()) {
-            noteContent += ` Notes: ${escalationNotes}`;
-        }
-
-        const noteEntry = {
-            type: 'note',
-            author: ITSMData.currentUser.username,
-            content: noteContent,
-            timestamp: new Date().toISOString()
-        };
-        incident.notes.push(noteEntry);
-
-        // Add audit log entry
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Escalated',
-            target: incidentId,
-            details: `Escalated to ${escalationTeam}. Reason: ${escalationReason}${increasePriority ? `. Priority: ${oldPriority} -> ${incident.priority}` : ''}`
-        };
-        ITSMData.auditLog.unshift(auditEntry);
-
-        closeModal();
-
-        // Refresh UI
-        this.refreshIncidentDetail(incidentId);
-        this.refreshIncidentList();
-
-        showToast(`Incident ${incidentId} escalated to ${escalationTeam}`, 'warning');
     },
 
     /**
@@ -424,7 +326,7 @@ const IncidentsModule = {
      * @param {string} incidentId - The incident ID
      * @param {string} noteType - 'internal' or 'customer'
      */
-    addNote: function(incidentId, noteType = 'internal') {
+    addNote: async function(incidentId, noteType = 'internal') {
         const noteTextarea = document.getElementById('new-note');
         const noteContent = noteTextarea ? noteTextarea.value.trim() : '';
 
@@ -433,55 +335,33 @@ const IncidentsModule = {
             return;
         }
 
-        const incident = ITSMData.incidents.find(i => i.id === incidentId);
-        if (!incident) {
-            showToast('Incident not found', 'error');
-            return;
-        }
-
         // Handle legacy boolean parameter
         if (typeof noteType === 'boolean') {
             noteType = noteType ? 'internal' : 'note';
         }
 
-        // Add note to incident
-        const noteEntry = {
-            type: noteType,
-            visibility: noteType === 'customer' ? 'customer-visible' : 'technicians-only',
-            author: ITSMData.currentUser.username,
-            content: noteContent,
-            timestamp: new Date().toISOString()
-        };
-        incident.notes.push(noteEntry);
-        incident.updatedAt = new Date().toISOString();
+        try {
+            const result = await ITSMApi.addIncidentNote(incidentId, {
+                content: noteContent,
+                type: noteType
+            });
 
-        // If customer note, simulate sending email
-        if (noteType === 'customer') {
-            const customer = ITSMData.customers?.find(c => c.email === incident.reporter);
-            if (customer) {
-                showToast(`Update sent to ${customer.name}`, 'info');
+            if (result.success) {
+                if (noteTextarea) noteTextarea.value = '';
+                this.refreshNotesDisplay(incidentId);
+
+                if (noteType === 'customer') {
+                    const incident = ITSMData.incidents.find(i => i.id === incidentId);
+                    const customer = ITSMData.customers?.find(c => c.email === incident?.reporter);
+                    if (customer) showToast(`Update sent to ${customer.name}`, 'info');
+                }
+                showToast(noteType === 'customer' ? `Customer update sent for ${incidentId}` : `Note added to ${incidentId}`, 'success');
+            } else {
+                showToast(result.error || 'Failed to add note', 'error');
             }
+        } catch (err) {
+            showToast('Failed to add note: ' + err.message, 'error');
         }
-
-        // Add audit log entry
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: noteType === 'customer' ? 'Customer Update Sent' : 'Internal Note Added',
-            target: incidentId,
-            details: noteType === 'customer' ? 'Customer update sent via email' : 'Added internal work note'
-        };
-        ITSMData.auditLog.unshift(auditEntry);
-
-        // Clear the textarea
-        if (noteTextarea) {
-            noteTextarea.value = '';
-        }
-
-        // Refresh notes display
-        this.refreshNotesDisplay(incidentId);
-
-        showToast(noteType === 'customer' ? `Customer update sent for ${incidentId}` : `Note added to ${incidentId}`, 'success');
     },
 
     /**
@@ -538,13 +418,7 @@ const IncidentsModule = {
      * Save pending state for an incident
      * @param {string} incidentId - The incident ID
      */
-    savePendingState: function(incidentId) {
-        const incident = ITSMData.incidents.find(i => i.id === incidentId);
-        if (!incident) {
-            showToast('Incident not found', 'error');
-            return;
-        }
-
+    savePendingState: async function(incidentId) {
         const pendingType = document.getElementById('pending-type').value;
         const pendingReason = document.getElementById('pending-reason').value.trim();
         const expectedDate = document.getElementById('pending-expected-date').value;
@@ -555,111 +429,77 @@ const IncidentsModule = {
             return;
         }
 
-        const oldStatus = incident.status;
-
-        // Update incident
-        incident.status = 'Pending';
-        incident.pendingState = {
-            type: pendingType,
-            reason: pendingReason,
-            expectedDate: expectedDate || null,
-            reminderEnabled: sendReminder,
-            reminderSent: false,
-            setAt: new Date().toISOString(),
-            setBy: ITSMData.currentUser.username
-        };
-        incident.updatedAt = new Date().toISOString();
-
-        // Add note
         const pendingTypeLabel = this.pendingTypes.find(pt => pt.value === pendingType)?.label || pendingType;
-        incident.notes.push({
-            type: 'system',
-            author: 'System',
-            content: `Status changed to ${pendingTypeLabel}. Reason: ${pendingReason}${expectedDate ? `. Expected response: ${expectedDate}` : ''}`,
-            timestamp: new Date().toISOString()
-        });
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Set to Pending',
-            target: incidentId,
-            details: `${pendingTypeLabel}: ${pendingReason}`
-        });
+        try {
+            await ITSMApi.saveEntity('incidents', incidentId, {
+                status: 'Pending',
+                pendingState: {
+                    type: pendingType,
+                    reason: pendingReason,
+                    expectedDate: expectedDate || null,
+                    reminderEnabled: sendReminder,
+                    reminderSent: false,
+                    setAt: new Date().toISOString(),
+                    setBy: ITSMData.currentUser.username
+                },
+                updatedAt: new Date().toISOString()
+            });
 
-        closeModal();
-        this.refreshIncidentDetail(incidentId);
-        this.refreshIncidentList();
-
-        showToast(`${incidentId} set to ${pendingTypeLabel}`, 'info');
+            closeModal();
+            this.refreshIncidentDetail(incidentId);
+            this.refreshIncidentList();
+            showToast(`${incidentId} set to ${pendingTypeLabel}`, 'info');
+        } catch (err) {
+            showToast('Failed to set pending state: ' + err.message, 'error');
+        }
     },
 
     /**
      * Clear pending state and reopen incident
      * @param {string} incidentId - The incident ID
      */
-    clearPendingState: function(incidentId) {
-        const incident = ITSMData.incidents.find(i => i.id === incidentId);
-        if (!incident) return;
+    clearPendingState: async function(incidentId) {
+        try {
+            await ITSMApi.saveEntity('incidents', incidentId, {
+                status: 'Open',
+                pendingState: null,
+                updatedAt: new Date().toISOString()
+            });
 
-        incident.status = 'Open';
-        incident.pendingState = null;
-        incident.updatedAt = new Date().toISOString();
-
-        incident.notes.push({
-            type: 'system',
-            author: 'System',
-            content: 'Pending state cleared. Incident reopened.',
-            timestamp: new Date().toISOString()
-        });
-
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Pending State Cleared',
-            target: incidentId,
-            details: 'Incident reopened'
-        });
-
-        closeModal();
-        this.refreshIncidentDetail(incidentId);
-        this.refreshIncidentList();
-
-        showToast(`${incidentId} reopened`, 'success');
+            closeModal();
+            this.refreshIncidentDetail(incidentId);
+            this.refreshIncidentList();
+            showToast(`${incidentId} reopened`, 'success');
+        } catch (err) {
+            showToast('Failed to clear pending state: ' + err.message, 'error');
+        }
     },
 
     /**
      * Send reminder for pending incident
      * @param {string} incidentId - The incident ID
      */
-    sendPendingReminder: function(incidentId) {
+    sendPendingReminder: async function(incidentId) {
         const incident = ITSMData.incidents.find(i => i.id === incidentId);
         if (!incident || !incident.pendingState) return;
 
         const customer = ITSMData.customers?.find(c => c.email === incident.reporter);
         const recipientName = customer ? customer.name : incident.reporter;
 
-        incident.pendingState.reminderSent = true;
-        incident.pendingState.lastReminderAt = new Date().toISOString();
+        try {
+            const pendingState = { ...incident.pendingState, reminderSent: true, lastReminderAt: new Date().toISOString() };
+            await ITSMApi.saveEntity('incidents', incidentId, { pendingState });
+            await ITSMApi.addIncidentNote(incidentId, {
+                content: `Reminder sent to ${recipientName} regarding pending response.`,
+                type: 'system'
+            });
 
-        incident.notes.push({
-            type: 'system',
-            author: 'System',
-            content: `Reminder sent to ${recipientName} regarding pending response.`,
-            timestamp: new Date().toISOString()
-        });
-
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Pending Reminder Sent',
-            target: incidentId,
-            details: `Reminder sent to ${recipientName}`
-        });
-
-        this.refreshIncidentDetail(incidentId);
-        showToast(`Reminder sent to ${recipientName}`, 'success');
+            this.refreshIncidentDetail(incidentId);
+            showToast(`Reminder sent to ${recipientName}`, 'success');
+        } catch (err) {
+            showToast('Failed to send reminder: ' + err.message, 'error');
+        }
     },
 
     /**
@@ -902,14 +742,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
             incident.attachments.push(attachment);
             incident.updatedAt = new Date().toISOString();
 
-            // Add audit log entry
-            ITSMData.auditLog.unshift({
-                timestamp: new Date().toISOString(),
-                actor: ITSMData.currentUser.username,
-                action: 'Attachment Added',
-                target: incidentId,
-                details: `Uploaded file: ${file.name} (${formatSize(file.size)})`
-            });
+            // Audit logging handled server-side
 
             closeModal();
 
@@ -1222,14 +1055,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
         incident.notes.push(noteEntry);
 
         // Add audit log entry
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'KB Article Linked',
-            target: incidentId,
-            details: `Linked ${kbId}: ${kb.title}`
-        };
-        ITSMData.auditLog.unshift(auditEntry);
+        // Audit logging handled server-side
 
         // Refresh related tab if visible
         this.refreshRelatedDisplay(incidentId);
@@ -1284,15 +1110,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
             incident.linkedKB.splice(index, 1);
             incident.updatedAt = new Date().toISOString();
 
-            // Add audit log entry
-            const auditEntry = {
-                timestamp: new Date().toISOString(),
-                actor: ITSMData.currentUser.username,
-                action: 'KB Article Unlinked',
-                target: incidentId,
-                details: `Unlinked ${kbId}`
-            };
-            ITSMData.auditLog.unshift(auditEntry);
+            // Audit logging handled server-side
 
             this.refreshRelatedDisplay(incidentId);
             showToast(`${kbId} unlinked from incident`, 'success');
@@ -1892,14 +1710,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
             timestamp: new Date().toISOString()
         });
 
-        // Add audit log
-        ITSMData.auditLog.unshift({
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: 'Incident Closed',
-            target: incidentId,
-            details: 'Incident closed after resolution'
-        });
+        // Audit logging handled server-side
 
         this.refreshIncidentDetail(incidentId);
         this.refreshIncidentList();

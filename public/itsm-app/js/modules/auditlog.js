@@ -11,11 +11,19 @@ const AuditLogModule = {
         dateTo: ''
     },
 
-    // Render audit log page
+    // Render audit log page (re-fetch from API)
     render() {
+        // Fire-and-forget refresh of audit log from API
+        ITSMApi.loadRecentAuditLog().then(() => {
+            const content = document.getElementById('audit-log-content');
+            if (content) {
+                content.innerHTML = this.renderTable(ITSMData.auditLog);
+            }
+        }).catch(() => {});
+
         return `
             <div class="page-header">
-                <div class="page-title">📝 Audit Log</div>
+                <div class="page-title"><img class="page-icon" src="icons/audit.png" alt=""> Audit Log</div>
                 <div class="page-subtitle">System activity and change history</div>
             </div>
             <div class="toolbar">

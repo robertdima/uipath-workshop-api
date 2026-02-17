@@ -492,14 +492,7 @@ const AssignmentModule = {
      * @param {string} details - The action details
      */
     addAuditEntry: function(incidentId, action, details) {
-        const auditEntry = {
-            timestamp: new Date().toISOString(),
-            actor: ITSMData.currentUser.username,
-            action: `Incident ${action}`,
-            target: incidentId,
-            details: details
-        };
-        ITSMData.auditLog.unshift(auditEntry);
+        // Audit logging handled server-side
     },
 
     /**
@@ -534,18 +527,6 @@ const AssignmentModule = {
         if (typeof NotificationsModule !== 'undefined' && NotificationsModule.add) {
             NotificationsModule.add('incident', title, message, incidentId);
         }
-
-        // Also add to ITSMData.notifications for persistence
-        const notification = {
-            id: `NOTIF-${Date.now()}`,
-            type: 'assignment',
-            title: title,
-            message: message,
-            link: incidentId,
-            timestamp: new Date().toISOString(),
-            read: false
-        };
-        ITSMData.notifications.unshift(notification);
     },
 
     /**

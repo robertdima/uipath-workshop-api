@@ -4,8 +4,8 @@
 > Built with real-world enterprise integration patterns and business scenarios
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Available-FA4616?style=for-the-badge)](https://uipath-workshop-api-production.up.railway.app/)
-[![API Endpoints](https://img.shields.io/badge/📡_API_Endpoints-87-0ba2b3?style=for-the-badge)](https://uipath-workshop-api-production.up.railway.app/api-documentation.html)
-[![Collections](https://img.shields.io/badge/📊_Data_Collections-26-172125?style=for-the-badge)](#features)
+[![API Endpoints](https://img.shields.io/badge/📡_API_Endpoints-145+-0ba2b3?style=for-the-badge)](https://uipath-workshop-api-production.up.railway.app/api-documentation.html)
+[![Collections](https://img.shields.io/badge/📊_Data_Collections-42-172125?style=for-the-badge)](#features)
 [![Deploy on Railway](https://img.shields.io/badge/🚀_Deploy-Railway-8B5CF6?style=for-the-badge)](https://railway.app/template/ZweBXA)
 
 ---
@@ -14,23 +14,26 @@
 
 ### Core Capabilities
 
-- **87 Production-Ready Endpoints** across 5 business modules (HR, Finance, CRM, IoT, Analytics)
-- **26 Data Collections** with 700+ realistic business records
+- **145+ Production-Ready Endpoints** across 7 business modules (HR, Finance, CRM, IoT, Analytics, ITSM, Projects)
+- **42 Data Collections** with 900+ realistic business records
 - **Dynamic Data Generation** for real-time scenarios and testing
 - **Zero Authentication** required for simplified workshop experience
 - **Interactive UI** with modern Origin design patterns
-- **Live Data Viewer** for exploring API responses
+- **ITSM Console** - Full IT Service Management application fully integrated with the API — incidents, changes, service requests, problems, knowledge base, and CMDB
+- **Legacy HR Portal** - Simulated legacy web application for onboarding automation
 - **Real-time HR Onboarding Tracker** demonstrating practical use cases
 
 ### Business Modules
 
 | Module | Endpoints | Description | Key Use Cases |
 |--------|-----------|-------------|---------------|
-| **👥 HR Management** | 23 | Employee records, performance, onboarding | Employee directory, performance tracking, onboarding automation |
-| **💰 Finance** | 19 | Invoices, expenses, budget tracking | Invoice approval workflows, expense automation, budget variance alerts |
-| **🤝 CRM** | 20 | Customer management, sales pipeline | Customer health scoring, churn prevention, opportunity tracking |
-| **🔌 IoT** | 18 | Device management, telemetry, alerts | Predictive maintenance, device monitoring, alert automation |
+| **👥 HR Management** | 20 | Employee records, performance, onboarding | Employee directory, performance tracking, onboarding automation |
+| **💰 Finance** | 13 | Invoices, expenses, budget tracking | Invoice approval workflows, expense automation, budget variance alerts |
+| **🤝 CRM** | 17 | Customer management, sales pipeline | Customer health scoring, churn prevention, opportunity tracking |
+| **🔌 IoT** | 16 | Device management, telemetry, alerts | Predictive maintenance, device monitoring, alert automation |
+| **🎫 ITSM** | 65+ | IT Service Management (Incidents, Changes, Requests, Problems, Assets, Knowledge, Reports, Audit) | Incident automation, change approval workflows, service catalog, asset management, SLA reporting |
 | **📊 Analytics** | 7 | Reports, KPIs, workflow monitoring | Executive dashboards, workforce analytics, automation health |
+| **📋 Projects** | 5 | Project tracking and workflows | Project monitoring, resource allocation |
 
 ---
 
@@ -201,6 +204,101 @@ Content-Type: application/json
 | `/analytics/sales/pipeline` | `GET` | Pipeline analysis | Sales forecasting |
 | `/workflows/triggers` | `GET` | Automation health | Process monitoring |
 
+### ITSM Module (IT Service Management)
+
+#### Incident Management
+
+| Endpoint | Method | Description | Workshop Use Case |
+|----------|---------|-------------|-------------------|
+| `/itsm/incidents` | `GET` | All incidents | Incident dashboard automation |
+| `/itsm/incidents/:id` | `GET` | Incident details | Retrieve specific incident info |
+| `/itsm/incidents` | `POST` | Create incident | Automated incident creation from monitoring |
+| `/itsm/incidents/:id/status` | `PATCH` | Update status | Workflow-based status transitions |
+| `/itsm/incidents/:id/notes` | `POST` | Add work note | Automated documentation |
+| `/itsm/incidents/:id/assign` | `POST` | Assign to team | Intelligent routing automation |
+| `/itsm/incidents/:id/escalate` | `POST` | Escalate incident | Priority escalation workflows |
+| `/itsm/incidents/:id/resolve` | `POST` | Resolve incident | Auto-resolution workflows |
+| `/itsm/incidents/:id/link` | `POST` | Link to other records | Cross-module correlation |
+| `/itsm/incidents/stats` | `GET` | Incident statistics | SLA compliance dashboard |
+
+#### Change Management
+
+| Endpoint | Method | Description | Workshop Use Case |
+|----------|---------|-------------|-------------------|
+| `/itsm/changes` | `GET` | All change requests | Change calendar automation |
+| `/itsm/changes/:id` | `GET` | Change details | Retrieve specific change info |
+| `/itsm/changes` | `POST` | Create change request | Automated change creation |
+| `/itsm/changes/:id/status` | `PATCH` | Update status | Change workflow automation |
+| `/itsm/changes/:id/approve` | `POST` | CAB approval | Approval workflow automation |
+| `/itsm/changes/:id/reject` | `POST` | Reject change | Rejection with reason |
+| `/itsm/changes/:id/implement` | `POST` | Start implementation | Implementation tracking |
+| `/itsm/changes/:id/complete` | `POST` | Complete change | Success/failure recording |
+| `/itsm/changes/stats` | `GET` | Change statistics | Success rate monitoring |
+| `/itsm/changes/calendar` | `GET` | Change calendar | Schedule visibility |
+
+#### Service Requests
+
+| Endpoint | Method | Description | Workshop Use Case |
+|----------|---------|-------------|-------------------|
+| `/itsm/requests` | `GET` | All service requests | Request fulfillment tracking |
+| `/itsm/requests/:id` | `GET` | Request details | Retrieve specific request |
+| `/itsm/requests` | `POST` | Submit request | Self-service automation |
+| `/itsm/requests/:id/status` | `PATCH` | Update status | Fulfillment workflow |
+| `/itsm/requests/:id/approve` | `POST` | Approve request | Approval routing |
+| `/itsm/requests/:id/reject` | `POST` | Reject request | Rejection with reason |
+| `/itsm/requests/:id/fulfill` | `POST` | Fulfill request | Auto-fulfillment |
+| `/itsm/requests/:id/assign` | `POST` | Assign request | Assignment routing |
+| `/itsm/requests/:id/notes` | `POST` | Add note | Automated documentation |
+| `/itsm/requests/stats` | `GET` | Request statistics | Fulfillment metrics |
+| `/itsm/requests/pending-approval` | `GET` | Pending approvals | Approval queue |
+
+#### Problem Management
+
+| Endpoint | Method | Description | Workshop Use Case |
+|----------|---------|-------------|-------------------|
+| `/itsm/problems` | `GET` | All problems | Root cause tracking |
+| `/itsm/problems` | `POST` | Create problem | Problem creation from incidents |
+| `/itsm/problems/:id/status` | `PATCH` | Update status | Investigation workflow |
+| `/itsm/problems/:id/root-cause` | `PATCH` | Update root cause | RCA automation |
+| `/itsm/problems/:id/link-incident` | `POST` | Link incident | Correlation automation |
+| `/itsm/problems/known-errors` | `GET` | Known errors | Self-healing automation |
+
+#### Assets, Knowledge & Configuration
+
+| Endpoint | Method | Description | Workshop Use Case |
+|----------|---------|-------------|-------------------|
+| `/itsm/assets` | `GET` | All CMDB assets | Asset inventory |
+| `/itsm/assets` | `POST` | Create asset | Asset onboarding |
+| `/itsm/assets/:id/status` | `PATCH` | Update asset status | Lifecycle management |
+| `/itsm/assets/stats` | `GET` | Asset statistics | CMDB dashboard |
+| `/itsm/knowledge` | `GET` | All KB articles | Knowledge search |
+| `/itsm/knowledge` | `POST` | Create KB article | Knowledge creation |
+| `/itsm/knowledge/:id/publish` | `PATCH` | Publish article | Publishing workflow |
+| `/itsm/knowledge/search` | `GET` | Search KB | Context grounding for agents |
+| `/itsm/catalog` | `GET` | Service catalog | Self-service portal |
+| `/itsm/dashboard/stats` | `GET` | ITSM dashboard | Executive ITSM overview |
+| `/itsm/audit-log/recent` | `GET` | Recent audit entries | Compliance reporting |
+| `/itsm/reports/sla-compliance` | `GET` | SLA compliance report | SLA monitoring |
+| `/itsm/reports/team-performance` | `GET` | Team performance | Capacity planning |
+| `/itsm/reset` | `POST` | Reset demo data | Environment reset |
+
+#### Example: Create Incident
+
+```http
+POST /api/itsm/incidents
+Content-Type: application/json
+
+{
+  "summary": "Email service unavailable",
+  "description": "Users reporting inability to send/receive emails since 9am",
+  "impact": 2,
+  "urgency": 1,
+  "category": "Email",
+  "callerName": "John Smith",
+  "callerEmail": "john.smith@acme.com"
+}
+```
+
 ---
 
 ## Workshop Scenarios
@@ -326,6 +424,33 @@ ELSE:
 
 ---
 
+### Scenario 4: IT Incident Automation
+
+**Objective:** Automate incident triage, assignment, and resolution workflows
+
+**Endpoints:**
+1. `/itsm/incidents` - Get all incidents or create new ones
+2. `/itsm/incidents/:id/assign` - Auto-assign based on category/skills
+3. `/itsm/knowledge/search` - Find relevant KB articles
+4. `/itsm/incidents/:id/resolve` - Auto-resolve with KB solutions
+
+**UiPath Implementation:**
+```
+1. GET /itsm/incidents (filter status = 'New')
+2. For Each new incident:
+   - Analyze category and subcategory
+   - GET /itsm/knowledge/search?q={category}
+   - If matching KB article found:
+     - POST /itsm/incidents/:id/notes (attach KB solution)
+     - POST /itsm/incidents/:id/resolve (auto-resolve)
+   - If no KB match:
+     - Match category to team skills
+     - POST /itsm/incidents/:id/assign (route to team)
+3. GET /itsm/incidents/stats (generate SLA report)
+```
+
+---
+
 ## Integration Patterns
 
 ### Pattern 1: Data Enrichment
@@ -406,10 +531,10 @@ Track your automation performance:
 
 ### Technology Stack
 
-- **Runtime:** Node.js 18+
-- **Framework:** Express.js
-- **Database:** JSON Server (lowdb)
-- **Data Generation:** Faker.js
+- **Runtime:** Node.js 14+
+- **Framework:** JSON Server 0.17.4 (Express-based)
+- **Data Generation:** @faker-js/faker 8.0
+- **Testing:** Playwright 1.58
 - **CORS:** Enabled for all origins
 - **Response Format:** JSON
 
@@ -483,10 +608,10 @@ Track your automation performance:
 ### During the Workshop
 
 - **Live API:** https://uipath-workshop-api-production.up.railway.app/
-- **Interactive UI:** Available at root URL
+- **Interactive UI:** Available at root URL (test all 145+ endpoints)
 - **API Documentation:** `/api-documentation.html`
+- **ITSM Console:** `/itsm-app/` (full IT Service Management application)
 - **Health Check:** `/health` endpoint
-- **Data Viewer:** `/data-viewer` endpoint
 
 ### Additional Resources
 
@@ -543,16 +668,26 @@ Track your automation performance:
 
 ```
 uipath-workshop-api/
-├── server.js                 # Main Express server
-├── db.json                   # JSON database
-├── routes.json               # API route definitions
+├── server.js                          # Main Express server (data generation + API routes)
+├── enhanced_routes_complete.json      # API route mappings (116 routes)
 ├── public/
-│   ├── index.html           # Interactive UI
-│   ├── api-documentation.html  # API documentation
-│   ├── workshop-guide.html  # Workshop scenarios
-│   └── data-viewer.html     # Data exploration tool
-├── package.json             # Dependencies
-└── README.md               # This file
+│   ├── index.html                     # Interactive API testing UI
+│   ├── api-documentation.html         # Complete API documentation
+│   ├── script.js                      # Frontend scripts
+│   ├── styles/                        # CSS stylesheets
+│   ├── js/                            # JavaScript modules
+│   └── itsm-app/                      # ITSM Console Application
+│       ├── index.html                 # ITSM Console UI
+│       ├── icons/                     # Line icon set (28 icons)
+│       ├── styles/                    # CSS (retro theme, components)
+│       └── js/
+│           ├── app.js                 # Console app logic
+│           ├── api.js                 # API service layer (all HTTP calls)
+│           ├── data.js                # ITSM seed/fallback data
+│           └── modules/               # Feature modules (incidents, changes, requests, etc.)
+├── src/                               # Source modules
+├── package.json                       # Dependencies
+└── README.md                          # This file
 ```
 
 ---
@@ -599,9 +734,10 @@ MIT License - Feel free to use for workshops, training, and educational purposes
 ### Getting Started
 
 1. **Access the API:** https://uipath-workshop-api-production.up.railway.app/
-2. **Open UiPath Studio Web:** https://studio.uipath.com
-3. **Create Your First Workflow:** Start with Scenario 1 (Employee Onboarding)
-4. **Build an Agent:** Add your workflow as a tool
+2. **Explore the ITSM Console:** https://uipath-workshop-api-production.up.railway.app/itsm-app/
+3. **Open UiPath Studio Web:** https://studio.uipath.com
+4. **Create Your First Workflow:** Start with Scenario 1 (Employee Onboarding) or Scenario 4 (IT Incident Automation)
+5. **Build an Agent:** Add your workflow as a tool
 
 ### Learning Path
 
@@ -627,7 +763,10 @@ A: This is designed for workshops and training. For production use, implement pr
 A: Absolutely! Use Railway, Render, or run locally. See deployment instructions above.
 
 **Q: How often does data refresh?**
-A: The database contains static seed data. Dynamic endpoints (like telemetry) generate data on each request.
+A: The database is regenerated on each server restart. Dynamic endpoints (like telemetry) generate data on each request. ITSM data uses curated realistic scenarios.
+
+**Q: Does the ITSM Console connect to the API?**
+A: Yes! The ITSM Console at `/itsm-app/` is fully integrated with the API. All CRUD operations (creating incidents, approving changes, fulfilling requests, etc.) go through the API endpoints. Changes made in the UI are visible via the API and vice versa. It also falls back to local demo data if the API is unavailable.
 
 **Q: Can I use this for UiPath certifications?**
 A: This is designed for practice and workshops. Check UiPath certification requirements for approved resources.

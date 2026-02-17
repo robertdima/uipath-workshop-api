@@ -980,7 +980,7 @@ function generateDatabase() {
         { name: 'asset_tag', label: 'Asset Tag (if applicable)', type: 'text', required: false, step: 3 },
         { name: 'owner_team', label: 'System Owner / Team', type: 'text', required: false, step: 3 },
         { name: 'time_detected', label: 'When Was It Detected?', type: 'text', required: false, step: 3 },
-        { name: 'duration', label: 'Estimated Duration', type: 'select', options: ['Less than 1 hour', '1-4 hours', '4-24 hours', 'More than 24 hours', 'Unknown'], required: false, step: 3 },
+        { name: 'duration', label: 'Time Detected', type: 'select', options: ['Less than 1 hour', '1-4 hours', '4-24 hours', 'More than 24 hours', 'Unknown'], required: false, step: 3 },
         { name: 'attachments', label: 'Attach Evidence (screenshots, logs)', type: 'file', required: false, step: 4 },
         { name: 'ioc_indicators', label: 'Indicators of Compromise (IPs, URLs, hashes)', type: 'textarea', required: false, step: 4 },
         { name: 'consent', label: 'I confirm that the information provided is accurate to the best of my knowledge and I understand this report may trigger a security investigation.', type: 'checkbox', required: true, step: 4 },

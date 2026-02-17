@@ -264,6 +264,13 @@ const CatalogModule = {
             return;
         }
 
+        // Detect wizard-style items (fields with step property)
+        const hasSteps = item.fields.some(f => f.step !== undefined);
+        if (hasSteps) {
+            this.showWizardForm(itemId);
+            return;
+        }
+
         const currentUser = ITSMData.currentUser;
 
         showModal(`
@@ -361,6 +368,25 @@ const CatalogModule = {
                 `;
                 break;
 
+            case 'checkbox':
+                fieldHtml = `
+                    <div class="consent-check">
+                        <input type="checkbox" id="field-${field.name}" ${requiredAttr}>
+                        <label for="field-${field.name}">${field.label}</label>
+                    </div>
+                `;
+                return `
+                    <div class="form-group" id="group-${field.name}"${field.showWhen ? ` data-show-when-field="${field.showWhen.field}" data-show-when-equals="${field.showWhen.equals}" style="display:none;"` : ''}>
+                        ${fieldHtml}
+                    </div>
+                `;
+
+            case 'file':
+                fieldHtml = `
+                    <input type="file" class="form-control" id="field-${field.name}" multiple>
+                `;
+                break;
+
             case 'text':
             default:
                 fieldHtml = `
@@ -369,8 +395,12 @@ const CatalogModule = {
                 break;
         }
 
+        const showWhenAttrs = field.showWhen
+            ? ` data-show-when-field="${field.showWhen.field}" data-show-when-equals="${field.showWhen.equals}" style="display:none;"`
+            : '';
+
         return `
-            <div class="form-group">
+            <div class="form-group" id="group-${field.name}"${showWhenAttrs}>
                 <label class="form-label ${requiredClass}">${field.label}</label>
                 ${fieldHtml}
             </div>
@@ -383,6 +413,11 @@ const CatalogModule = {
      * @returns {object|null} Form data object or null if validation fails
      */
     collectFormData: function(itemId) {
+        // If wizard is active, return wizard data
+        if (this._wizardState && this._wizardState.itemId === itemId) {
+            return this._wizardState.formData;
+        }
+
         const item = this.getCatalogItem(itemId);
         if (!item) return null;
 
@@ -390,9 +425,22 @@ const CatalogModule = {
         let isValid = true;
 
         item.fields.forEach(field => {
+            // Skip hidden conditional fields
+            const group = document.getElementById(`group-${field.name}`);
+            if (group && group.style.display === 'none') return;
+
             const element = document.getElementById(`field-${field.name}`);
             if (element) {
-                const value = element.value.trim();
+                let value;
+                if (field.type === 'checkbox') {
+                    value = element.checked;
+                } else if (field.type === 'file') {
+                    value = element.files && element.files.length > 0
+                        ? Array.from(element.files).map(f => f.name).join(', ')
+                        : '';
+                } else {
+                    value = element.value.trim();
+                }
                 formData[field.name] = value;
 
                 if (field.required && !value) {
@@ -427,13 +475,26 @@ const CatalogModule = {
         const priority = document.getElementById('req-priority')?.value || 'Normal';
 
         // Collect form data without validation
-        const formData = {};
-        item.fields.forEach(field => {
-            const element = document.getElementById(`field-${field.name}`);
-            if (element) {
-                formData[field.name] = element.value.trim();
-            }
-        });
+        let formData = {};
+        if (this._wizardState && this._wizardState.itemId === itemId) {
+            // Collect current step data first
+            this.collectWizardStepData(this._wizardState.currentStep);
+            formData = { ...this._wizardState.formData };
+        } else {
+            item.fields.forEach(field => {
+                const element = document.getElementById(`field-${field.name}`);
+                if (element) {
+                    if (field.type === 'checkbox') {
+                        formData[field.name] = element.checked;
+                    } else if (field.type === 'file') {
+                        formData[field.name] = element.files && element.files.length > 0
+                            ? Array.from(element.files).map(f => f.name).join(', ') : '';
+                    } else {
+                        formData[field.name] = element.value.trim();
+                    }
+                }
+            });
+        }
 
         // Find requester details
         const requester = (ITSMData.customers || []).find(c => c.email === requestedFor);
@@ -655,9 +716,434 @@ const CatalogModule = {
         const categoryTeams = {
             'Hardware': 'Service Desk',
             'Software': 'Application Support',
-            'Access': 'Identity Team'
+            'Access': 'Identity Team',
+            'Security': 'Security Team'
         };
         return categoryTeams[item.category] || 'Service Desk';
+    },
+
+    // ==================== WIZARD ENGINE ====================
+
+    _wizardState: null,
+
+    showWizardForm: function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        if (!item) { showToast('Catalog item not found', 'error'); return; }
+
+        // Determine steps from fields
+        const stepNums = [...new Set(item.fields.filter(f => f.step !== undefined).map(f => f.step))].sort((a, b) => a - b);
+        const totalSteps = stepNums.length;
+        const stepLabels = item.stepLabels || stepNums.map(n => `Step ${n}`);
+
+        this._wizardState = {
+            itemId: itemId,
+            currentStep: stepNums[0],
+            totalSteps: totalSteps,
+            stepNums: stepNums,
+            stepLabels: stepLabels,
+            formData: {}
+        };
+
+        this.renderWizardModal(itemId);
+    },
+
+    renderWizardModal: function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        const ws = this._wizardState;
+
+        showModal(`
+            <div class="modal-header">
+                <span><img class="modal-icon" src="icons/${item.icon}.png" alt=""> ${item.name}</span>
+                <button class="panel-close" onclick="closeModal(); CatalogModule._wizardState = null;">x</button>
+            </div>
+            <div class="wizard-steps">
+                ${this.renderStepIndicator(ws.currentStep, ws.stepNums, ws.stepLabels)}
+            </div>
+            <div class="modal-body wizard-body" style="width: 650px;" id="wizard-body">
+                ${this.renderWizardStep(itemId)}
+            </div>
+            <div class="modal-footer" id="wizard-footer">
+                ${this.renderWizardFooter(itemId)}
+            </div>
+        `);
+
+        this.attachConditionalListeners();
+    },
+
+    renderStepIndicator: function(currentStep, stepNums, stepLabels) {
+        return stepNums.map((stepNum, i) => {
+            let cls = 'pending';
+            if (stepNum === currentStep) cls = 'active';
+            else if (stepNum < currentStep) cls = 'completed';
+            const connector = i < stepNums.length - 1 ? '<div class="wizard-step-connector"></div>' : '';
+            return `
+                <div class="wizard-step ${cls}">
+                    <div class="wizard-step-number">${cls === 'completed' ? '&#10003;' : (i + 1)}</div>
+                    <span>${stepLabels[i] || 'Step ' + (i + 1)}</span>
+                </div>
+                ${connector}
+            `;
+        }).join('');
+    },
+
+    renderWizardStep: function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        const ws = this._wizardState;
+        const currentStep = ws.currentStep;
+        const isLastStep = currentStep === ws.stepNums[ws.stepNums.length - 1];
+
+        let html = '';
+
+        // If last step, render review summary of all prior steps first
+        if (isLastStep) {
+            html += this.renderReviewStep(itemId);
+        }
+
+        // Render fields for current step
+        const stepFields = item.fields.filter(f => f.step === currentStep);
+        if (stepFields.length > 0 && isLastStep) {
+            html += '<div class="wizard-section-title" style="margin-top: var(--spacing-lg);">Additional Information</div>';
+        }
+        stepFields.forEach(field => {
+            const savedValue = ws.formData[field.name];
+            if (savedValue !== undefined && savedValue !== '') {
+                html += this.renderFormFieldWithValue(field, savedValue);
+            } else {
+                html += this.renderFormField(field);
+            }
+        });
+
+        return html;
+    },
+
+    renderReviewStep: function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        const ws = this._wizardState;
+        // Show all prior steps in summary cards
+        const priorSteps = ws.stepNums.filter(s => s < ws.currentStep);
+        let html = '<div class="wizard-section-title">Review Your Submission</div>';
+
+        priorSteps.forEach((stepNum, i) => {
+            const stepFields = item.fields.filter(f => f.step === stepNum);
+            const label = ws.stepLabels[i] || 'Step ' + (i + 1);
+            html += `<div class="review-step-card">
+                <div class="review-step-card-header">${label}</div>
+                <div class="review-step-card-body">`;
+            stepFields.forEach(field => {
+                // Skip hidden conditional fields
+                if (field.showWhen && !this.isFieldVisibleFromData(field)) return;
+                const val = ws.formData[field.name];
+                const displayVal = val === true ? 'Yes' : val === false ? 'No' : (val || '-');
+                html += `<div class="review-row">
+                    <div class="review-row-label">${field.label}</div>
+                    <div class="review-row-value">${displayVal}</div>
+                </div>`;
+            });
+            html += '</div></div>';
+        });
+
+        return html;
+    },
+
+    renderWizardFooter: function(itemId) {
+        const ws = this._wizardState;
+        const isFirst = ws.currentStep === ws.stepNums[0];
+        const isLast = ws.currentStep === ws.stepNums[ws.stepNums.length - 1];
+
+        let html = '';
+        html += `<button class="btn btn-secondary" onclick="closeModal(); CatalogModule._wizardState = null;">Cancel</button>`;
+        html += `<button class="btn btn-secondary" onclick="CatalogModule.saveWizardAsDraft('${itemId}')">Save as Draft</button>`;
+        if (!isFirst) {
+            html += `<button class="btn btn-secondary" onclick="CatalogModule.wizardBack('${itemId}')">Back</button>`;
+        }
+        if (isLast) {
+            html += `<button class="btn btn-primary" onclick="CatalogModule.submitWizardRequest('${itemId}')">Submit Request</button>`;
+        } else {
+            html += `<button class="btn btn-primary" onclick="CatalogModule.wizardNext('${itemId}')">Next</button>`;
+        }
+        return html;
+    },
+
+    wizardNext: function(itemId) {
+        const ws = this._wizardState;
+        if (!this.validateWizardStep(ws.currentStep, itemId)) return;
+        this.collectWizardStepData(ws.currentStep);
+        const idx = ws.stepNums.indexOf(ws.currentStep);
+        if (idx < ws.stepNums.length - 1) {
+            ws.currentStep = ws.stepNums[idx + 1];
+            this.renderWizardModal(itemId);
+        }
+    },
+
+    wizardBack: function(itemId) {
+        const ws = this._wizardState;
+        this.collectWizardStepData(ws.currentStep);
+        const idx = ws.stepNums.indexOf(ws.currentStep);
+        if (idx > 0) {
+            ws.currentStep = ws.stepNums[idx - 1];
+            this.renderWizardModal(itemId);
+        }
+    },
+
+    validateWizardStep: function(stepNum, itemId) {
+        const item = this.getCatalogItem(itemId);
+        const stepFields = item.fields.filter(f => f.step === stepNum);
+        let isValid = true;
+
+        stepFields.forEach(field => {
+            if (!field.required) return;
+
+            // Skip hidden conditional fields
+            const group = document.getElementById(`group-${field.name}`);
+            if (group && group.style.display === 'none') return;
+
+            const el = document.getElementById(`field-${field.name}`);
+            if (!el) return;
+
+            let value;
+            if (field.type === 'checkbox') {
+                value = el.checked;
+            } else {
+                value = el.value ? el.value.trim() : '';
+            }
+
+            if (!value) {
+                el.style.borderColor = 'var(--accent-red)';
+                isValid = false;
+            } else {
+                el.style.borderColor = '';
+            }
+        });
+
+        if (!isValid) {
+            showToast('Please fill in all required fields', 'error');
+        }
+        return isValid;
+    },
+
+    collectWizardStepData: function(stepNum) {
+        const item = this.getCatalogItem(this._wizardState.itemId);
+        const stepFields = item.fields.filter(f => f.step === stepNum);
+
+        stepFields.forEach(field => {
+            const el = document.getElementById(`field-${field.name}`);
+            if (!el) return;
+
+            // Skip hidden conditional fields
+            const group = document.getElementById(`group-${field.name}`);
+            if (group && group.style.display === 'none') return;
+
+            if (field.type === 'checkbox') {
+                this._wizardState.formData[field.name] = el.checked;
+            } else if (field.type === 'file') {
+                if (el.files && el.files.length > 0) {
+                    this._wizardState.formData[field.name] = Array.from(el.files).map(f => f.name).join(', ');
+                }
+            } else {
+                this._wizardState.formData[field.name] = el.value ? el.value.trim() : '';
+            }
+        });
+    },
+
+    attachConditionalListeners: function() {
+        const item = this.getCatalogItem(this._wizardState.itemId);
+        const stepFields = item.fields.filter(f => f.step === this._wizardState.currentStep);
+
+        // Find all fields that control conditional visibility
+        const controllerNames = new Set();
+        stepFields.forEach(field => {
+            if (field.showWhen) controllerNames.add(field.showWhen.field);
+            if (field.dependsOn) controllerNames.add(field.dependsOn);
+        });
+
+        controllerNames.forEach(name => {
+            const el = document.getElementById(`field-${name}`);
+            if (el) {
+                el.addEventListener('change', () => {
+                    this.updateConditionalVisibility();
+                    this.updateDynamicOptions(item);
+                });
+            }
+        });
+
+        // Run initial visibility check
+        this.updateConditionalVisibility();
+        this.updateDynamicOptions(item);
+    },
+
+    updateConditionalVisibility: function() {
+        const groups = document.querySelectorAll('[data-show-when-field]');
+        groups.forEach(group => {
+            const controlField = group.getAttribute('data-show-when-field');
+            const requiredValue = group.getAttribute('data-show-when-equals');
+            const controlEl = document.getElementById(`field-${controlField}`);
+
+            if (controlEl) {
+                const match = requiredValue.split('|').some(v => controlEl.value === v);
+                if (match) {
+                    group.style.display = '';
+                } else {
+                    group.style.display = 'none';
+                    // Clear hidden field values
+                    const input = group.querySelector('input, select, textarea');
+                    if (input) {
+                        if (input.type === 'checkbox') input.checked = false;
+                        else input.value = '';
+                    }
+                }
+            }
+        });
+    },
+
+    updateDynamicOptions: function(item) {
+        const stepFields = item.fields.filter(f => f.step === this._wizardState.currentStep);
+
+        stepFields.forEach(field => {
+            if (!field.optionsMap || !field.dependsOn) return;
+            const parentEl = document.getElementById(`field-${field.dependsOn}`);
+            if (!parentEl) return;
+
+            const parentVal = parentEl.value;
+            const options = field.optionsMap[parentVal];
+            const el = document.getElementById(`field-${field.name}`);
+            const group = document.getElementById(`group-${field.name}`);
+            if (!el || !group) return;
+
+            if (!options) {
+                // No options for this parent value — hide
+                group.style.display = 'none';
+                return;
+            }
+
+            group.style.display = '';
+
+            if (options.includes('_other')) {
+                // Check if current value triggers "Other" text input
+                // _other means: if the user picks "Other", swap to text input
+            }
+
+            // If the element is a <select>, rebuild its options
+            if (el.tagName === 'SELECT') {
+                const currentVal = el.value;
+                el.innerHTML = '<option value="">-- Select --</option>' +
+                    options.filter(o => o !== '_other').map(o => `<option value="${o}" ${o === currentVal ? 'selected' : ''}>${o}</option>`).join('') +
+                    (options.includes('_other') ? '<option value="_other">Other (specify)</option>' : '');
+
+                // Handle _other swap
+                if (options.includes('_other')) {
+                    const otherInputId = `field-${field.name}-other`;
+                    let otherInput = document.getElementById(otherInputId);
+                    if (!otherInput) {
+                        const wrapper = document.createElement('div');
+                        wrapper.id = `${field.name}-other-wrapper`;
+                        wrapper.style.display = 'none';
+                        wrapper.style.marginTop = '6px';
+                        wrapper.innerHTML = `<input type="text" class="form-control" id="${otherInputId}" placeholder="Please specify...">`;
+                        el.parentNode.appendChild(wrapper);
+                    }
+                    // Toggle other input
+                    el.addEventListener('change', function handler() {
+                        const w = document.getElementById(`${field.name}-other-wrapper`);
+                        if (w) w.style.display = el.value === '_other' ? '' : 'none';
+                    });
+                    // Check initial state
+                    const w = document.getElementById(`${field.name}-other-wrapper`);
+                    if (w) w.style.display = el.value === '_other' ? '' : 'none';
+                }
+            }
+        });
+    },
+
+    isFieldVisibleFromData: function(field) {
+        if (!field.showWhen) return true;
+        const controlVal = this._wizardState.formData[field.showWhen.field];
+        return field.showWhen.equals.split('|').some(v => controlVal === v);
+    },
+
+    submitWizardRequest: async function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        const ws = this._wizardState;
+        if (!item || !ws) return;
+
+        // Validate current step
+        if (!this.validateWizardStep(ws.currentStep, itemId)) return;
+        this.collectWizardStepData(ws.currentStep);
+
+        const formData = { ...ws.formData };
+        // Handle _other fields — merge "Other" text values
+        item.fields.forEach(field => {
+            if (formData[field.name] === '_other') {
+                const otherVal = formData[`${field.name}-other`] || document.getElementById(`field-${field.name}-other`)?.value || '';
+                formData[field.name] = otherVal ? `Other: ${otherVal}` : 'Other';
+            }
+        });
+
+        const requestedFor = formData.reporter_email || ITSMData.currentUser.email;
+        const priority = formData.severity || 'Normal';
+
+        try {
+            const result = await ITSMApi.createRequest({
+                catalogItem: itemId,
+                requestedBy: ITSMData.currentUser.email,
+                requestedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
+                requestedFor: requestedFor,
+                requestedForName: formData.reporter_name || ITSMData.currentUser.name,
+                requestedForDepartment: '',
+                requestedForLocation: '',
+                requestedForVip: false,
+                description: formData.description || item.description,
+                priority: priority,
+                formData: formData,
+                assignmentGroup: this.determineAssignment(item)
+            });
+            if (result.success) {
+                this._wizardState = null;
+                closeModal();
+                showToast(`Request ${result.data.id} submitted successfully`, 'success');
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            } else {
+                showToast(result.error || 'Failed to submit request', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to submit request: ' + err.message, 'error');
+        }
+    },
+
+    saveWizardAsDraft: async function(itemId) {
+        const item = this.getCatalogItem(itemId);
+        const ws = this._wizardState;
+        if (!item || !ws) return;
+
+        this.collectWizardStepData(ws.currentStep);
+        const formData = { ...ws.formData };
+        const requestedFor = formData.reporter_email || ITSMData.currentUser.email;
+
+        try {
+            const result = await ITSMApi.createRequest({
+                catalogItem: itemId,
+                requestedBy: ITSMData.currentUser.email,
+                requestedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
+                requestedFor: requestedFor,
+                requestedForName: formData.reporter_name || ITSMData.currentUser.name,
+                requestedForDepartment: '',
+                requestedForLocation: '',
+                requestedForVip: false,
+                description: item.description,
+                priority: formData.severity || 'Normal',
+                formData: formData
+            });
+            if (result.success) {
+                await ITSMApi.updateRequestStatus(result.data.id, 'Draft');
+                this._wizardState = null;
+                closeModal();
+                showToast(`Draft ${result.data.id} saved`, 'success');
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            } else {
+                showToast(result.error || 'Failed to save draft', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to save draft: ' + err.message, 'error');
+        }
     },
 
     // ==================== MY REQUESTS ====================
@@ -1089,6 +1575,26 @@ const CatalogModule = {
                 `;
                 break;
 
+            case 'checkbox':
+                fieldHtml = `
+                    <div class="consent-check">
+                        <input type="checkbox" id="field-${field.name}" ${value ? 'checked' : ''}>
+                        <label for="field-${field.name}">${field.label}</label>
+                    </div>
+                `;
+                return `
+                    <div class="form-group" id="group-${field.name}">
+                        ${fieldHtml}
+                    </div>
+                `;
+
+            case 'file':
+                fieldHtml = `
+                    <input type="file" class="form-control" id="field-${field.name}" multiple>
+                    ${value ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Previously: ${value}</div>` : ''}
+                `;
+                break;
+
             case 'text':
             default:
                 fieldHtml = `
@@ -1098,7 +1604,7 @@ const CatalogModule = {
         }
 
         return `
-            <div class="form-group">
+            <div class="form-group" id="group-${field.name}">
                 <label class="form-label ${requiredClass}">${field.label}</label>
                 ${fieldHtml}
             </div>

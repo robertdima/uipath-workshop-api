@@ -965,7 +965,48 @@ function generateDatabase() {
       { id: 'CAT-009', name: 'Shared Mailbox / Distribution List', category: 'Access', description: 'Create a shared mailbox or distribution list', icon: 'email', approvalRequired: true, fulfillmentTime: '1 business day', cost: 'No cost', fields: [{ name: 'mailbox_name', label: 'Mailbox/List Name', type: 'text', required: true }, { name: 'type', label: 'Type', type: 'select', options: ['Shared Mailbox', 'Distribution List'], required: true }, { name: 'owner_email', label: 'Owner Email', type: 'email', required: true }, { name: 'members', label: 'Members (one email per line)', type: 'textarea', required: true }, { name: 'justification', label: 'Justification', type: 'textarea', required: true }] },
       { id: 'CAT-010', name: 'Shipping & Delivery Request', category: 'Logistics', description: 'Request shipping of equipment or documents', icon: 'delivery', approvalRequired: false, fulfillmentTime: '3 business days', cost: 'Varies', fields: [{ name: 'sender_name', label: 'Sender Name', type: 'text', required: true }, { name: 'sender_location', label: 'Pickup Location', type: 'text', required: true }, { name: 'recipient_name', label: 'Recipient Name', type: 'text', required: true }, { name: 'recipient_location', label: 'Delivery Location', type: 'text', required: true }, { name: 'package_description', label: 'Package Description', type: 'textarea', required: true }, { name: 'urgency', label: 'Urgency', type: 'select', options: ['Standard', 'Express', 'Next Day'], required: true }] },
       { id: 'CAT-011', name: 'Office Supplies Request', category: 'Facilities', description: 'Request office supplies and consumables', icon: 'edit', approvalRequired: false, fulfillmentTime: '1 business day', cost: '$10 - $200', fields: [{ name: 'requester_name', label: 'Requester Name', type: 'text', required: true }, { name: 'department', label: 'Department', type: 'select', options: ['Sales', 'Marketing', 'Finance', 'Engineering', 'HR', 'IT', 'Operations'], required: true }, { name: 'items_needed', label: 'Items Needed (describe)', type: 'textarea', required: true }, { name: 'delivery_location', label: 'Delivery Location', type: 'text', required: true }] },
-      { id: 'CAT-012', name: 'Meeting Room AV Setup', category: 'Facilities', description: 'Request AV equipment setup for a meeting', icon: 'slideshow', approvalRequired: false, fulfillmentTime: 'Same day', cost: 'No cost', fields: [{ name: 'meeting_room', label: 'Meeting Room', type: 'select', options: ['Conference Room A', 'Conference Room B', 'Boardroom', 'Training Room 1', 'Training Room 2'], required: true }, { name: 'date', label: 'Meeting Date', type: 'date', required: true }, { name: 'time_start', label: 'Start Time', type: 'text', required: true }, { name: 'time_end', label: 'End Time', type: 'text', required: true }, { name: 'requirements', label: 'AV Requirements', type: 'textarea', required: true }] }
+      { id: 'CAT-012', name: 'Meeting Room AV Setup', category: 'Facilities', description: 'Request AV equipment setup for a meeting', icon: 'slideshow', approvalRequired: false, fulfillmentTime: 'Same day', cost: 'No cost', fields: [{ name: 'meeting_room', label: 'Meeting Room', type: 'select', options: ['Conference Room A', 'Conference Room B', 'Boardroom', 'Training Room 1', 'Training Room 2'], required: true }, { name: 'date', label: 'Meeting Date', type: 'date', required: true }, { name: 'time_start', label: 'Start Time', type: 'text', required: true }, { name: 'time_end', label: 'End Time', type: 'text', required: true }, { name: 'requirements', label: 'AV Requirements', type: 'textarea', required: true }] },
+      { id: 'CAT-013', name: 'Security Question / Breach Report', category: 'Security', description: 'Report a security incident, suspicious activity, or ask a security-related question', icon: 'alert', approvalRequired: true, fulfillmentTime: '4 hours (Critical) / 24 hours', cost: 'No cost', stepLabels: ['Reporter Info', 'Classification', 'Context', 'Evidence & Consent', 'Review & Submit'], fields: [
+        { name: 'reporter_name', label: 'Your Full Name', type: 'text', required: true, step: 1 },
+        { name: 'reporter_email', label: 'Email Address', type: 'email', required: true, step: 1 },
+        { name: 'reporter_employee_id', label: 'Employee ID', type: 'text', required: true, step: 1 },
+        { name: 'reporter_phone', label: 'Contact Phone', type: 'text', required: false, step: 1 },
+        { name: 'report_type', label: 'Report Type', type: 'select', options: ['Question', 'Incident', 'Suspicious Activity'], required: true, step: 2 },
+        { name: 'incident_type', label: 'Incident Type', type: 'select', options: ['Phishing', 'Malware', 'Data Breach', 'Unauthorized Access', 'Policy Violation', 'Account Compromise', 'Lost/Stolen Device'], required: true, step: 2, showWhen: { field: 'report_type', equals: 'Incident|Suspicious Activity' } },
+        { name: 'summary', label: 'Short Summary', type: 'text', required: true, step: 2 },
+        { name: 'description', label: 'Detailed Description', type: 'textarea', required: true, step: 2 },
+        { name: 'affected_system', label: 'Affected System / Application', type: 'text', required: false, step: 3 },
+        { name: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Staging', 'Development', 'Unknown'], required: false, step: 3 },
+        { name: 'asset_tag', label: 'Asset Tag (if applicable)', type: 'text', required: false, step: 3 },
+        { name: 'owner_team', label: 'System Owner / Team', type: 'text', required: false, step: 3 },
+        { name: 'time_detected', label: 'When Was It Detected?', type: 'text', required: false, step: 3 },
+        { name: 'duration', label: 'Estimated Duration', type: 'select', options: ['Less than 1 hour', '1-4 hours', '4-24 hours', 'More than 24 hours', 'Unknown'], required: false, step: 3 },
+        { name: 'attachments', label: 'Attach Evidence (screenshots, logs)', type: 'file', required: false, step: 4 },
+        { name: 'ioc_indicators', label: 'Indicators of Compromise (IPs, URLs, hashes)', type: 'textarea', required: false, step: 4 },
+        { name: 'consent', label: 'I confirm that the information provided is accurate to the best of my knowledge and I understand this report may trigger a security investigation.', type: 'checkbox', required: true, step: 4 },
+        { name: 'severity', label: 'Suggested Severity', type: 'select', options: ['Low', 'Normal', 'High', 'Critical'], required: true, step: 5 }
+      ]},
+      { id: 'CAT-014', name: 'Account Issue Report', category: 'Security', description: 'Report account lockouts, unauthorized access, MFA failures, or other account-related issues', icon: 'key', approvalRequired: false, fulfillmentTime: '2 hours (Critical) / 8 hours', cost: 'No cost', stepLabels: ['Reporter Info', 'Classification', 'Account & Environment', 'Evidence', 'Review & Submit'], fields: [
+        { name: 'reporter_name', label: 'Your Full Name', type: 'text', required: true, step: 1 },
+        { name: 'reporter_email', label: 'Email Address', type: 'email', required: true, step: 1 },
+        { name: 'reporter_employee_id', label: 'Employee ID', type: 'text', required: true, step: 1 },
+        { name: 'reporter_phone', label: 'Contact Phone', type: 'text', required: false, step: 1 },
+        { name: 'issue_category', label: 'Issue Category', type: 'select', options: ['Lockout', 'Access Issue', 'MFA Problem', 'Suspicious Activity', 'Password Issue'], required: true, step: 2 },
+        { name: 'issue_type', label: 'Issue Type', type: 'select', options: [], required: true, step: 2, dependsOn: 'issue_category', optionsMap: { 'Lockout': ['Too Many Failed Attempts', 'Account Disabled by Admin', 'Expired Password', 'Unknown Cause', '_other'], 'Access Issue': ['Permission Denied', 'Role Missing', 'Group Membership', 'Application Access', '_other'], 'MFA Problem': ['MFA Not Prompting', 'MFA Token Rejected', 'Lost MFA Device', 'MFA Enrollment', '_other'], 'Suspicious Activity': ['Unrecognized Login', 'Login from Unknown Location', 'Multiple Failed Attempts', 'Account Used After Hours', '_other'], 'Password Issue': ['Cannot Reset', 'Reset Link Expired', 'Complexity Rejection', 'Password Not Syncing', '_other'] } },
+        { name: 'summary', label: 'Short Summary', type: 'text', required: true, step: 2 },
+        { name: 'description', label: 'Detailed Description', type: 'textarea', required: true, step: 2 },
+        { name: 'affected_username', label: 'Affected Username / UPN', type: 'text', required: true, step: 3 },
+        { name: 'affected_app', label: 'Application / Service', type: 'text', required: true, step: 3 },
+        { name: 'auth_provider', label: 'Auth Provider', type: 'select', options: ['Active Directory', 'Azure AD / Entra ID', 'Okta', 'LDAP', 'Other / Unknown'], required: false, step: 3 },
+        { name: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Staging', 'Development', 'Unknown'], required: false, step: 3 },
+        { name: 'last_successful_login', label: 'Last Successful Login (approx.)', type: 'text', required: false, step: 3 },
+        { name: 'device', label: 'Device Used', type: 'text', required: false, step: 3 },
+        { name: 'attachments', label: 'Attach Evidence (screenshots, error messages)', type: 'file', required: false, step: 4 },
+        { name: 'requested_action', label: 'Requested Action', type: 'select', options: ['Unlock Account', 'Reset Password', 'Investigate Activity', 'Restore Access', 'Disable Account', 'Other'], required: true, step: 4 },
+        { name: 'approver_email', label: 'Manager / Approver Email', type: 'email', required: false, step: 4 },
+        { name: 'consent', label: 'I confirm the affected account belongs to me or I am authorized to report on behalf of the account holder.', type: 'checkbox', required: true, step: 4 },
+        { name: 'severity', label: 'Severity', type: 'select', options: ['Low', 'Normal', 'High', 'Critical'], required: true, step: 5 }
+      ]}
     ],
 
     // ITSM Policies
@@ -1003,6 +1044,10 @@ function generateDatabase() {
 
 /* ---------- Generate Data ---------- */
 const db = generateDatabase();
+
+// Preserve full catalog before json-server/lowdb processes it
+// (lowdb may drop items with complex nested objects like optionsMap/showWhen)
+const _fullItsmCatalog = JSON.parse(JSON.stringify(db.itsm_catalog));
 
 console.log('📊 Database generated successfully:');
 Object.keys(db).forEach(key => {
@@ -1990,6 +2035,30 @@ server.post('/api/itsm/incidents/:id/link', (req, res) => {
   res.json({ success: true, message: `Linked ${linkType} ${targetId} to ${inc.id}`, data: inc });
 });
 
+// Custom catalog routes — bypass json-server/lowdb which drops complex nested items
+server.get('/api/itsm/catalog', (req, res) => {
+  const category = req.query.category;
+  let items = _fullItsmCatalog;
+  if (category) items = items.filter(i => i.category === category);
+  res.json(items);
+});
+
+server.get('/api/itsm/catalog/:id', (req, res) => {
+  const item = _fullItsmCatalog.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Catalog item not found' });
+  res.json(item);
+});
+
+server.get('/itsm_catalog', (req, res) => {
+  res.json(_fullItsmCatalog);
+});
+
+server.get('/itsm_catalog/:id', (req, res) => {
+  const item = _fullItsmCatalog.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ error: 'Catalog item not found' });
+  res.json(item);
+});
+
 server.get('/api/itsm/incidents/stats', (req, res) => {
   const incs = db.itsm_incidents;
   const byStatus = {};
@@ -2135,7 +2204,7 @@ server.get('/api/itsm/changes/stats', (req, res) => {
 server.post('/api/itsm/requests', (req, res) => {
   const { catalogItem, requestedBy, requestedByName } = req.body;
   if (!catalogItem) return res.status(400).json({ success: false, error: 'catalogItem is required' });
-  const catItem = db.itsm_catalog.find(c => c.id === catalogItem);
+  const catItem = _fullItsmCatalog.find(c => c.id === catalogItem);
   if (!catItem) return res.status(400).json({ success: false, error: `Catalog item ${catalogItem} not found` });
   const id = nextItsmId(db.itsm_requests, 'REQ');
   const now = new Date().toISOString();
@@ -2673,6 +2742,9 @@ server.post('/api/itsm/reset', (req, res) => {
   const freshDb = generateDatabase();
   const itsmKeys = Object.keys(freshDb).filter(k => k.startsWith('itsm_'));
   itsmKeys.forEach(key => { db[key] = freshDb[key]; });
+  // Refresh preserved catalog copy
+  _fullItsmCatalog.length = 0;
+  freshDb.itsm_catalog.forEach(item => _fullItsmCatalog.push(item));
   res.json({ success: true, message: `ITSM data reset. Regenerated ${itsmKeys.length} collections.`, collections: itsmKeys });
 });
 

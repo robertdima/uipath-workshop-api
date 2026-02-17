@@ -91,6 +91,7 @@ const RequestsModule = {
                                 <option value="Access">Access</option>
                                 <option value="Logistics">Logistics</option>
                                 <option value="Facilities">Facilities</option>
+                                <option value="Security">Security</option>
                             </select>
                         </div>
                         <div class="toolbar-search" style="margin-left: auto;">

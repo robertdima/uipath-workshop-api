@@ -11,7 +11,8 @@ const IncidentsModule = {
         'Hardware': ['Printer', 'Laptop', 'Desktop', 'Monitor'],
         'Email': ['Sync', 'Delivery', 'Calendar', 'Contacts'],
         'Infrastructure': ['Server', 'Storage', 'Database', 'Backup'],
-        'Identity': ['Password', 'MFA', 'Account', 'Access']
+        'Identity': ['Password', 'MFA', 'Account', 'Access'],
+        'Security': ['Phishing', 'Malware', 'Data Breach', 'Unauthorized Access', 'Policy Violation', 'Account Compromise']
     },
 
     // Team options for assignment

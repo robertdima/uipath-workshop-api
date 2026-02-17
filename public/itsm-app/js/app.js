@@ -1294,6 +1294,7 @@ function createNewIncident() {
                             <option value="Email">Email</option>
                             <option value="Infrastructure">Infrastructure</option>
                             <option value="Identity">Identity</option>
+                            <option value="Security">Security</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: var(--spacing-sm);">
@@ -1451,7 +1452,8 @@ function updateSubcategories() {
         'Hardware': ['Desktop', 'Laptop', 'Printer', 'Monitor', 'Peripheral', 'Other'],
         'Email': ['Delivery', 'Access', 'Calendar', 'Outlook', 'Mobile', 'Other'],
         'Infrastructure': ['Server', 'Storage', 'Database', 'Backup', 'Cloud', 'Other'],
-        'Identity': ['Password', 'Account Locked', 'Permissions', 'MFA', 'SSO', 'Other']
+        'Identity': ['Password', 'Account Locked', 'Permissions', 'MFA', 'SSO', 'Other'],
+        'Security': ['Phishing', 'Malware', 'Data Breach', 'Unauthorized Access', 'Policy Violation', 'Account Compromise', 'Other']
     };
 
     const options = subcategories[category] || ['General', 'Other'];

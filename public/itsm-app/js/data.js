@@ -278,7 +278,76 @@ const ITSMData = {
             { name: 'time_start', label: 'Start Time', type: 'text', required: true },
             { name: 'time_end', label: 'End Time', type: 'text', required: true },
             { name: 'requirements', label: 'AV Requirements (describe what you need)', type: 'textarea', required: true }
-        ]}
+        ]},
+        {
+            id: 'CAT-013', name: 'Security Question / Breach Report', category: 'Security',
+            description: 'Report a security incident, suspicious activity, or ask a security-related question',
+            icon: 'alert', approvalRequired: true, fulfillmentTime: '4 hours (Critical) / 24 hours', cost: 'No cost',
+            stepLabels: ['Reporter Info', 'Classification', 'Context', 'Evidence & Consent', 'Review & Submit'],
+            fields: [
+                // Step 1 — Reporter Info
+                { name: 'reporter_name', label: 'Your Full Name', type: 'text', required: true, step: 1 },
+                { name: 'reporter_email', label: 'Email Address', type: 'email', required: true, step: 1 },
+                { name: 'reporter_employee_id', label: 'Employee ID', type: 'text', required: true, step: 1 },
+                { name: 'reporter_phone', label: 'Contact Phone', type: 'text', required: false, step: 1 },
+                // Step 2 — Classification
+                { name: 'report_type', label: 'Report Type', type: 'select', options: ['Question', 'Incident', 'Suspicious Activity'], required: true, step: 2 },
+                { name: 'incident_type', label: 'Incident Type', type: 'select', options: ['Phishing', 'Malware', 'Data Breach', 'Unauthorized Access', 'Policy Violation', 'Account Compromise', 'Lost/Stolen Device'], required: true, step: 2, showWhen: { field: 'report_type', equals: 'Incident|Suspicious Activity' } },
+                { name: 'summary', label: 'Short Summary', type: 'text', required: true, step: 2 },
+                { name: 'description', label: 'Detailed Description', type: 'textarea', required: true, step: 2 },
+                // Step 3 — Context
+                { name: 'affected_system', label: 'Affected System / Application', type: 'text', required: false, step: 3 },
+                { name: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Staging', 'Development', 'Unknown'], required: false, step: 3 },
+                { name: 'asset_tag', label: 'Asset Tag (if applicable)', type: 'text', required: false, step: 3 },
+                { name: 'owner_team', label: 'System Owner / Team', type: 'text', required: false, step: 3 },
+                { name: 'time_detected', label: 'When Was It Detected?', type: 'text', required: false, step: 3 },
+                { name: 'duration', label: 'Estimated Duration', type: 'select', options: ['Less than 1 hour', '1-4 hours', '4-24 hours', 'More than 24 hours', 'Unknown'], required: false, step: 3 },
+                // Step 4 — Evidence & Consent
+                { name: 'attachments', label: 'Attach Evidence (screenshots, logs)', type: 'file', required: false, step: 4 },
+                { name: 'ioc_indicators', label: 'Indicators of Compromise (IPs, URLs, hashes)', type: 'textarea', required: false, step: 4 },
+                { name: 'consent', label: 'I confirm that the information provided is accurate to the best of my knowledge and I understand this report may trigger a security investigation.', type: 'checkbox', required: true, step: 4 },
+                // Step 5 — Review (severity editable on last step)
+                { name: 'severity', label: 'Suggested Severity', type: 'select', options: ['Low', 'Normal', 'High', 'Critical'], required: true, step: 5 }
+            ]
+        },
+        {
+            id: 'CAT-014', name: 'Account Issue Report', category: 'Security',
+            description: 'Report account lockouts, unauthorized access, MFA failures, or other account-related issues',
+            icon: 'key', approvalRequired: false, fulfillmentTime: '2 hours (Critical) / 8 hours', cost: 'No cost',
+            stepLabels: ['Reporter Info', 'Classification', 'Account & Environment', 'Evidence', 'Review & Submit'],
+            fields: [
+                // Step 1 — Reporter Info
+                { name: 'reporter_name', label: 'Your Full Name', type: 'text', required: true, step: 1 },
+                { name: 'reporter_email', label: 'Email Address', type: 'email', required: true, step: 1 },
+                { name: 'reporter_employee_id', label: 'Employee ID', type: 'text', required: true, step: 1 },
+                { name: 'reporter_phone', label: 'Contact Phone', type: 'text', required: false, step: 1 },
+                // Step 2 — Classification
+                { name: 'issue_category', label: 'Issue Category', type: 'select', options: ['Lockout', 'Access Issue', 'MFA Problem', 'Suspicious Activity', 'Password Issue'], required: true, step: 2 },
+                { name: 'issue_type', label: 'Issue Type', type: 'select', options: [], required: true, step: 2, dependsOn: 'issue_category', optionsMap: {
+                    'Lockout': ['Too Many Failed Attempts', 'Account Disabled by Admin', 'Expired Password', 'Unknown Cause', '_other'],
+                    'Access Issue': ['Permission Denied', 'Role Missing', 'Group Membership', 'Application Access', '_other'],
+                    'MFA Problem': ['MFA Not Prompting', 'MFA Token Rejected', 'Lost MFA Device', 'MFA Enrollment', '_other'],
+                    'Suspicious Activity': ['Unrecognized Login', 'Login from Unknown Location', 'Multiple Failed Attempts', 'Account Used After Hours', '_other'],
+                    'Password Issue': ['Cannot Reset', 'Reset Link Expired', 'Complexity Rejection', 'Password Not Syncing', '_other']
+                }},
+                { name: 'summary', label: 'Short Summary', type: 'text', required: true, step: 2 },
+                { name: 'description', label: 'Detailed Description', type: 'textarea', required: true, step: 2 },
+                // Step 3 — Account & Environment
+                { name: 'affected_username', label: 'Affected Username / UPN', type: 'text', required: true, step: 3 },
+                { name: 'affected_app', label: 'Application / Service', type: 'text', required: true, step: 3 },
+                { name: 'auth_provider', label: 'Auth Provider', type: 'select', options: ['Active Directory', 'Azure AD / Entra ID', 'Okta', 'LDAP', 'Other / Unknown'], required: false, step: 3 },
+                { name: 'environment', label: 'Environment', type: 'select', options: ['Production', 'Staging', 'Development', 'Unknown'], required: false, step: 3 },
+                { name: 'last_successful_login', label: 'Last Successful Login (approx.)', type: 'text', required: false, step: 3 },
+                { name: 'device', label: 'Device Used', type: 'text', required: false, step: 3 },
+                // Step 4 — Evidence
+                { name: 'attachments', label: 'Attach Evidence (screenshots, error messages)', type: 'file', required: false, step: 4 },
+                { name: 'requested_action', label: 'Requested Action', type: 'select', options: ['Unlock Account', 'Reset Password', 'Investigate Activity', 'Restore Access', 'Disable Account', 'Other'], required: true, step: 4 },
+                { name: 'approver_email', label: 'Manager / Approver Email', type: 'email', required: false, step: 4 },
+                { name: 'consent', label: 'I confirm the affected account belongs to me or I am authorized to report on behalf of the account holder.', type: 'checkbox', required: true, step: 4 },
+                // Step 5 — Review
+                { name: 'severity', label: 'Severity', type: 'select', options: ['Low', 'Normal', 'High', 'Critical'], required: true, step: 5 }
+            ]
+        }
     ],
 
     // Service Requests (enriched first-class ticket type)

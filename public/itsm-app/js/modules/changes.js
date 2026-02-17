@@ -129,7 +129,131 @@ const ChangesModule = {
     },
 
     /**
-     * Create New Change - Show full modal form
+     * Render services dropdown for affected services
+     */
+    getServicesOptions() {
+        const services = [
+            'Email Services',
+            'CRM Application',
+            'ERP System',
+            'VPN / Remote Access',
+            'Active Directory',
+            'File Services',
+            'Print Services',
+            'Web Applications',
+            'Database Services',
+            'Network Infrastructure',
+            'Payment Gateway',
+            'Customer Portal',
+            'Internal Portal',
+            'Backup Services',
+            'Monitoring Systems'
+        ];
+        return services.map(s => `<option value="${s}">${s}</option>`).join('');
+    },
+
+    /**
+     * Render category/subcategory options
+     */
+    getCategoryOptions() {
+        return `
+            <option value="">-- Select Category --</option>
+            <option value="Application">Application</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Network">Network</option>
+            <option value="Security">Security</option>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Database">Database</option>
+            <option value="Cloud">Cloud Services</option>
+        `;
+    },
+
+    /**
+     * Update subcategory options based on category
+     */
+    updateSubcategoryOptions() {
+        const category = document.getElementById('chg-category')?.value;
+        const subcategorySelect = document.getElementById('chg-subcategory');
+        if (!subcategorySelect) return;
+
+        const subcategories = {
+            'Application': ['Deployment', 'Configuration', 'Upgrade', 'Patch', 'Integration'],
+            'Hardware': ['Server', 'Workstation', 'Network Device', 'Storage', 'Peripheral'],
+            'Network': ['Routing', 'Switching', 'Firewall', 'DNS', 'Load Balancer', 'VPN'],
+            'Security': ['Access Control', 'Certificate', 'Encryption', 'Policy', 'Vulnerability Patch'],
+            'Infrastructure': ['Virtual Machine', 'Container', 'Backup', 'Monitoring', 'Automation'],
+            'Database': ['Schema Change', 'Migration', 'Optimization', 'Backup/Restore', 'Replication'],
+            'Cloud': ['AWS', 'Azure', 'GCP', 'SaaS Configuration', 'Hybrid']
+        };
+
+        const options = subcategories[category] || [];
+        subcategorySelect.innerHTML = '<option value="">-- Select Subcategory --</option>' +
+            options.map(s => `<option value="${s}">${s}</option>`).join('');
+    },
+
+    /**
+     * Populate requester details when customer is selected
+     */
+    populateRequesterDetails() {
+        const requesterSelect = document.getElementById('chg-requested-by');
+        if (!requesterSelect) return;
+
+        const selectedOption = requesterSelect.options[requesterSelect.selectedIndex];
+        const customerId = selectedOption.getAttribute('data-customer-id');
+        const customer = ITSMData.customers.find(c => c.id === customerId);
+
+        // Update detail fields
+        const nameEl = document.getElementById('chg-requester-name');
+        const emailEl = document.getElementById('chg-requester-email');
+        const phoneEl = document.getElementById('chg-requester-phone');
+        const deptEl = document.getElementById('chg-requester-dept');
+        const vipBadge = document.getElementById('chg-vip-badge');
+
+        if (customer) {
+            if (nameEl) nameEl.value = customer.name;
+            if (emailEl) emailEl.value = customer.email;
+            if (phoneEl) phoneEl.value = customer.phone;
+            if (deptEl) deptEl.value = customer.department;
+            if (vipBadge) vipBadge.style.display = customer.vip ? 'inline-block' : 'none';
+        } else {
+            if (nameEl) nameEl.value = '';
+            if (emailEl) emailEl.value = '';
+            if (phoneEl) phoneEl.value = '';
+            if (deptEl) deptEl.value = '';
+            if (vipBadge) vipBadge.style.display = 'none';
+        }
+    },
+
+    /**
+     * Toggle outage duration field visibility
+     */
+    toggleOutageDuration() {
+        const outageRequired = document.getElementById('chg-outage-required')?.checked;
+        const durationField = document.getElementById('chg-outage-duration-group');
+        if (durationField) {
+            durationField.style.display = outageRequired ? 'block' : 'none';
+        }
+    },
+
+    /**
+     * Update assignee options based on selected team
+     */
+    updateAssigneeOptions() {
+        const team = document.getElementById('chg-assignment-group')?.value;
+        const assigneeSelect = document.getElementById('chg-assignee');
+        if (!assigneeSelect) return;
+
+        const teamData = ITSMData.teams.find(t => t.name === team);
+        const technicians = teamData
+            ? ITSMData.technicians.filter(t => teamData.members.includes(t.id))
+            : [];
+
+        assigneeSelect.innerHTML = '<option value="">-- Auto Assign --</option>' +
+            technicians.map(t => `<option value="${t.email}">${t.name} (${t.workload} tickets)</option>`).join('');
+    },
+
+    /**
+     * Create New Change - Show full modal form with comprehensive fields
      */
     createNewChange() {
         const now = new Date();
@@ -141,74 +265,318 @@ const ChangesModule = {
                 <span>+ Create New Change Request</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
-            <div class="modal-body" style="width: 600px; max-height: 70vh; overflow-y: auto;">
-                <div class="form-group">
-                    <label class="form-label required">Title</label>
-                    <input type="text" class="form-control" id="chg-title" placeholder="Brief title for the change">
+            <div class="modal-body" style="width: 750px; max-height: 75vh; overflow-y: auto;">
+
+                <!-- Section 1: Requester Information -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Requester Information
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label required">Requested By</label>
+                            <select class="form-control" id="chg-requested-by" onchange="ChangesModule.populateRequesterDetails()">
+                                <option value="">-- Select Requester --</option>
+                                ${ITSMData.customers.map(c => `
+                                    <option value="${c.email}" data-customer-id="${c.id}">${c.name} (${c.department})</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Requester Name</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="text" class="form-control" id="chg-requester-name" readonly placeholder="Auto-filled">
+                                <span id="chg-vip-badge" class="badge badge-critical" style="display: none;">VIP</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="chg-requester-email" readonly placeholder="Auto-filled">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="chg-requester-phone" readonly placeholder="Auto-filled">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-control" id="chg-requester-dept" readonly placeholder="Auto-filled">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Requested For</label>
+                            <select class="form-control" id="chg-requested-for">
+                                <option value="">-- Same as Requester --</option>
+                                ${ITSMData.customers.map(c => `
+                                    <option value="${c.email}">${c.name} (${c.department})</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label required">Description</label>
-                    <textarea class="form-control" id="chg-description" rows="3" placeholder="Detailed description of the change..."></textarea>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+
+                <!-- Section 2: Change Details -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Change Details
+                    </div>
                     <div class="form-group">
-                        <label class="form-label">Type</label>
-                        <select class="form-control" id="chg-type">
-                            <option value="Standard">Standard</option>
-                            <option value="Normal">Normal</option>
-                            <option value="Emergency">Emergency</option>
+                        <label class="form-label required">Short Description</label>
+                        <input type="text" class="form-control" id="chg-title" placeholder="Brief title for the change (max 100 chars)" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Description</label>
+                        <textarea class="form-control" id="chg-description" rows="3" placeholder="Detailed description of what this change entails..."></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-control" id="chg-category" onchange="ChangesModule.updateSubcategoryOptions()">
+                                ${this.getCategoryOptions()}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subcategory</label>
+                            <select class="form-control" id="chg-subcategory">
+                                <option value="">-- Select Category First --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Change Type</label>
+                            <select class="form-control" id="chg-type" onchange="ChangesModule.onTypeChange()">
+                                <option value="Standard">Standard (Pre-approved)</option>
+                                <option value="Normal" selected>Normal (Requires CAB)</option>
+                                <option value="Emergency">Emergency (Expedited)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Risk Level</label>
+                            <select class="form-control" id="chg-risk" onchange="ChangesModule.onRiskChange()">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Business Justification -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Business Justification
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Business Justification</label>
+                        <textarea class="form-control" id="chg-justification" rows="3" placeholder="Why is this change needed? What business problem does it solve?"></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Related Incident/Problem</label>
+                            <select class="form-control" id="chg-related-incident">
+                                <option value="">-- None --</option>
+                                ${ITSMData.incidents.map(inc => `
+                                    <option value="${inc.id}">${inc.id}: ${inc.summary.substring(0, 50)}...</option>
+                                `).join('')}
+                                ${ITSMData.problems.map(prb => `
+                                    <option value="${prb.id}">${prb.id}: ${prb.title.substring(0, 50)}...</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Policy Reference</label>
+                            <select class="form-control" id="chg-policy">
+                                <option value="">-- Select Policy --</option>
+                                ${ITSMData.policies.map(policy => `
+                                    <option value="${policy.id}">${policy.id}: ${policy.title}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Impact Assessment -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Impact Assessment
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Impact</label>
+                            <select class="form-control" id="chg-impact">
+                                <option value="1">1 - High (Enterprise-wide)</option>
+                                <option value="2" selected>2 - Medium (Department/Service)</option>
+                                <option value="3">3 - Low (Individual/Limited)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Affected Users</label>
+                            <select class="form-control" id="chg-affected-users">
+                                <option value="all">All Users</option>
+                                <option value="department">Specific Department</option>
+                                <option value="team">Specific Team</option>
+                                <option value="individual">Individual Users</option>
+                                <option value="none" selected>No Direct User Impact</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Affected Services</label>
+                        <select class="form-control" id="chg-affected-services" multiple size="4" style="height: auto;">
+                            ${this.getServicesOptions()}
                         </select>
+                        <small style="color: var(--text-muted);">Hold Ctrl/Cmd to select multiple services</small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Risk</label>
-                        <select class="form-control" id="chg-risk" onchange="ChangesModule.onRiskChange()">
-                            <option value="Low">Low</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="High">High</option>
+                        <label class="form-label">Affected Configuration Items</label>
+                        ${this.renderAssetMultiSelect()}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="chg-outage-required" onchange="ChangesModule.toggleOutageDuration()">
+                                <label for="chg-outage-required">Service Outage Required</label>
+                            </div>
+                        </div>
+                        <div class="form-group" id="chg-outage-duration-group" style="display: none;">
+                            <label class="form-label">Estimated Outage Duration</label>
+                            <select class="form-control" id="chg-outage-duration">
+                                <option value="5">5 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60" selected>1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="240">4 hours</option>
+                                <option value="480">8 hours</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Planning -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Planning
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Implementation Plan</label>
+                        <textarea class="form-control" id="chg-implementation-plan" rows="4" placeholder="Step-by-step implementation procedure...
+1.
+2.
+3. "></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Test Plan</label>
+                        <textarea class="form-control" id="chg-test-plan" rows="3" placeholder="How will you verify the change was successful?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Backout/Rollback Plan</label>
+                        <textarea class="form-control" id="chg-rollback" rows="3" placeholder="How to rollback this change if it fails..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 6: Schedule -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Schedule
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Planned Start Date/Time</label>
+                            <input type="datetime-local" class="form-control" id="chg-scheduled-start"
+                                value="${this.formatDateTimeForInput(scheduledStart.toISOString())}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Planned End Date/Time</label>
+                            <input type="datetime-local" class="form-control" id="chg-scheduled-end"
+                                value="${this.formatDateTimeForInput(scheduledEnd.toISOString())}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Change Window</label>
+                            <select class="form-control" id="chg-window">
+                                <option value="maintenance">Maintenance Window (22:00-06:00)</option>
+                                <option value="weekend">Weekend Window</option>
+                                <option value="business">Business Hours (with approval)</option>
+                                <option value="emergency">Emergency (Immediate)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7: Assignment & Approval -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Assignment & Approval
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Assignment Group</label>
+                            <select class="form-control" id="chg-assignment-group" onchange="ChangesModule.updateAssigneeOptions()">
+                                <option value="">-- Select Team --</option>
+                                ${ITSMData.teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assigned To</label>
+                            <select class="form-control" id="chg-assignee">
+                                <option value="">-- Select Team First --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Implementer</label>
+                            <select class="form-control" id="chg-implementer">
+                                <option value="">-- Same as Assigned To --</option>
+                                ${ITSMData.technicians.map(t => `<option value="${t.email}">${t.name} (${t.team})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-check" style="margin-top: 28px;">
+                                <input type="checkbox" id="chg-cab-required" checked>
+                                <label for="chg-cab-required">CAB Approval Required</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 8: Communication -->
+                <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Communication Plan
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notification Recipients</label>
+                        <select class="form-control" id="chg-notify" multiple size="3" style="height: auto;">
+                            <option value="affected-users">Affected Users</option>
+                            <option value="service-owners">Service Owners</option>
+                            <option value="management">Management</option>
+                            <option value="helpdesk">Help Desk</option>
+                            <option value="vendors">Vendors</option>
                         </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Affected Assets</label>
-                    ${this.renderAssetMultiSelect()}
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                    <div class="form-group">
-                        <label class="form-label">Scheduled Start</label>
-                        <input type="datetime-local" class="form-control" id="chg-scheduled-start"
-                            value="${this.formatDateTimeForInput(scheduledStart.toISOString())}">
+                        <small style="color: var(--text-muted);">Hold Ctrl/Cmd to select multiple groups</small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Scheduled End</label>
-                        <input type="datetime-local" class="form-control" id="chg-scheduled-end"
-                            value="${this.formatDateTimeForInput(scheduledEnd.toISOString())}">
+                        <label class="form-label">Communication Notes</label>
+                        <textarea class="form-control" id="chg-communication-notes" rows="2" placeholder="Special communication requirements or messages..."></textarea>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="form-check">
-                        <input type="checkbox" id="chg-cab-required">
-                        <label for="chg-cab-required">CAB Approval Required</label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Rollback Plan</label>
-                    <textarea class="form-control" id="chg-rollback" rows="3" placeholder="Describe how to rollback this change if it fails..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Policy Reference (Optional)</label>
-                    <select class="form-control" id="chg-policy">
-                        <option value="">-- Select Policy --</option>
-                        ${ITSMData.policies.map(policy => `
-                            <option value="${policy.id}">${policy.id}: ${policy.title}</option>
-                        `).join('')}
-                    </select>
-                </div>
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="ChangesModule.submitNewChange()">Create Change Request</button>
             </div>
         `);
+    },
+
+    /**
+     * Handle type change - auto-check CAB based on type
+     */
+    onTypeChange() {
+        const type = document.getElementById('chg-type').value;
+        const cabCheckbox = document.getElementById('chg-cab-required');
+
+        if (type === 'Standard') {
+            cabCheckbox.checked = false;
+        } else {
+            cabCheckbox.checked = true;
+        }
     },
 
     /**
@@ -226,47 +594,133 @@ const ChangesModule = {
      * Submit new change request
      */
     submitNewChange() {
+        // Requester Information
+        const requestedBy = document.getElementById('chg-requested-by').value;
+        const requesterName = document.getElementById('chg-requester-name').value;
+        const requesterEmail = document.getElementById('chg-requester-email').value;
+        const requesterPhone = document.getElementById('chg-requester-phone').value;
+        const requesterDept = document.getElementById('chg-requester-dept').value;
+        const requestedFor = document.getElementById('chg-requested-for').value || requestedBy;
+
+        // Change Details
         const title = document.getElementById('chg-title').value.trim();
         const description = document.getElementById('chg-description').value.trim();
+        const category = document.getElementById('chg-category').value;
+        const subcategory = document.getElementById('chg-subcategory').value;
         const type = document.getElementById('chg-type').value;
         const risk = document.getElementById('chg-risk').value;
-        const affectedAssets = this.getSelectedAssets();
-        const scheduledStart = document.getElementById('chg-scheduled-start').value;
-        const scheduledEnd = document.getElementById('chg-scheduled-end').value;
-        const cabRequired = document.getElementById('chg-cab-required').checked;
-        const rollbackPlan = document.getElementById('chg-rollback').value.trim();
+
+        // Business Justification
+        const justification = document.getElementById('chg-justification').value.trim();
+        const relatedIncident = document.getElementById('chg-related-incident').value;
         const policyReference = document.getElementById('chg-policy').value;
 
+        // Impact Assessment
+        const impact = document.getElementById('chg-impact').value;
+        const affectedUsers = document.getElementById('chg-affected-users').value;
+        const affectedServicesEl = document.getElementById('chg-affected-services');
+        const affectedServices = affectedServicesEl ? Array.from(affectedServicesEl.selectedOptions).map(o => o.value) : [];
+        const affectedAssets = this.getSelectedAssets();
+        const outageRequired = document.getElementById('chg-outage-required').checked;
+        const outageDuration = outageRequired ? document.getElementById('chg-outage-duration').value : null;
+
+        // Planning
+        const implementationPlan = document.getElementById('chg-implementation-plan').value.trim();
+        const testPlan = document.getElementById('chg-test-plan').value.trim();
+        const rollbackPlan = document.getElementById('chg-rollback').value.trim();
+
+        // Schedule
+        const scheduledStart = document.getElementById('chg-scheduled-start').value;
+        const scheduledEnd = document.getElementById('chg-scheduled-end').value;
+        const changeWindow = document.getElementById('chg-window').value;
+
+        // Assignment & Approval
+        const assignmentGroup = document.getElementById('chg-assignment-group').value;
+        const assignee = document.getElementById('chg-assignee').value;
+        const implementer = document.getElementById('chg-implementer').value || assignee;
+        const cabRequired = document.getElementById('chg-cab-required').checked;
+
+        // Communication
+        const notifyEl = document.getElementById('chg-notify');
+        const notifyRecipients = notifyEl ? Array.from(notifyEl.selectedOptions).map(o => o.value) : [];
+        const communicationNotes = document.getElementById('chg-communication-notes').value.trim();
+
         // Validation
+        if (!requestedBy) {
+            showToast('Requester is required', 'error');
+            return;
+        }
         if (!title) {
-            showToast('Title is required', 'error');
+            showToast('Short Description is required', 'error');
             return;
         }
         if (!description) {
             showToast('Description is required', 'error');
             return;
         }
+        if (!justification) {
+            showToast('Business Justification is required', 'error');
+            return;
+        }
+        if (!implementationPlan) {
+            showToast('Implementation Plan is required', 'error');
+            return;
+        }
+        if (!rollbackPlan) {
+            showToast('Rollback Plan is required', 'error');
+            return;
+        }
 
         const newId = this.getNextChangeId();
         const newChange = {
             id: newId,
+            // Requester Info
+            requestedBy: requestedBy,
+            requesterName: requesterName,
+            requesterEmail: requesterEmail,
+            requesterPhone: requesterPhone,
+            requesterDept: requesterDept,
+            requestedFor: requestedFor,
+            // Change Details
             title: title,
             description: description,
+            category: category,
+            subcategory: subcategory,
             type: type,
-            status: cabRequired ? 'Pending Approval' : 'Scheduled',
             risk: risk,
-            priority: type === 'Emergency' ? 'High' : 'Normal',
-            requestedBy: ITSMData.currentUser.username,
-            assignedTo: 'Change Team',
+            // Business Justification
+            justification: justification,
+            relatedIncident: relatedIncident || null,
+            policyReference: policyReference || null,
+            // Impact Assessment
+            impact: parseInt(impact),
+            affectedUsers: affectedUsers,
+            affectedServices: affectedServices,
             affectedAssets: affectedAssets,
+            outageRequired: outageRequired,
+            outageDuration: outageDuration ? parseInt(outageDuration) : null,
+            // Planning
+            implementationPlan: implementationPlan,
+            testPlan: testPlan,
+            rollbackPlan: rollbackPlan,
+            // Schedule
             scheduledStart: scheduledStart ? new Date(scheduledStart).toISOString() : null,
             scheduledEnd: scheduledEnd ? new Date(scheduledEnd).toISOString() : null,
+            changeWindow: changeWindow,
             actualStart: null,
             actualEnd: null,
+            // Assignment & Approval
+            assignedTo: assignmentGroup || 'Change Team',
+            assignee: assignee || null,
+            implementer: implementer || null,
             cabRequired: cabRequired,
             cabApproval: null,
-            rollbackPlan: rollbackPlan,
-            policyReference: policyReference || null,
+            // Communication
+            notifyRecipients: notifyRecipients,
+            communicationNotes: communicationNotes,
+            // Status & Metadata
+            status: cabRequired ? 'Pending Approval' : 'Scheduled',
+            priority: type === 'Emergency' ? 'High' : 'Normal',
             createdAt: new Date().toISOString(),
             notes: []
         };
@@ -311,6 +765,14 @@ const ChangesModule = {
             }).join('')
             : '<span style="color: var(--text-muted);">None specified</span>';
 
+        const affectedServicesList = change.affectedServices && change.affectedServices.length > 0
+            ? change.affectedServices.map(s => `<span class="badge badge-open" style="margin-right: 4px;">${s}</span>`).join('')
+            : '<span style="color: var(--text-muted);">None specified</span>';
+
+        // Find requester customer info if available
+        const requester = ITSMData.customers.find(c => c.email === change.requestedBy);
+        const isVip = requester?.vip || false;
+
         const actionButtons = this.getActionButtons(change);
 
         showModal(`
@@ -318,9 +780,9 @@ const ChangesModule = {
                 <span>${change.id}: ${change.title}</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
-            <div class="modal-body" style="width: 700px; max-height: 75vh; overflow-y: auto;">
+            <div class="modal-body" style="width: 750px; max-height: 75vh; overflow-y: auto;">
                 <!-- Status Bar -->
-                <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
                     <div>
                         <strong>Status:</strong>
                         <span class="badge ${this.getStatusBadgeClass(change.status)}">${change.status}</span>
@@ -333,6 +795,7 @@ const ChangesModule = {
                         <strong>Risk:</strong>
                         <span class="badge ${this.getRiskBadgeClass(change.risk)}">${change.risk}</span>
                     </div>
+                    ${change.category ? `<div><strong>Category:</strong> ${change.category}${change.subcategory ? ' / ' + change.subcategory : ''}</div>` : ''}
                     <div>
                         <strong>CAB:</strong>
                         ${change.cabRequired
@@ -343,69 +806,174 @@ const ChangesModule = {
                     </div>
                 </div>
 
-                <!-- Details Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                    <div class="form-group">
-                        <label class="form-label">Requested By</label>
-                        <input type="text" class="form-control" value="${change.requestedBy}" readonly>
+                <!-- Requester Information -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Requester Information ${isVip ? '<span class="badge badge-critical">VIP</span>' : ''}
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Assigned To</label>
-                        <input type="text" class="form-control" value="${change.assignedTo}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Scheduled Start</label>
-                        <input type="text" class="form-control" value="${this.formatDateTime(change.scheduledStart)}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Scheduled End</label>
-                        <input type="text" class="form-control" value="${this.formatDateTime(change.scheduledEnd)}" readonly>
-                    </div>
-                    ${change.actualStart ? `
-                    <div class="form-group">
-                        <label class="form-label">Actual Start</label>
-                        <input type="text" class="form-control" value="${this.formatDateTime(change.actualStart)}" readonly>
-                    </div>
-                    ` : ''}
-                    ${change.actualEnd ? `
-                    <div class="form-group">
-                        <label class="form-label">Actual End</label>
-                        <input type="text" class="form-control" value="${this.formatDateTime(change.actualEnd)}" readonly>
-                    </div>
-                    ` : ''}
-                    <div class="form-group">
-                        <label class="form-label">Created</label>
-                        <input type="text" class="form-control" value="${this.formatDateTime(change.createdAt)}" readonly>
-                    </div>
-                    ${change.policyReference ? `
-                    <div class="form-group">
-                        <label class="form-label">Policy Reference</label>
-                        <input type="text" class="form-control" value="${change.policyReference}" readonly>
-                    </div>
-                    ` : ''}
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-control" rows="3" readonly>${change.description}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Affected Assets</label>
-                    <div style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: 4px;">
-                        ${affectedAssetsList}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Requested By</label>
+                            <input type="text" class="form-control" value="${change.requesterName || change.requestedBy}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="text" class="form-control" value="${change.requesterEmail || change.requestedBy}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-control" value="${change.requesterDept || 'N/A'}" readonly>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Rollback Plan</label>
-                    <textarea class="form-control" rows="3" readonly>${change.rollbackPlan || 'No rollback plan specified'}</textarea>
+                <!-- Change Details -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Change Details
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" rows="3" readonly>${change.description}</textarea>
+                    </div>
+                    ${change.justification ? `
+                    <div class="form-group">
+                        <label class="form-label">Business Justification</label>
+                        <textarea class="form-control" rows="2" readonly>${change.justification}</textarea>
+                    </div>
+                    ` : ''}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        ${change.relatedIncident ? `
+                        <div class="form-group">
+                            <label class="form-label">Related Incident/Problem</label>
+                            <input type="text" class="form-control" value="${change.relatedIncident}" readonly>
+                        </div>
+                        ` : ''}
+                        ${change.policyReference ? `
+                        <div class="form-group">
+                            <label class="form-label">Policy Reference</label>
+                            <input type="text" class="form-control" value="${change.policyReference}" readonly>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- Impact Assessment -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Impact Assessment
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Impact Level</label>
+                            <input type="text" class="form-control" value="${change.impact === 1 ? 'High (Enterprise-wide)' : change.impact === 2 ? 'Medium (Department/Service)' : change.impact === 3 ? 'Low (Individual/Limited)' : 'N/A'}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Outage Required</label>
+                            <input type="text" class="form-control" value="${change.outageRequired ? 'Yes - ' + (change.outageDuration || 0) + ' minutes' : 'No'}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Affected Services</label>
+                        <div style="padding: var(--spacing-sm); background: var(--bg-primary); border-radius: 4px;">
+                            ${affectedServicesList}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Affected Configuration Items</label>
+                        <div style="padding: var(--spacing-sm); background: var(--bg-primary); border-radius: 4px;">
+                            ${affectedAssetsList}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Planning -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Planning
+                    </div>
+                    ${change.implementationPlan ? `
+                    <div class="form-group">
+                        <label class="form-label">Implementation Plan</label>
+                        <textarea class="form-control" rows="3" readonly>${change.implementationPlan}</textarea>
+                    </div>
+                    ` : ''}
+                    ${change.testPlan ? `
+                    <div class="form-group">
+                        <label class="form-label">Test Plan</label>
+                        <textarea class="form-control" rows="2" readonly>${change.testPlan}</textarea>
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label class="form-label">Rollback Plan</label>
+                        <textarea class="form-control" rows="2" readonly>${change.rollbackPlan || 'No rollback plan specified'}</textarea>
+                    </div>
+                </div>
+
+                <!-- Schedule -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Schedule
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Scheduled Start</label>
+                            <input type="text" class="form-control" value="${this.formatDateTime(change.scheduledStart)}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Scheduled End</label>
+                            <input type="text" class="form-control" value="${this.formatDateTime(change.scheduledEnd)}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Change Window</label>
+                            <input type="text" class="form-control" value="${change.changeWindow || 'Standard'}" readonly>
+                        </div>
+                        ${change.actualStart ? `
+                        <div class="form-group">
+                            <label class="form-label">Actual Start</label>
+                            <input type="text" class="form-control" value="${this.formatDateTime(change.actualStart)}" readonly>
+                        </div>
+                        ` : ''}
+                        ${change.actualEnd ? `
+                        <div class="form-group">
+                            <label class="form-label">Actual End</label>
+                            <input type="text" class="form-control" value="${this.formatDateTime(change.actualEnd)}" readonly>
+                        </div>
+                        ` : ''}
+                        <div class="form-group">
+                            <label class="form-label">Created</label>
+                            <input type="text" class="form-control" value="${this.formatDateTime(change.createdAt)}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Assignment
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label class="form-label">Assignment Group</label>
+                            <input type="text" class="form-control" value="${change.assignedTo}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assigned To</label>
+                            <input type="text" class="form-control" value="${change.assignee || 'Unassigned'}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Implementer</label>
+                            <input type="text" class="form-control" value="${change.implementer || change.assignee || 'TBD'}" readonly>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Notes/History Section -->
-                <div class="form-group">
-                    <label class="form-label">Notes / History</label>
-                    <div style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); padding: var(--spacing-sm); background: var(--bg-secondary);">
+                <div style="padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-md); color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        Notes / History
+                    </div>
+                    <div style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); padding: var(--spacing-sm); background: var(--bg-primary);">
                         ${change.notes && change.notes.length > 0
                             ? change.notes.map(note => `
                                 <div class="activity-item" style="padding: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--border-light);">

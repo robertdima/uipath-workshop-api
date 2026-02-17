@@ -304,6 +304,8 @@ body {
     border: 2px solid;
     border-color: var(--border-sunken) var(--border-raised) var(--border-raised) var(--border-sunken);
     margin: var(--spacing-sm);
+    position: relative;
+    z-index: 1;
 }
 
 /* Right Panel */

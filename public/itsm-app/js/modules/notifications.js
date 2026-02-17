@@ -8,32 +8,32 @@ const NotificationsModule = {
     notificationTypes: {
         'sla-warning': {
             icon: '⚠️',
-            color: 'var(--accent-orange)',
+            color: '#ff6600',
             title: 'SLA Warning'
         },
         'sla-breached': {
             icon: '🔴',
-            color: 'var(--accent-red)',
+            color: '#cc0000',
             title: 'SLA Breached'
         },
         'assignment': {
             icon: '👤',
-            color: 'var(--accent-blue)',
+            color: '#0066cc',
             title: 'Assignment'
         },
         'cab-approval': {
             icon: '📋',
-            color: 'var(--accent-purple)',
+            color: '#6f42c1',
             title: 'CAB Approval'
         },
         'change-scheduled': {
             icon: '📅',
-            color: 'var(--accent-blue)',
+            color: '#0066cc',
             title: 'Change Scheduled'
         },
         'escalation': {
             icon: '⬆️',
-            color: 'var(--accent-orange)',
+            color: '#ff6600',
             title: 'Escalation'
         }
     },
@@ -133,37 +133,67 @@ const NotificationsModule = {
         const bellContainer = document.getElementById('notification-bell');
         if (!bellContainer) return;
 
+        // Get bell position for panel placement
+        const bellRect = bellContainer.getBoundingClientRect();
+
         const notifications = ITSMData.notifications.slice(0, 10); // Show max 10 recent
 
-        const panelHtml = `
-            <div class="notifications-panel" id="notifications-panel">
-                <div class="notifications-panel-header">
-                    <span class="notifications-panel-title">Notifications</span>
-                    ${notifications.length > 0 ? `
-                        <button class="notifications-dismiss-all" onclick="NotificationsModule.dismissAll(event)">
-                            Clear All
-                        </button>
-                    ` : ''}
-                </div>
-                <div class="notifications-panel-body">
-                    ${notifications.length === 0 ? `
-                        <div class="notifications-empty">
-                            <div class="notifications-empty-icon">🔔</div>
-                            <div class="notifications-empty-text">No notifications</div>
-                        </div>
-                    ` : notifications.map(n => this.renderNotificationItem(n)).join('')}
-                </div>
-                ${notifications.length > 0 ? `
-                    <div class="notifications-panel-footer">
-                        <button class="notifications-mark-read" onclick="NotificationsModule.markAllRead(event)">
-                            Mark All as Read
-                        </button>
-                    </div>
-                ` : ''}
-            </div>
+        // Create overlay container appended directly to body
+        const overlay = document.createElement('div');
+        overlay.id = 'notifications-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999999;';
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                this.closePanel();
+            }
+        };
+
+        // Create the panel
+        const panel = document.createElement('div');
+        panel.id = 'notifications-panel';
+        panel.style.cssText = `
+            position: absolute;
+            top: ${bellRect.bottom + 5}px;
+            right: ${window.innerWidth - bellRect.right}px;
+            width: 360px;
+            max-height: 450px;
+            background-color: #ffffff;
+            border: 2px solid #808080;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
         `;
 
-        bellContainer.insertAdjacentHTML('afterend', panelHtml);
+        panel.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 1px solid #c0c0c0;">
+                <span style="font-weight: 600; font-size: 14px; color: #000000;">Notifications</span>
+                ${notifications.length > 0 ? `
+                    <button onclick="NotificationsModule.dismissAll(event)" style="font-size: 11px; color: #dc3545; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 3px;">
+                        Clear All
+                    </button>
+                ` : ''}
+            </div>
+            <div style="max-height: 320px; overflow-y: auto; background-color: #ffffff;">
+                ${notifications.length === 0 ? `
+                    <div style="padding: 40px 20px; text-align: center; background-color: #ffffff;">
+                        <div style="font-size: 36px; opacity: 0.4; margin-bottom: 8px;">🔔</div>
+                        <div style="font-size: 13px; color: #666666;">No notifications</div>
+                    </div>
+                ` : notifications.map(n => this.renderNotificationItem(n)).join('')}
+            </div>
+            ${notifications.length > 0 ? `
+                <div style="padding: 10px 16px; background-color: #f8f9fa; border-top: 1px solid #c0c0c0; text-align: center;">
+                    <button onclick="NotificationsModule.markAllRead(event)" style="font-size: 12px; color: #0066cc; background: none; border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px;">
+                        Mark All as Read
+                    </button>
+                </div>
+            ` : ''}
+        `;
+
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
         this.panelOpen = true;
     },
 
@@ -171,6 +201,10 @@ const NotificationsModule = {
      * Close the notifications panel
      */
     closePanel: function() {
+        const overlay = document.getElementById('notifications-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
         const panel = document.getElementById('notifications-panel');
         if (panel) {
             panel.remove();
@@ -186,30 +220,36 @@ const NotificationsModule = {
     renderNotificationItem: function(notification) {
         const config = this.notificationTypes[notification.type] || {
             icon: 'ℹ️',
-            color: 'var(--text-muted)',
+            color: '#666666',
             title: 'Notification'
         };
 
+        // Convert CSS variable colors to hex
+        const iconColor = config.color.startsWith('var(') ? '#666666' : config.color;
         const timeAgo = this.formatTimeAgo(notification.timestamp);
+        const bgColor = notification.read ? '#fafafa' : '#e8f4ff';
+        const fontWeight = notification.read ? 'normal' : '600';
 
         return `
-            <div class="notification-item ${notification.read ? 'read' : 'unread'}"
-                 onclick="NotificationsModule.handleClick('${notification.id}', '${notification.link || ''}')">
-                <div class="notification-item-icon" style="color: ${config.color}">
+            <div onclick="NotificationsModule.handleClick('${notification.id}', '${notification.link || ''}')"
+                 style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #c0c0c0; cursor: pointer; background-color: ${bgColor};"
+                 onmouseover="this.style.backgroundColor='#f0f0f0'"
+                 onmouseout="this.style.backgroundColor='${bgColor}'">
+                <div style="font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; color: ${iconColor};">
                     ${config.icon}
                 </div>
-                <div class="notification-item-content">
-                    <div class="notification-item-title ${notification.read ? '' : 'unread'}">
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 12px; color: #000000; margin-bottom: 2px; font-weight: ${fontWeight};">
                         ${notification.title}
                     </div>
-                    <div class="notification-item-message">
+                    <div style="font-size: 11px; color: #333333; line-height: 1.4; word-wrap: break-word;">
                         ${notification.message}
                     </div>
-                    <div class="notification-item-time">
+                    <div style="font-size: 10px; color: #666666; margin-top: 4px;">
                         ${timeAgo}
                     </div>
                 </div>
-                ${!notification.read ? '<div class="notification-item-dot"></div>' : ''}
+                ${!notification.read ? '<div style="width: 8px; height: 8px; background-color: #0066cc; border-radius: 50%; flex-shrink: 0; margin-top: 4px;"></div>' : ''}
             </div>
         `;
     },

@@ -326,146 +326,303 @@ const ITSMData = {
     incidents: [
         {
             id: 'INC-001',
+            // Short description and details
             summary: 'VPN connection drops frequently',
             description: 'User reports VPN disconnects every 15-20 minutes. Started after recent Windows update. Error log attached.',
+            // Caller Information (who the incident is for)
+            caller: 'CUST-001',
+            callerName: 'John Smith',
+            callerEmail: 'john.smith@acme.com',
+            callerPhone: '+1-555-0123',
+            callerDepartment: 'Sales',
+            callerLocation: 'Building A, Floor 2',
+            callerVip: false,
+            // Opened By (who created the ticket - may differ from caller)
+            openedBy: 'tech.support',
+            openedByName: 'Alex Thompson',
+            // Contact method
+            contactType: 'phone',
+            // Classification
             category: 'Network',
             subcategory: 'VPN',
+            // Impact & Urgency
+            impact: 3, // 1=High, 2=Medium, 3=Low
+            urgency: 2, // 1=High, 2=Medium, 3=Low
             priority: 'P2',
+            // Business Service
+            businessService: 'VPN / Remote Access',
+            // Status
             status: 'Open',
+            // Assignment
+            assignmentGroup: 'Network Team',
             assignedTo: 'Network Team',
             assignee: 'tech.support',
+            assigneeName: 'Alex Thompson',
+            // Configuration Item
+            configurationItem: 'LAPTOP-JS-001',
+            affectedAsset: 'LAPTOP-JS-001',
+            // Reporter (legacy field)
             reporter: 'john.smith@acme.com',
+            // Timestamps
             createdAt: '2025-02-13T08:30:00Z',
             updatedAt: '2025-02-13T09:15:00Z',
             slaTarget: '2025-02-13T16:30:00Z',
-            affectedAsset: 'LAPTOP-JS-001',
+            // Watch list
+            watchList: ['james.chen@acme.com'],
+            // Additional comments notify
+            additionalCommentsNotify: ['john.smith@acme.com'],
+            // Work notes notify
+            workNotesNotify: ['james.chen@acme.com', 'network.manager@acme.com'],
             attachments: [
                 { name: 'vpn_error.log', type: 'log', size: '24KB' },
                 { name: 'event_viewer.png', type: 'screenshot', size: '156KB' }
             ],
             notes: [
-                { type: 'user', author: 'john.smith@acme.com', content: 'This is really affecting my productivity. Need urgent help!', timestamp: '2025-02-13T08:30:00Z' },
-                { type: 'system', author: 'System', content: 'Ticket created and assigned to Network Team', timestamp: '2025-02-13T08:30:00Z' },
-                { type: 'note', author: 'tech.support', content: 'Reviewing error log. Looks like certificate validation issue.', timestamp: '2025-02-13T09:15:00Z' }
+                { type: 'customer', visibility: 'customer-visible', author: 'john.smith@acme.com', content: 'This is really affecting my productivity. Need urgent help!', timestamp: '2025-02-13T08:30:00Z' },
+                { type: 'system', visibility: 'technicians-only', author: 'System', content: 'Ticket created and assigned to Network Team', timestamp: '2025-02-13T08:30:00Z' },
+                { type: 'internal', visibility: 'technicians-only', author: 'tech.support', content: 'Reviewing error log. Looks like certificate validation issue.', timestamp: '2025-02-13T09:15:00Z' }
             ],
-            linkedKB: ['KB-101']
+            linkedKB: ['KB-101'],
+            linkedProblems: ['PRB-001'],
+            linkedChanges: []
         },
         {
             id: 'INC-002',
             summary: 'Application crash - ntdll.dll error',
             description: 'CRM application crashes on startup with ntdll.dll access violation. Multiple users affected.',
+            // Caller Information
+            caller: 'CUST-002',
+            callerName: 'Mary Jones',
+            callerEmail: 'mary.jones@acme.com',
+            callerPhone: '+1-555-0124',
+            callerDepartment: 'Sales',
+            callerLocation: 'Building A, Floor 2',
+            callerVip: true,
+            // Opened By
+            openedBy: 'app.admin',
+            openedByName: 'Sarah Miller',
+            contactType: 'phone',
+            // Classification
             category: 'Application',
             subcategory: 'CRM',
+            impact: 1, // High - multiple users affected
+            urgency: 1, // High - business critical
             priority: 'P1',
+            businessService: 'CRM Application',
             status: 'In Progress',
+            assignmentGroup: 'Application Support',
             assignedTo: 'Application Support',
             assignee: 'app.admin',
+            assigneeName: 'Sarah Miller',
+            configurationItem: 'CRM-SERVER-01',
+            affectedAsset: 'CRM-SERVER-01',
             reporter: 'mary.jones@acme.com',
             createdAt: '2025-02-13T07:45:00Z',
             updatedAt: '2025-02-13T10:30:00Z',
             slaTarget: '2025-02-13T11:45:00Z',
-            affectedAsset: 'CRM-SERVER-01',
+            watchList: ['sales.manager@acme.com', 'it.manager@acme.com'],
+            additionalCommentsNotify: ['mary.jones@acme.com'],
+            workNotesNotify: ['app.admin@acme.com'],
             attachments: [
                 { name: 'crash_dump.dmp', type: 'dump', size: '2.4MB' },
                 { name: 'app_crash.log', type: 'log', size: '89KB' }
             ],
             notes: [
-                { type: 'user', author: 'mary.jones@acme.com', content: 'Cannot access CRM at all. This is blocking all sales activities!', timestamp: '2025-02-13T07:45:00Z' },
-                { type: 'system', author: 'System', content: 'Priority escalated to P1 due to business impact', timestamp: '2025-02-13T08:00:00Z' },
-                { type: 'note', author: 'app.admin', content: 'Identified issue with recent .NET update. Preparing rollback.', timestamp: '2025-02-13T10:30:00Z' }
+                { type: 'customer', visibility: 'customer-visible', author: 'mary.jones@acme.com', content: 'Cannot access CRM at all. This is blocking all sales activities!', timestamp: '2025-02-13T07:45:00Z' },
+                { type: 'system', visibility: 'technicians-only', author: 'System', content: 'Priority escalated to P1 due to business impact', timestamp: '2025-02-13T08:00:00Z' },
+                { type: 'internal', visibility: 'technicians-only', author: 'app.admin', content: 'Identified issue with recent .NET update. Preparing rollback.', timestamp: '2025-02-13T10:30:00Z' }
             ],
-            linkedKB: ['KB-112']
+            linkedKB: ['KB-112'],
+            linkedProblems: ['PRB-002'],
+            linkedChanges: ['CHG-456']
         },
         {
             id: 'INC-003',
             summary: 'Email not syncing on mobile device',
             description: 'Outlook app on iPhone not syncing emails since yesterday. Already tried removing and re-adding account.',
+            // Caller Information
+            caller: 'CUST-003',
+            callerName: 'David Wilson',
+            callerEmail: 'david.wilson@acme.com',
+            callerPhone: '+1-555-0125',
+            callerDepartment: 'Marketing',
+            callerLocation: 'Building B, Floor 1',
+            callerVip: false,
+            openedBy: 'tech.support',
+            openedByName: 'Alex Thompson',
+            contactType: 'self-service',
             category: 'Email',
             subcategory: 'Mobile',
+            impact: 3,
+            urgency: 3,
             priority: 'P3',
+            businessService: 'Email Services',
             status: 'Pending',
+            pendingState: {
+                type: 'customer',
+                reason: 'Awaiting screenshot of error message from user',
+                expectedDate: '2025-02-14',
+                reminderEnabled: true,
+                reminderSent: false
+            },
+            assignmentGroup: 'Service Desk',
             assignedTo: 'Service Desk',
             assignee: 'tech.support',
+            assigneeName: 'Alex Thompson',
+            configurationItem: 'MOBILE-DW-001',
+            affectedAsset: 'MOBILE-DW-001',
             reporter: 'david.wilson@acme.com',
             createdAt: '2025-02-12T16:20:00Z',
             updatedAt: '2025-02-13T08:00:00Z',
             slaTarget: '2025-02-14T16:20:00Z',
-            affectedAsset: 'MOBILE-DW-001',
+            watchList: [],
+            additionalCommentsNotify: ['david.wilson@acme.com'],
+            workNotesNotify: [],
             attachments: [],
             notes: [
-                { type: 'user', author: 'david.wilson@acme.com', content: 'Getting "Cannot connect to server" error', timestamp: '2025-02-12T16:20:00Z' },
-                { type: 'note', author: 'tech.support', content: 'Requested screenshot of error. Awaiting response.', timestamp: '2025-02-12T17:00:00Z' }
+                { type: 'customer', visibility: 'customer-visible', author: 'david.wilson@acme.com', content: 'Getting "Cannot connect to server" error', timestamp: '2025-02-12T16:20:00Z' },
+                { type: 'internal', visibility: 'technicians-only', author: 'tech.support', content: 'Requested screenshot of error. Awaiting response.', timestamp: '2025-02-12T17:00:00Z' }
             ],
-            linkedKB: []
+            linkedKB: [],
+            linkedProblems: [],
+            linkedChanges: []
         },
         {
             id: 'INC-004',
             summary: 'Printer paper jam - 3rd floor',
             description: 'HP LaserJet on 3rd floor showing persistent paper jam error. Already cleared visible paper.',
+            // Caller Information
+            caller: 'CUST-004',
+            callerName: 'Sarah Chen',
+            callerEmail: 'sarah.chen@acme.com',
+            callerPhone: '+1-555-0126',
+            callerDepartment: 'Finance',
+            callerLocation: 'Building A, Floor 3',
+            callerVip: true,
+            openedBy: 'sarah.chen@acme.com',
+            openedByName: 'Sarah Chen',
+            contactType: 'walk-in',
             category: 'Hardware',
             subcategory: 'Printer',
+            impact: 2,
+            urgency: 3,
             priority: 'P4',
+            businessService: 'Print Services',
             status: 'New',
+            assignmentGroup: 'Service Desk',
             assignedTo: 'Service Desk',
             assignee: null,
+            assigneeName: null,
+            configurationItem: 'PRINTER-3F-001',
+            affectedAsset: 'PRINTER-3F-001',
             reporter: 'sarah.chen@acme.com',
             createdAt: '2025-02-13T10:45:00Z',
             updatedAt: '2025-02-13T10:45:00Z',
             slaTarget: '2025-02-15T10:45:00Z',
-            affectedAsset: 'PRINTER-3F-001',
+            watchList: [],
+            additionalCommentsNotify: ['sarah.chen@acme.com'],
+            workNotesNotify: [],
             attachments: [
                 { name: 'printer_display.jpg', type: 'screenshot', size: '340KB' }
             ],
             notes: [],
-            linkedKB: ['KB-203']
+            linkedKB: ['KB-203'],
+            linkedProblems: [],
+            linkedChanges: []
         },
         {
             id: 'INC-005',
             summary: 'Server high CPU - WEBSRV-03',
             description: 'Monitoring alert: WEBSRV-03 showing 94% CPU utilization for past 2 hours. Website response times degraded.',
+            // Caller Information (auto-generated from monitoring)
+            caller: null,
+            callerName: 'Monitoring System',
+            callerEmail: 'monitoring@acme.com',
+            callerPhone: null,
+            callerDepartment: 'IT Operations',
+            callerLocation: 'Data Center',
+            callerVip: false,
+            openedBy: 'monitoring',
+            openedByName: 'Monitoring System',
+            contactType: 'monitoring',
             category: 'Infrastructure',
             subcategory: 'Server',
+            impact: 2,
+            urgency: 2,
             priority: 'P2',
+            businessService: 'Web Applications',
             status: 'Open',
+            assignmentGroup: 'Server Team',
             assignedTo: 'Server Team',
             assignee: 'server.admin',
+            assigneeName: 'Michael Brown',
+            configurationItem: 'WEBSRV-03',
+            affectedAsset: 'WEBSRV-03',
             reporter: 'monitoring@acme.com',
             createdAt: '2025-02-13T06:00:00Z',
             updatedAt: '2025-02-13T09:45:00Z',
             slaTarget: '2025-02-13T14:00:00Z',
-            affectedAsset: 'WEBSRV-03',
+            watchList: ['it.manager@acme.com'],
+            additionalCommentsNotify: [],
+            workNotesNotify: ['server.admin@acme.com', 'it.manager@acme.com'],
             attachments: [
                 { name: 'cpu_metrics.png', type: 'screenshot', size: '89KB' },
                 { name: 'process_list.txt', type: 'log', size: '12KB' }
             ],
             notes: [
-                { type: 'system', author: 'Monitoring', content: 'Auto-generated incident from CPU threshold alert', timestamp: '2025-02-13T06:00:00Z' },
-                { type: 'note', author: 'server.admin', content: 'Investigating. Correlated with deployment CHG-456 this morning.', timestamp: '2025-02-13T09:45:00Z' }
+                { type: 'system', visibility: 'technicians-only', author: 'Monitoring', content: 'Auto-generated incident from CPU threshold alert', timestamp: '2025-02-13T06:00:00Z' },
+                { type: 'internal', visibility: 'technicians-only', author: 'server.admin', content: 'Investigating. Correlated with deployment CHG-456 this morning.', timestamp: '2025-02-13T09:45:00Z' }
             ],
-            linkedKB: ['KB-512']
+            linkedKB: ['KB-512'],
+            linkedProblems: [],
+            linkedChanges: ['CHG-456']
         },
         {
             id: 'INC-006',
             summary: 'Password reset not working',
             description: 'Self-service password reset portal shows "service unavailable" error.',
+            // Caller Information
+            caller: null,
+            callerName: 'Multiple Users',
+            callerEmail: 'helpdesk@acme.com',
+            callerPhone: null,
+            callerDepartment: 'Multiple',
+            callerLocation: 'Enterprise-wide',
+            callerVip: false,
+            openedBy: 'id.admin',
+            openedByName: 'Emily Davis',
+            contactType: 'email',
             category: 'Identity',
             subcategory: 'Password',
+            impact: 1, // Enterprise-wide
+            urgency: 2,
             priority: 'P2',
+            businessService: 'Active Directory',
             status: 'Resolved',
+            assignmentGroup: 'Identity Team',
             assignedTo: 'Identity Team',
             assignee: 'id.admin',
+            assigneeName: 'Emily Davis',
+            configurationItem: 'SSPR-SERVER',
+            affectedAsset: 'SSPR-SERVER',
             reporter: 'multiple',
             createdAt: '2025-02-12T14:00:00Z',
             updatedAt: '2025-02-12T15:30:00Z',
             slaTarget: '2025-02-12T22:00:00Z',
             resolvedAt: '2025-02-12T15:30:00Z',
-            affectedAsset: 'SSPR-SERVER',
+            resolutionCode: 'Fixed',
+            resolutionNotes: 'Service was down due to certificate expiration. Renewed cert and restarted service.',
+            watchList: [],
+            additionalCommentsNotify: [],
+            workNotesNotify: ['id.admin@acme.com'],
             attachments: [],
             notes: [
-                { type: 'note', author: 'id.admin', content: 'Service was down due to certificate expiration. Renewed cert and restarted service.', timestamp: '2025-02-12T15:30:00Z' },
-                { type: 'system', author: 'System', content: 'Incident resolved. Resolution time: 1h 30m', timestamp: '2025-02-12T15:30:00Z' }
+                { type: 'internal', visibility: 'technicians-only', author: 'id.admin', content: 'Service was down due to certificate expiration. Renewed cert and restarted service.', timestamp: '2025-02-12T15:30:00Z' },
+                { type: 'system', visibility: 'technicians-only', author: 'System', content: 'Incident resolved. Resolution time: 1h 30m', timestamp: '2025-02-12T15:30:00Z' }
             ],
-            linkedKB: []
+            linkedKB: [],
+            linkedProblems: [],
+            linkedChanges: []
         }
     ],
 
@@ -673,38 +830,100 @@ Coordinate maintenance window for server restart.
             status: 'Implemented',
             risk: 'Medium',
             priority: 'Normal',
-            requestedBy: 'app.admin',
+            category: 'Application',
+            subcategory: 'Deployment',
+            // Requester Info
+            requestedBy: 'sarah.miller@acme.com',
+            requesterName: 'Sarah Miller',
+            requesterEmail: 'sarah.miller@acme.com',
+            requesterPhone: '+1-555-0130',
+            requesterDept: 'Application Support',
+            requestedFor: 'sarah.miller@acme.com',
+            // Assignment
             assignedTo: 'Release Team',
+            assignee: 'sarah.miller@acme.com',
+            implementer: 'michael.brown@acme.com',
+            // Impact
+            impact: 2,
+            affectedUsers: 'department',
+            affectedServices: ['CRM Application'],
             affectedAssets: ['CRM-SERVER-01', 'CRM-SERVER-02'],
+            outageRequired: true,
+            outageDuration: 30,
+            // Planning
+            justification: 'Critical security patches and performance improvements required for CRM stability.',
+            implementationPlan: '1. Backup current CRM database and files\n2. Stop CRM services on both servers\n3. Deploy update package to CRM-SERVER-01\n4. Run database migration scripts\n5. Start services and verify\n6. Deploy to CRM-SERVER-02\n7. Verify load balancing',
+            testPlan: 'Verify login functionality, test key workflows (create contact, create opportunity, generate report)',
+            rollbackPlan: 'Restore from backup taken at 05:45. Contact DBA for database rollback if needed.',
+            relatedIncident: 'PRB-002',
+            policyReference: null,
+            // Schedule
             scheduledStart: '2025-02-13T06:00:00Z',
             scheduledEnd: '2025-02-13T08:00:00Z',
+            changeWindow: 'maintenance',
             actualStart: '2025-02-13T06:00:00Z',
             actualEnd: '2025-02-13T07:45:00Z',
+            // Approval
             cabRequired: false,
             cabApproval: null,
-            rollbackPlan: 'Restore from backup taken at 05:45. Contact DBA for database rollback if needed.',
-            createdAt: '2025-02-10T14:00:00Z'
+            // Communication
+            notifyRecipients: ['affected-users', 'service-owners'],
+            communicationNotes: 'Users notified via email 24 hours prior',
+            createdAt: '2025-02-10T14:00:00Z',
+            notes: [
+                { timestamp: '2025-02-13T07:45:00Z', author: 'michael.brown@acme.com', content: 'Deployment completed successfully. All tests passed.' },
+                { timestamp: '2025-02-13T06:00:00Z', author: 'michael.brown@acme.com', content: 'Starting deployment. Backup completed.' }
+            ]
         },
         {
             id: 'CHG-457',
             title: 'Restart Payment Gateway Service',
             description: 'Scheduled restart of payment gateway service to apply memory configuration changes.',
-            type: 'Standard',
+            type: 'Normal',
             status: 'Pending Approval',
             risk: 'High',
             priority: 'Normal',
-            requestedBy: 'finance.admin',
+            category: 'Infrastructure',
+            subcategory: 'Configuration',
+            // Requester Info
+            requestedBy: 'lisa.wong@acme.com',
+            requesterName: 'Lisa Wong',
+            requesterEmail: 'lisa.wong@acme.com',
+            requesterPhone: '+1-555-0129',
+            requesterDept: 'Finance',
+            requestedFor: 'lisa.wong@acme.com',
+            // Assignment
             assignedTo: 'Server Team',
+            assignee: 'michael.brown@acme.com',
+            implementer: 'michael.brown@acme.com',
+            // Impact
+            impact: 1,
+            affectedUsers: 'all',
+            affectedServices: ['Payment Gateway'],
             affectedAssets: ['PAYMENT-GW-01'],
+            outageRequired: true,
+            outageDuration: 15,
+            // Planning
+            justification: 'Payment gateway experiencing memory issues causing intermittent failures. Memory configuration optimization required.',
+            implementationPlan: '1. Notify finance team of upcoming outage\n2. Stop payment gateway service\n3. Apply memory configuration changes\n4. Start service and verify\n5. Run test transactions\n6. Confirm with finance team',
+            testPlan: 'Run 5 test transactions of different types. Verify memory utilization is within expected range.',
+            rollbackPlan: 'If service fails to start, restore previous configuration from /backup/payment-gw/',
+            relatedIncident: null,
+            policyReference: 'POL-SEC-201',
+            // Schedule
             scheduledStart: '2025-02-14T22:00:00Z',
             scheduledEnd: '2025-02-14T22:30:00Z',
+            changeWindow: 'maintenance',
             actualStart: null,
             actualEnd: null,
+            // Approval
             cabRequired: true,
             cabApproval: null,
-            policyReference: 'POL-SEC-201 Section 3.2',
-            rollbackPlan: 'If service fails to start, restore previous configuration from /backup/payment-gw/',
-            createdAt: '2025-02-13T09:00:00Z'
+            // Communication
+            notifyRecipients: ['affected-users', 'management', 'service-owners'],
+            communicationNotes: 'Finance team and executives must be notified due to payment processing impact',
+            createdAt: '2025-02-13T09:00:00Z',
+            notes: []
         },
         {
             id: 'CHG-458',
@@ -714,17 +933,49 @@ Coordinate maintenance window for server restart.
             status: 'Scheduled',
             risk: 'High',
             priority: 'High',
-            requestedBy: 'security.team',
+            category: 'Security',
+            subcategory: 'Vulnerability Patch',
+            // Requester Info
+            requestedBy: 'emily.davis@acme.com',
+            requesterName: 'Emily Davis',
+            requesterEmail: 'emily.davis@acme.com',
+            requesterPhone: '+1-555-0131',
+            requesterDept: 'Security',
+            requestedFor: 'emily.davis@acme.com',
+            // Assignment
             assignedTo: 'Network Team',
+            assignee: 'james.chen@acme.com',
+            implementer: 'james.chen@acme.com',
+            // Impact
+            impact: 2,
+            affectedUsers: 'department',
+            affectedServices: ['Network Infrastructure'],
             affectedAssets: ['SW-BLDGB-01', 'SW-BLDGB-02', 'SW-BLDGB-03'],
+            outageRequired: true,
+            outageDuration: 60,
+            // Planning
+            justification: 'Critical security vulnerability CVE-2025-1234 discovered in switch firmware. Rated CVSS 9.1. Must patch within 72 hours per security policy.',
+            implementationPlan: '1. Download firmware from vendor portal\n2. Backup current switch configurations\n3. Update SW-BLDGB-01 (core switch)\n4. Verify connectivity and routing\n5. Update SW-BLDGB-02 (core switch)\n6. Verify failover functioning\n7. Update SW-BLDGB-03 (access switch)\n8. Final verification and documentation',
+            testPlan: 'Verify all VLANs accessible, test inter-VLAN routing, confirm spanning tree convergence, ping tests to critical hosts',
+            rollbackPlan: 'Firmware can be rolled back via console connection. Contact vendor support if needed.',
+            relatedIncident: null,
+            policyReference: 'POL-SEC-305',
+            // Schedule
             scheduledStart: '2025-02-13T23:00:00Z',
             scheduledEnd: '2025-02-14T02:00:00Z',
+            changeWindow: 'emergency',
             actualStart: null,
             actualEnd: null,
+            // Approval
             cabRequired: true,
             cabApproval: '2025-02-13T11:00:00Z',
-            rollbackPlan: 'Firmware can be rolled back via console connection. Contact vendor support if needed.',
-            createdAt: '2025-02-13T08:00:00Z'
+            // Communication
+            notifyRecipients: ['affected-users', 'management', 'helpdesk'],
+            communicationNotes: 'Building B users notified of potential brief network interruptions. Helpdesk briefed on possible tickets.',
+            createdAt: '2025-02-13T08:00:00Z',
+            notes: [
+                { timestamp: '2025-02-13T11:00:00Z', author: 'CAB', content: 'Emergency change approved by CAB due to critical security vulnerability.' }
+            ]
         }
     ],
 

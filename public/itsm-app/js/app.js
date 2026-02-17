@@ -319,11 +319,16 @@ function selectIncident(incidentId) {
     });
     document.querySelector(`[data-incident-id="${incidentId}"]`)?.classList.add('selected');
 
-    // Render detail
+    // Render detail using IncidentsModule if available, otherwise fall back to renderIncidentDetail
     const incident = ITSMData.incidents.find(i => i.id === incidentId);
     if (incident) {
         document.getElementById('detail-header').textContent = `${incident.id} - ${incident.summary}`;
-        document.getElementById('incident-detail').innerHTML = renderIncidentDetail(incident);
+        // Use the enhanced IncidentsModule form if available
+        if (typeof IncidentsModule !== 'undefined' && IncidentsModule.renderIncidentForm) {
+            document.getElementById('incident-detail').innerHTML = IncidentsModule.renderIncidentForm(incident);
+        } else {
+            document.getElementById('incident-detail').innerHTML = renderIncidentDetail(incident);
+        }
     }
 }
 
@@ -1135,45 +1140,188 @@ function closeModal() {
 // ==================== ACTION FUNCTIONS ====================
 
 function createNewIncident() {
+    // Build customer options from ITSMData
+    const customerOptions = (ITSMData.customers || []).map(c =>
+        `<option value="${c.email}" data-name="${c.name}" data-phone="${c.phone || ''}" data-vip="${c.vip || false}" data-dept="${c.department || ''}" data-location="${c.location || ''}">${c.name} (${c.email})</option>`
+    ).join('');
+
+    // Build team options
+    const teamOptions = (ITSMData.teams || []).map(t =>
+        `<option value="${t.name}">${t.name}</option>`
+    ).join('');
+
+    // Build asset options
+    const assetOptions = (ITSMData.assets || []).map(a =>
+        `<option value="${a.id}">${a.id} - ${a.name}</option>`
+    ).join('');
+
     showModal(`
         <div class="modal-header">
             <span>🎫 Create New Incident</span>
             <button class="panel-close" onclick="closeModal()">×</button>
         </div>
-        <div class="modal-body" style="width: 500px;">
-            <div class="form-group">
-                <label class="form-label required">Summary</label>
-                <input type="text" class="form-control" id="new-inc-summary" placeholder="Brief description of the issue">
-            </div>
-            <div class="form-group">
-                <label class="form-label required">Description</label>
-                <textarea class="form-control" id="new-inc-description" rows="4" placeholder="Detailed description..."></textarea>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <select class="form-control" id="new-inc-category">
-                        <option>Network</option>
-                        <option>Application</option>
-                        <option>Hardware</option>
-                        <option>Email</option>
-                        <option>Infrastructure</option>
-                        <option>Identity</option>
-                    </select>
+        <div class="modal-body" style="width: 700px; max-height: 75vh; overflow-y: auto;">
+            <!-- Caller Information Section -->
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); margin-bottom: var(--spacing-md); border-radius: 4px;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 12px; color: var(--text-muted);">CALLER INFORMATION</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label required">Caller</label>
+                        <select class="form-control" id="new-inc-caller" onchange="populateCallerDetails()">
+                            <option value="">-- Select Caller --</option>
+                            <option value="manual">+ Enter Manually</option>
+                            ${customerOptions}
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Caller Name</label>
+                        <input type="text" class="form-control" id="new-inc-caller-name" placeholder="Full name">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Priority</label>
-                    <select class="form-control" id="new-inc-priority">
-                        <option value="P3">P3 - Medium</option>
-                        <option value="P4">P4 - Low</option>
-                        <option value="P2">P2 - High</option>
-                        <option value="P1">P1 - Critical</option>
-                    </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="new-inc-caller-email" placeholder="email@company.com">
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="new-inc-caller-phone" placeholder="+1-555-0123">
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" id="new-inc-location" placeholder="Building A, Floor 2">
+                    </div>
+                </div>
+                <div id="vip-indicator" style="display: none; margin-top: var(--spacing-xs);">
+                    <span class="badge" style="background: gold; color: black;">⭐ VIP Customer</span>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Attachments</label>
-                <input type="file" class="form-control" multiple>
+
+            <!-- Incident Details Section -->
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); margin-bottom: var(--spacing-md); border-radius: 4px;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 12px; color: var(--text-muted);">INCIDENT DETAILS</h4>
+                <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                    <label class="form-label required">Short Description</label>
+                    <input type="text" class="form-control" id="new-inc-summary" placeholder="Brief summary of the issue (max 160 chars)" maxlength="160">
+                </div>
+                <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                    <label class="form-label required">Description</label>
+                    <textarea class="form-control" id="new-inc-description" rows="4" placeholder="Detailed description of the issue, including error messages, steps to reproduce, and any troubleshooting already attempted..."></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Category</label>
+                        <select class="form-control" id="new-inc-category" onchange="updateSubcategories()">
+                            <option value="Network">Network</option>
+                            <option value="Application">Application</option>
+                            <option value="Hardware">Hardware</option>
+                            <option value="Email">Email</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Identity">Identity</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Subcategory</label>
+                        <select class="form-control" id="new-inc-subcategory">
+                            <option value="Connectivity">Connectivity</option>
+                            <option value="Performance">Performance</option>
+                            <option value="Access">Access</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Affected Service</label>
+                        <select class="form-control" id="new-inc-service">
+                            <option value="">-- Select Service --</option>
+                            <option value="VPN">VPN Service</option>
+                            <option value="Email">Email / Exchange</option>
+                            <option value="Active Directory">Active Directory</option>
+                            <option value="File Services">File Services</option>
+                            <option value="Print Services">Print Services</option>
+                            <option value="ERP">ERP System</option>
+                            <option value="CRM">CRM System</option>
+                            <option value="Website">Corporate Website</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classification Section -->
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); margin-bottom: var(--spacing-md); border-radius: 4px;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 12px; color: var(--text-muted);">CLASSIFICATION</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Impact</label>
+                        <select class="form-control" id="new-inc-impact" onchange="calculatePriority()">
+                            <option value="3">3 - Low (Single user)</option>
+                            <option value="2" selected>2 - Medium (Department)</option>
+                            <option value="1">1 - High (Enterprise-wide)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Urgency</label>
+                        <select class="form-control" id="new-inc-urgency" onchange="calculatePriority()">
+                            <option value="3">3 - Low (No deadline)</option>
+                            <option value="2" selected>2 - Medium (Work affected)</option>
+                            <option value="1">1 - High (Work stopped)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Priority (Calculated)</label>
+                        <select class="form-control" id="new-inc-priority" style="font-weight: bold;">
+                            <option value="P4">P4 - Low</option>
+                            <option value="P3" selected>P3 - Medium</option>
+                            <option value="P2">P2 - High</option>
+                            <option value="P1">P1 - Critical</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Section -->
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); margin-bottom: var(--spacing-md); border-radius: 4px;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 12px; color: var(--text-muted);">ASSIGNMENT</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Assignment Group</label>
+                        <select class="form-control" id="new-inc-assignment-group" onchange="updateAssigneeOptions()">
+                            <option value="Service Desk">Service Desk</option>
+                            ${teamOptions}
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Assigned To</label>
+                        <select class="form-control" id="new-inc-assignee">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Section -->
+            <div style="background: var(--bg-secondary); padding: var(--spacing-md); border-radius: 4px;">
+                <h4 style="margin-bottom: var(--spacing-sm); font-size: 12px; color: var(--text-muted);">ADDITIONAL INFORMATION</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Configuration Item</label>
+                        <select class="form-control" id="new-inc-ci">
+                            <option value="">-- Select CI --</option>
+                            ${assetOptions}
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--spacing-sm);">
+                        <label class="form-label">Callback Required</label>
+                        <select class="form-control" id="new-inc-callback">
+                            <option value="no">No</option>
+                            <option value="yes">Yes - Call customer when resolved</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Attachments</label>
+                    <input type="file" class="form-control" id="new-inc-attachments" multiple>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Attach screenshots, log files, or other relevant documents</div>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -1181,42 +1329,266 @@ function createNewIncident() {
             <button class="btn btn-primary" onclick="submitNewIncident()">Create Incident</button>
         </div>
     `);
+
+    // Initialize assignee options
+    updateAssigneeOptions();
 }
 
-function submitNewIncident() {
-    const summary = document.getElementById('new-inc-summary').value;
-    const description = document.getElementById('new-inc-description').value;
-    const category = document.getElementById('new-inc-category').value;
-    const priority = document.getElementById('new-inc-priority').value;
+// Helper function to populate caller details when selected from dropdown
+function populateCallerDetails() {
+    const callerSelect = document.getElementById('new-inc-caller');
+    const selectedOption = callerSelect.options[callerSelect.selectedIndex];
 
-    if (!summary || !description) {
-        showToast('Please fill in required fields', 'error');
+    if (callerSelect.value === '' || callerSelect.value === 'manual') {
+        document.getElementById('new-inc-caller-name').value = '';
+        document.getElementById('new-inc-caller-email').value = '';
+        document.getElementById('new-inc-caller-phone').value = '';
+        document.getElementById('new-inc-location').value = '';
+        document.getElementById('vip-indicator').style.display = 'none';
         return;
     }
 
-    // Create new incident (in real app, this would be an API call)
+    document.getElementById('new-inc-caller-name').value = selectedOption.dataset.name || '';
+    document.getElementById('new-inc-caller-email').value = callerSelect.value;
+    document.getElementById('new-inc-caller-phone').value = selectedOption.dataset.phone || '';
+    document.getElementById('new-inc-location').value = selectedOption.dataset.location || '';
+
+    // Show VIP indicator if applicable
+    const isVip = selectedOption.dataset.vip === 'true';
+    document.getElementById('vip-indicator').style.display = isVip ? 'block' : 'none';
+
+    // Auto-increase urgency for VIP customers
+    if (isVip) {
+        document.getElementById('new-inc-urgency').value = '1';
+        calculatePriority();
+    }
+}
+
+// Helper function to update subcategories based on category
+function updateSubcategories() {
+    const category = document.getElementById('new-inc-category').value;
+    const subcategorySelect = document.getElementById('new-inc-subcategory');
+
+    const subcategories = {
+        'Network': ['Connectivity', 'VPN', 'DNS', 'Firewall', 'WiFi', 'Other'],
+        'Application': ['Crash', 'Performance', 'Login', 'Feature Request', 'Bug', 'Other'],
+        'Hardware': ['Desktop', 'Laptop', 'Printer', 'Monitor', 'Peripheral', 'Other'],
+        'Email': ['Delivery', 'Access', 'Calendar', 'Outlook', 'Mobile', 'Other'],
+        'Infrastructure': ['Server', 'Storage', 'Database', 'Backup', 'Cloud', 'Other'],
+        'Identity': ['Password', 'Account Locked', 'Permissions', 'MFA', 'SSO', 'Other']
+    };
+
+    const options = subcategories[category] || ['General', 'Other'];
+    subcategorySelect.innerHTML = options.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+// Helper function to calculate priority from impact and urgency
+function calculatePriority() {
+    const impact = parseInt(document.getElementById('new-inc-impact').value);
+    const urgency = parseInt(document.getElementById('new-inc-urgency').value);
+
+    // Priority matrix: Impact x Urgency
+    // 1,1 = P1 | 1,2 = P2 | 1,3 = P2
+    // 2,1 = P2 | 2,2 = P3 | 2,3 = P3
+    // 3,1 = P3 | 3,2 = P3 | 3,3 = P4
+
+    let priority;
+    const score = impact + urgency;
+
+    if (score <= 2) priority = 'P1';
+    else if (score <= 3) priority = 'P2';
+    else if (score <= 5) priority = 'P3';
+    else priority = 'P4';
+
+    document.getElementById('new-inc-priority').value = priority;
+}
+
+// Helper function to update assignee options based on selected team
+function updateAssigneeOptions() {
+    const teamName = document.getElementById('new-inc-assignment-group').value;
+    const assigneeSelect = document.getElementById('new-inc-assignee');
+
+    // Find team members
+    const team = (ITSMData.teams || []).find(t => t.name === teamName);
+    const memberIds = team ? team.members : [];
+
+    // Get technician details
+    const technicians = (ITSMData.technicians || []).filter(t =>
+        memberIds.includes(t.id) || teamName === 'Service Desk'
+    );
+
+    assigneeSelect.innerHTML = '<option value="">-- Unassigned --</option>' +
+        technicians.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+function submitNewIncident() {
+    // Get all form values
+    const callerEmail = document.getElementById('new-inc-caller-email').value.trim();
+    const callerName = document.getElementById('new-inc-caller-name').value.trim();
+    const callerPhone = document.getElementById('new-inc-caller-phone').value.trim();
+    const location = document.getElementById('new-inc-location').value.trim();
+    const summary = document.getElementById('new-inc-summary').value.trim();
+    const description = document.getElementById('new-inc-description').value.trim();
+    const category = document.getElementById('new-inc-category').value;
+    const subcategory = document.getElementById('new-inc-subcategory').value;
+    const service = document.getElementById('new-inc-service').value;
+    const impact = document.getElementById('new-inc-impact').value;
+    const urgency = document.getElementById('new-inc-urgency').value;
+    const priority = document.getElementById('new-inc-priority').value;
+    const assignmentGroup = document.getElementById('new-inc-assignment-group').value;
+    const assignee = document.getElementById('new-inc-assignee').value;
+    const configItem = document.getElementById('new-inc-ci').value;
+    const callbackRequired = document.getElementById('new-inc-callback').value === 'yes';
+
+    // Process attachments
+    const attachmentsInput = document.getElementById('new-inc-attachments');
+    const attachments = [];
+    if (attachmentsInput && attachmentsInput.files && attachmentsInput.files.length > 0) {
+        const formatSize = (bytes) => {
+            if (bytes < 1024) return bytes + 'B';
+            if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + 'KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+        };
+        const getFileType = (filename) => {
+            const ext = filename.split('.').pop().toLowerCase();
+            const typeMap = {
+                'pdf': 'document', 'doc': 'document', 'docx': 'document',
+                'txt': 'text', 'log': 'log',
+                'png': 'screenshot', 'jpg': 'screenshot', 'jpeg': 'screenshot', 'gif': 'screenshot', 'bmp': 'screenshot',
+                'zip': 'archive', 'rar': 'archive', '7z': 'archive',
+                'dmp': 'dump', 'mdmp': 'dump'
+            };
+            return typeMap[ext] || 'file';
+        };
+
+        for (let i = 0; i < attachmentsInput.files.length; i++) {
+            const file = attachmentsInput.files[i];
+            attachments.push({
+                name: file.name,
+                type: getFileType(file.name),
+                size: formatSize(file.size),
+                uploadedBy: ITSMData.currentUser.username,
+                uploadedAt: new Date().toISOString()
+            });
+        }
+    }
+
+    // Validation
+    if (!summary) {
+        showToast('Please enter a short description', 'error');
+        return;
+    }
+    if (!description) {
+        showToast('Please enter a detailed description', 'error');
+        return;
+    }
+    if (!callerEmail && !callerName) {
+        showToast('Please provide caller information', 'error');
+        return;
+    }
+
+    // Calculate SLA based on priority
+    const slaHours = { 'P1': 1, 'P2': 4, 'P3': 8, 'P4': 24 };
+    const slaTarget = new Date(Date.now() + (slaHours[priority] || 8) * 3600000).toISOString();
+
+    // Find assignee name if assigned
+    let assigneeName = null;
+    if (assignee) {
+        const tech = (ITSMData.technicians || []).find(t => t.id === assignee);
+        assigneeName = tech ? tech.name : null;
+    }
+
+    // Check if caller is VIP
+    const customer = (ITSMData.customers || []).find(c => c.email === callerEmail);
+    const isVip = customer ? customer.vip : false;
+
+    // Find customer ID if available
+    const callerCustomer = (ITSMData.customers || []).find(c => c.email === callerEmail);
+
+    // Create new incident
     const newId = `INC-${String(ITSMData.incidents.length + 1).padStart(3, '0')}`;
     const newIncident = {
         id: newId,
         summary: summary,
         description: description,
+        // Caller Information
+        caller: callerCustomer ? callerCustomer.id : null,
+        callerName: callerName,
+        callerEmail: callerEmail,
+        callerPhone: callerPhone,
+        callerDepartment: callerCustomer ? callerCustomer.department : '',
+        callerLocation: location || (callerCustomer ? callerCustomer.location : ''),
+        callerVip: isVip,
+        // Opened By
+        openedBy: ITSMData.currentUser.username,
+        openedByName: ITSMData.currentUser.name || ITSMData.currentUser.username,
+        contactType: 'phone', // Default to phone
+        // Classification
         category: category,
-        subcategory: 'General',
+        subcategory: subcategory,
+        businessService: service || null,
+        impact: parseInt(impact),
+        urgency: parseInt(urgency),
         priority: priority,
+        // Status
         status: 'New',
-        assignedTo: 'Service Desk',
-        assignee: null,
-        reporter: ITSMData.currentUser.username,
+        // Assignment
+        assignmentGroup: assignmentGroup,
+        assignedTo: assignmentGroup,
+        assignee: assigneeName,
+        assigneeName: assigneeName,
+        assigneeId: assignee || null,
+        // Configuration Item
+        configurationItem: configItem || null,
+        affectedAsset: configItem || null,
+        // Legacy fields for compatibility
+        reporter: callerEmail || callerName,
+        reporterName: callerName,
+        reporterPhone: callerPhone,
+        reporterEmail: callerEmail,
+        location: location,
+        isVip: isVip,
+        callbackRequired: callbackRequired,
+        configItem: configItem || null,
+        // Timestamps
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        slaTarget: new Date(Date.now() + 8 * 3600000).toISOString(),
-        affectedAsset: null,
-        attachments: [],
+        createdBy: ITSMData.currentUser.username,
+        slaTarget: slaTarget,
+        // Watch list and notifications
+        watchList: [],
+        additionalCommentsNotify: callerEmail ? [callerEmail] : [],
+        workNotesNotify: [],
+        // Attachments and notes
+        attachments: attachments,
         notes: [],
-        linkedKB: []
+        linkedKB: [],
+        linkedChanges: [],
+        linkedProblems: []
     };
 
     ITSMData.incidents.unshift(newIncident);
+
+    // Add audit log entry
+    if (ITSMData.auditLog) {
+        ITSMData.auditLog.unshift({
+            timestamp: new Date().toISOString(),
+            actor: ITSMData.currentUser.username,
+            action: 'Incident Created',
+            target: newId,
+            details: `Created ${priority} incident: ${summary}`
+        });
+    }
+
+    // Add notification
+    if (typeof NotificationsModule !== 'undefined') {
+        NotificationsModule.add({
+            type: 'incident',
+            title: 'Incident Created',
+            message: `${newId}: ${summary}`,
+            relatedId: newId
+        });
+    }
 
     closeModal();
     showToast(`Incident ${newId} created successfully`, 'success');
@@ -1224,6 +1596,8 @@ function submitNewIncident() {
 
     if (currentModule === 'incidents') {
         renderModule('incidents');
+        // Auto-select the new incident
+        setTimeout(() => selectIncident(newId), 100);
     }
 }
 

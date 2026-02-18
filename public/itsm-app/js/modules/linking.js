@@ -226,7 +226,7 @@ const LinkingModule = {
         const noteEntry = {
             type: 'system',
             author: 'System',
-            content: `Set as child of ${parentIncidentId} (${parentIncident.summary})`,
+            content: `Set as child of ${parentIncidentId} (${parentIncident.title})`,
             timestamp: new Date().toISOString()
         };
         incident.notes.push(noteEntry);
@@ -570,7 +570,7 @@ const LinkingModule = {
                                     <strong style="color: var(--accent-blue); cursor: pointer; margin-left: var(--spacing-xs);" onclick="selectIncident('${parent.id}')">${parent.id}</strong>
                                     <span class="badge badge-${parent.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${parent.status}</span>
                                 </div>
-                                <div style="font-size: 11px; color: var(--text-muted);">${parent.summary}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">${parent.title}</div>
                             </div>
                             <button class="btn btn-sm btn-danger" onclick="LinkingModule.removeParentIncident('${incident.id}')" title="Remove parent">×</button>
                         </div>
@@ -594,7 +594,7 @@ const LinkingModule = {
                                         <strong style="color: var(--accent-blue); cursor: pointer; margin-left: var(--spacing-xs);" onclick="selectIncident('${child.id}')">${child.id}</strong>
                                         <span class="badge badge-${child.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${child.status}</span>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${child.summary}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${child.title}</div>
                                 </div>
                             </div>
                         </div>
@@ -872,7 +872,7 @@ const LinkingModule = {
                     i.id !== incidentId &&
                     i.id !== incident.parentIncident &&
                     !this.wouldCreateCircularReference(incidentId, i.id) &&
-                    (i.id.toLowerCase().includes(searchTerm) || i.summary.toLowerCase().includes(searchTerm))
+                    (i.id.toLowerCase().includes(searchTerm) || i.title.toLowerCase().includes(searchTerm))
                 );
                 renderFn = (item) => this.renderIncidentLinkItem(incidentId, item);
                 break;
@@ -960,7 +960,7 @@ const LinkingModule = {
                         <span class="badge badge-${incident.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${incident.status}</span>
                         <span class="badge priority-${incident.priority.toLowerCase()}" style="margin-left: var(--spacing-xs);">${incident.priority}</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${incident.summary}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${incident.title}</div>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'incident', '${incident.id}')">Set as Parent</button>
             </div>

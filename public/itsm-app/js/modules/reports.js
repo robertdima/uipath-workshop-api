@@ -172,7 +172,7 @@ const ReportsModule = {
                             }).map(inc => `
                                 <tr>
                                     <td class="cell-id">${inc.id}</td>
-                                    <td>${Utils.truncate(inc.summary, 40)}</td>
+                                    <td>${Utils.truncate(inc.title, 40)}</td>
                                     <td>${Utils.getPriorityBadge(inc.priority)}</td>
                                     <td>${Utils.renderSLABadge(inc)}</td>
                                     <td class="cell-date">${Utils.formatDateTime(inc.slaTarget)}</td>

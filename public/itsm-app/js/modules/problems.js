@@ -337,11 +337,11 @@ const ProblemsModule = {
             <div class="modal-body" style="width: 600px; max-height: 70vh; overflow-y: auto;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
                     <strong>Source Incident: ${incident.id}</strong>
-                    <div style="font-size: 12px; margin-top: 4px;">${incident.summary}</div>
+                    <div style="font-size: 12px; margin-top: 4px;">${incident.title}</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Problem Title</label>
-                    <input type="text" class="form-control" id="prb-title" value="${incident.summary}" placeholder="Brief title describing the problem">
+                    <input type="text" class="form-control" id="prb-title" value="${incident.title}" placeholder="Brief title describing the problem">
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Description</label>
@@ -557,7 +557,7 @@ const ProblemsModule = {
                     return `
                         <div style="padding: var(--spacing-sm); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${incident.id}</strong>: ${incident.summary}
+                                <strong>${incident.id}</strong>: ${incident.title}
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                                     <span class="badge ${incident.status.toLowerCase().replace(' ', '-')}">${incident.status}</span>
                                     <span style="margin-left: 8px;">${incident.category}</span>
@@ -881,7 +881,7 @@ const ProblemsModule = {
                 <div class="form-check" style="display: flex; align-items: flex-start;">
                     <input type="checkbox" id="link-inc-${inc.id}" value="${inc.id}" class="link-incident-checkbox" style="margin-top: 3px;">
                     <label for="link-inc-${inc.id}" style="cursor: pointer; margin-left: 8px; flex: 1;">
-                        <strong>${inc.id}</strong>: ${inc.summary}
+                        <strong>${inc.id}</strong>: ${inc.title}
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                             <span class="badge ${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span>
                             <span style="margin-left: 8px;">Priority: ${inc.priority}</span>
@@ -905,7 +905,7 @@ const ProblemsModule = {
             const notLinked = !problem.linkedIncidents || !problem.linkedIncidents.includes(inc.id);
             const matchesSearch = !searchTerm ||
                 inc.id.toLowerCase().includes(searchTerm) ||
-                inc.summary.toLowerCase().includes(searchTerm);
+                inc.title.toLowerCase().includes(searchTerm);
             return notLinked && matchesSearch;
         });
 

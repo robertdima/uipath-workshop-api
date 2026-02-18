@@ -510,16 +510,16 @@ const AssignmentModule = {
         switch (assignmentType) {
             case 'self-assigned':
                 title = 'Incident Self-Assigned';
-                message = `${incidentId}: ${incident.summary} - You have assigned this incident to yourself`;
+                message = `${incidentId}: ${incident.title} - You have assigned this incident to yourself`;
                 break;
             case 'reassigned':
                 title = 'Incident Reassigned';
-                message = `${incidentId}: ${incident.summary} has been reassigned to ${assigneeName}`;
+                message = `${incidentId}: ${incident.title} has been reassigned to ${assigneeName}`;
                 break;
             case 'assigned':
             default:
                 title = 'New Incident Assigned';
-                message = `${incidentId}: ${incident.summary} has been assigned to ${assigneeName}`;
+                message = `${incidentId}: ${incident.title} has been assigned to ${assigneeName}`;
                 break;
         }
 

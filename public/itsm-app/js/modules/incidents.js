@@ -103,7 +103,7 @@ const IncidentsModule = {
             data.affectedAsset = assetSelect.value || null;
             data.configurationItem = assetSelect.value || null;
         }
-        if (summaryInput) data.summary = summaryInput.value;
+        if (summaryInput) data.title = summaryInput.value;
         if (descriptionInput) data.description = descriptionInput.value;
         if (watchListInput) {
             data.watchList = watchListInput.value.split(',').map(e => e.trim()).filter(e => e);
@@ -1345,7 +1345,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <!-- Short Description -->
                     <div class="form-group">
                         <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Short Description</label>
-                        <input type="text" class="form-control" id="inc-summary" value="${incident.summary}" style="font-weight: 500;">
+                        <input type="text" class="form-control" id="inc-summary" value="${incident.title}" style="font-weight: 500;">
                     </div>
 
                     <!-- Status & Classification Section -->
@@ -1735,7 +1735,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
 
         const detailHeader = document.getElementById('detail-header');
         if (detailHeader) {
-            detailHeader.textContent = `${incident.id} - ${incident.summary}`;
+            detailHeader.textContent = `${incident.id} - ${incident.title}`;
         }
     },
 
@@ -1758,7 +1758,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                 const matchStatus = !statusFilter || inc.status === statusFilter;
                 const matchPriority = !priorityFilter || inc.priority === priorityFilter;
                 const matchSearch = !searchFilter ||
-                    inc.summary.toLowerCase().includes(searchFilter) ||
+                    inc.title.toLowerCase().includes(searchFilter) ||
                     inc.id.toLowerCase().includes(searchFilter);
                 return matchStatus && matchPriority && matchSearch;
             });
@@ -1770,7 +1770,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
                     <div class="ticket-id">${inc.id}</div>
                     <div style="flex: 1;">
-                        <div class="ticket-summary">${inc.summary}</div>
+                        <div class="ticket-summary">${inc.title}</div>
                         <div class="ticket-meta">
                             <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
                             <span>${inc.category}</span>
@@ -1822,7 +1822,7 @@ window.selectIncident = function(incidentId) {
     // Render detail using module's form
     const incident = ITSMData.incidents.find(i => i.id === incidentId);
     if (incident) {
-        document.getElementById('detail-header').textContent = `${incident.id} - ${incident.summary}`;
+        document.getElementById('detail-header').textContent = `${incident.id} - ${incident.title}`;
         document.getElementById('incident-detail').innerHTML = IncidentsModule.renderIncidentForm(incident);
     }
 };

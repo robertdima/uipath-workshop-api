@@ -248,7 +248,7 @@ const AssetsModule = {
                                     ${relatedIncidents.map(inc => `
                                         <tr class="clickable" onclick="closeModal(); openIncidentDetail('${inc.id}');">
                                             <td class="cell-id">${inc.id}</td>
-                                            <td>${inc.summary}</td>
+                                            <td>${inc.title}</td>
                                             <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
                                             <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
                                         </tr>
@@ -638,20 +638,20 @@ const AssetsModule = {
      * Submit incident created for asset
      */
     async submitIncidentForAsset() {
-        const summary = document.getElementById('asset-inc-summary').value.trim();
+        const title = document.getElementById('asset-inc-summary').value.trim();
         const description = document.getElementById('asset-inc-description').value.trim();
         const category = document.getElementById('asset-inc-category').value;
         const priority = document.getElementById('asset-inc-priority').value;
         const assetId = document.getElementById('asset-inc-asset-id').value;
 
-        if (!summary || !description) {
+        if (!title || !description) {
             showToast('Please fill in required fields', 'error');
             return;
         }
 
         try {
             const result = await ITSMApi.createIncident({
-                summary, description, category,
+                title, description, category,
                 subcategory: 'General',
                 impact: 3, urgency: 3,
                 assignmentGroup: 'Service Desk',

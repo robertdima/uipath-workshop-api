@@ -440,9 +440,9 @@ function generateDatabase() {
 
     // ITSM Email Templates
     itsm_email_templates: [
-      { id: uuid(), name: 'Incident Created', subject: 'Incident {{ticket_id}} has been created', body: 'Dear {{caller_name}},\n\nYour incident {{ticket_id}} regarding "{{summary}}" has been received and assigned to {{assigned_to}}.\n\nWe will update you on progress.\n\nBest regards,\nIT Service Desk', placeholders: ['{{ticket_id}}', '{{caller_name}}', '{{summary}}', '{{assigned_to}}'], active: true, lastUsed: date(3) },
+      { id: uuid(), name: 'Incident Created', subject: 'Incident {{ticket_id}} has been created', body: 'Dear {{caller_name}},\n\nYour incident {{ticket_id}} regarding "{{title}}" has been received and assigned to {{assigned_to}}.\n\nWe will update you on progress.\n\nBest regards,\nIT Service Desk', placeholders: ['{{ticket_id}}', '{{caller_name}}', '{{title}}', '{{assigned_to}}'], active: true, lastUsed: date(3) },
       { id: uuid(), name: 'Incident Resolved', subject: 'Incident {{ticket_id}} has been resolved', body: 'Dear {{caller_name}},\n\nYour incident {{ticket_id}} has been resolved.\n\nResolution: {{resolution}}\n\nIf the issue persists, please reply to this email.\n\nBest regards,\nIT Service Desk', placeholders: ['{{ticket_id}}', '{{caller_name}}', '{{resolution}}'], active: true, lastUsed: date(5) },
-      { id: uuid(), name: 'Change Scheduled', subject: 'Change {{ticket_id}} is scheduled', body: 'Dear team,\n\nChange {{ticket_id}} "{{summary}}" has been scheduled.\n\nWindow: {{scheduled_start}} - {{scheduled_end}}\n\nPlease ensure all preparations are complete.\n\nBest regards,\nChange Management', placeholders: ['{{ticket_id}}', '{{summary}}', '{{scheduled_start}}', '{{scheduled_end}}'], active: true, lastUsed: date(7) },
+      { id: uuid(), name: 'Change Scheduled', subject: 'Change {{ticket_id}} is scheduled', body: 'Dear team,\n\nChange {{ticket_id}} "{{title}}" has been scheduled.\n\nWindow: {{scheduled_start}} - {{scheduled_end}}\n\nPlease ensure all preparations are complete.\n\nBest regards,\nChange Management', placeholders: ['{{ticket_id}}', '{{title}}', '{{scheduled_start}}', '{{scheduled_end}}'], active: true, lastUsed: date(7) },
       { id: uuid(), name: 'Request Approved', subject: 'Service Request {{ticket_id}} has been approved', body: 'Dear {{caller_name}},\n\nYour service request {{ticket_id}} has been approved and is now being processed.\n\nExpected fulfillment: {{fulfillment_time}}\n\nBest regards,\nIT Service Desk', placeholders: ['{{ticket_id}}', '{{caller_name}}', '{{fulfillment_time}}'], active: true, lastUsed: date(2) },
       { id: uuid(), name: 'SLA Warning', subject: 'SLA Warning for {{ticket_id}}', body: 'ALERT: Incident {{ticket_id}} is approaching its SLA target.\n\nPriority: {{priority}}\nSLA Target: {{sla_target}}\nAssigned to: {{assigned_to}}\n\nPlease take immediate action.', placeholders: ['{{ticket_id}}', '{{priority}}', '{{sla_target}}', '{{assigned_to}}'], active: true, lastUsed: date(1) }
     ],
@@ -450,7 +450,7 @@ function generateDatabase() {
     // ITSM Incidents (curated data aligned with ITSM Console app)
     itsm_incidents: [
       {
-        id: 'INC-001', summary: 'VPN connection drops frequently',
+        id: 'INC-001', title: 'VPN connection drops frequently',
         description: 'User reports VPN disconnects every 15-20 minutes. Started after recent Windows update. Error log attached.',
         callerName: 'John Smith', callerEmail: 'john.smith@acme.com', callerPhone: '+1-555-0123',
         callerDepartment: 'Sales', callerLocation: 'Building A, Floor 2', callerVip: false,
@@ -470,7 +470,7 @@ function generateDatabase() {
         watchList: ['james.chen@acme.com'], additionalCommentsNotify: ['john.smith@acme.com'], workNotesNotify: ['james.chen@acme.com']
       },
       {
-        id: 'INC-002', summary: 'Application crash - ntdll.dll error',
+        id: 'INC-002', title: 'Application crash - ntdll.dll error',
         description: 'CRM application crashes on startup with ntdll.dll access violation. Multiple users affected.',
         callerName: 'Mary Jones', callerEmail: 'mary.jones@acme.com', callerPhone: '+1-555-0124',
         callerDepartment: 'Sales', callerLocation: 'Building A, Floor 2', callerVip: true,
@@ -490,7 +490,7 @@ function generateDatabase() {
         watchList: ['sales.manager@acme.com', 'it.manager@acme.com'], additionalCommentsNotify: ['mary.jones@acme.com'], workNotesNotify: ['app.admin@acme.com']
       },
       {
-        id: 'INC-003', summary: 'Email not syncing on mobile device',
+        id: 'INC-003', title: 'Email not syncing on mobile device',
         description: 'Outlook app on iPhone not syncing emails since yesterday. Already tried removing and re-adding account.',
         callerName: 'David Wilson', callerEmail: 'david.wilson@acme.com', callerPhone: '+1-555-0125',
         callerDepartment: 'Marketing', callerLocation: 'Building B, Floor 1', callerVip: false,
@@ -508,7 +508,7 @@ function generateDatabase() {
         watchList: [], additionalCommentsNotify: ['david.wilson@acme.com'], workNotesNotify: []
       },
       {
-        id: 'INC-004', summary: 'Printer paper jam - 3rd floor',
+        id: 'INC-004', title: 'Printer paper jam - 3rd floor',
         description: 'HP LaserJet on 3rd floor showing persistent paper jam error. Already cleared visible paper.',
         callerName: 'Sarah Chen', callerEmail: 'sarah.chen@acme.com', callerPhone: '+1-555-0126',
         callerDepartment: 'Finance', callerLocation: 'Building A, Floor 3', callerVip: true,
@@ -524,7 +524,7 @@ function generateDatabase() {
         watchList: [], additionalCommentsNotify: ['sarah.chen@acme.com'], workNotesNotify: []
       },
       {
-        id: 'INC-005', summary: 'Server high CPU - WEBSRV-03',
+        id: 'INC-005', title: 'Server high CPU - WEBSRV-03',
         description: 'Monitoring alert: WEBSRV-03 showing 94% CPU utilization for past 2 hours. Website response times degraded.',
         callerName: 'Monitoring System', callerEmail: 'monitoring@acme.com', callerPhone: null,
         callerDepartment: 'IT Operations', callerLocation: 'Data Center', callerVip: false,
@@ -543,7 +543,7 @@ function generateDatabase() {
         watchList: ['it.manager@acme.com'], additionalCommentsNotify: [], workNotesNotify: ['server.admin@acme.com', 'it.manager@acme.com']
       },
       {
-        id: 'INC-006', summary: 'Password reset not working',
+        id: 'INC-006', title: 'Password reset not working',
         description: 'Self-service password reset portal shows "service unavailable" error.',
         callerName: 'Multiple Users', callerEmail: 'helpdesk@acme.com', callerPhone: null,
         callerDepartment: 'Multiple', callerLocation: 'Enterprise-wide', callerVip: false,
@@ -1919,16 +1919,16 @@ function calcPriority(impact, urgency) {
 // ── Incidents ──
 
 server.post('/api/itsm/incidents', (req, res) => {
-  const { summary, description, callerEmail, callerName, category, impact, urgency, assignmentGroup } = req.body;
-  if (!summary || !description) {
-    return res.status(400).json({ success: false, error: 'summary and description are required' });
+  const { title, description, callerEmail, callerName, category, impact, urgency, assignmentGroup } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ success: false, error: 'title and description are required' });
   }
   const priority = calcPriority(impact, urgency);
   const slaHours = { P1: 1, P2: 4, P3: 8, P4: 24 };
   const id = nextItsmId(db.itsm_incidents, 'INC');
   const now = new Date().toISOString();
   const incident = {
-    id, summary, description,
+    id, title, description,
     callerName: callerName || 'Unknown', callerEmail: callerEmail || null,
     callerPhone: req.body.callerPhone || null, callerDepartment: req.body.callerDepartment || null,
     callerLocation: req.body.callerLocation || null, callerVip: req.body.callerVip || false,
@@ -1948,7 +1948,7 @@ server.post('/api/itsm/incidents', (req, res) => {
     watchList: [], additionalCommentsNotify: [], workNotesNotify: []
   };
   db.itsm_incidents.push(incident);
-  addItsmAudit('api', 'Incident Created', id, 'incident', `Created ${priority} incident: ${summary}`);
+  addItsmAudit('api', 'Incident Created', id, 'incident', `Created ${priority} incident: ${title}`);
   res.status(201).json({ success: true, message: `Incident ${id} created successfully`, data: incident });
 });
 
@@ -2588,7 +2588,7 @@ server.get('/api/itsm/reports/sla-compliance', (req, res) => {
     data: {
       total: resolved.length, met: met.length, breached: breached.length,
       compliance: resolved.length > 0 ? Math.round((met.length / resolved.length) * 100) : 100,
-      breachedTickets: breached.map(i => ({ id: i.id, summary: i.summary, priority: i.priority }))
+      breachedTickets: breached.map(i => ({ id: i.id, title: i.title, priority: i.priority }))
     }
   });
 });

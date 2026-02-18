@@ -210,7 +210,7 @@ function renderDashboard() {
                                     <tr class="clickable" onclick="openIncidentDetail('${inc.id}')">
                                         <td class="cell-id">${inc.id}</td>
                                         <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
-                                        <td>${inc.summary}</td>
+                                        <td>${inc.title}</td>
                                         <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
                                         <td>${inc.assignedTo}</td>
                                         <td>${renderSLABadge(inc)}</td>
@@ -335,7 +335,7 @@ function renderIncidentList() {
             <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
             <div class="ticket-id">${inc.id}</div>
             <div style="flex: 1;">
-                <div class="ticket-summary">${inc.summary}</div>
+                <div class="ticket-summary">${inc.title}</div>
                 <div class="ticket-meta">
                     <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
                     <span>${inc.category}</span>
@@ -362,7 +362,7 @@ function filterIncidents() {
         const matchStatus = !statusFilter || inc.status === statusFilter;
         const matchPriority = !priorityFilter || inc.priority === priorityFilter;
         const matchSearch = !searchFilter ||
-            inc.summary.toLowerCase().includes(searchFilter) ||
+            inc.title.toLowerCase().includes(searchFilter) ||
             inc.id.toLowerCase().includes(searchFilter);
         return matchStatus && matchPriority && matchSearch;
     });
@@ -373,7 +373,7 @@ function filterIncidents() {
                 <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
                 <div class="ticket-id">${inc.id}</div>
                 <div style="flex: 1;">
-                    <div class="ticket-summary">${inc.summary}</div>
+                    <div class="ticket-summary">${inc.title}</div>
                     <div class="ticket-meta">
                         <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
                         <span>${inc.category}</span>
@@ -398,7 +398,7 @@ function selectIncident(incidentId) {
     // Render detail using IncidentsModule if available, otherwise fall back to renderIncidentDetail
     const incident = ITSMData.incidents.find(i => i.id === incidentId);
     if (incident) {
-        document.getElementById('detail-header').textContent = `${incident.id} - ${incident.summary}`;
+        document.getElementById('detail-header').textContent = `${incident.id} - ${incident.title}`;
         // Use the enhanced IncidentsModule form if available
         if (typeof IncidentsModule !== 'undefined' && IncidentsModule.renderIncidentForm) {
             document.getElementById('incident-detail').innerHTML = IncidentsModule.renderIncidentForm(incident);
@@ -580,7 +580,7 @@ function renderMyTickets() {
                                 <tr>
                                     <td class="cell-id">${inc.id}</td>
                                     <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
-                                    <td>${inc.summary}</td>
+                                    <td>${inc.title}</td>
                                     <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
                                     <td>${renderSLABadge(inc)}</td>
                                     <td class="cell-actions">
@@ -1505,7 +1505,7 @@ async function submitNewIncident() {
     const callerName = document.getElementById('new-inc-caller-name').value.trim();
     const callerPhone = document.getElementById('new-inc-caller-phone').value.trim();
     const location = document.getElementById('new-inc-location').value.trim();
-    const summary = document.getElementById('new-inc-summary').value.trim();
+    const title = document.getElementById('new-inc-summary').value.trim();
     const description = document.getElementById('new-inc-description').value.trim();
     const category = document.getElementById('new-inc-category').value;
     const subcategory = document.getElementById('new-inc-subcategory').value;
@@ -1518,7 +1518,7 @@ async function submitNewIncident() {
     const configItem = document.getElementById('new-inc-ci').value;
 
     // Validation
-    if (!summary) {
+    if (!title) {
         showToast('Please enter a short description', 'error');
         return;
     }
@@ -1544,7 +1544,7 @@ async function submitNewIncident() {
 
     try {
         const result = await ITSMApi.createIncident({
-            summary, description,
+            title, description,
             callerEmail, callerName, callerPhone,
             callerDepartment: customer ? customer.department : '',
             callerLocation: location || (customer ? customer.location : ''),
@@ -1568,7 +1568,7 @@ async function submitNewIncident() {
                 NotificationsModule.add({
                     type: 'incident',
                     title: 'Incident Created',
-                    message: `${newId}: ${summary}`,
+                    message: `${newId}: ${title}`,
                     relatedId: newId
                 });
             }

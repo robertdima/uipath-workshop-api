@@ -366,7 +366,7 @@ const ChangesModule = {
                             <select class="form-control" id="chg-related-incident">
                                 <option value="">-- None --</option>
                                 ${ITSMData.incidents.map(inc => `
-                                    <option value="${inc.id}">${inc.id}: ${inc.summary.substring(0, 50)}...</option>
+                                    <option value="${inc.id}">${inc.id}: ${inc.title.substring(0, 50)}...</option>
                                 `).join('')}
                                 ${ITSMData.problems.map(prb => `
                                     <option value="${prb.id}">${prb.id}: ${prb.title.substring(0, 50)}...</option>

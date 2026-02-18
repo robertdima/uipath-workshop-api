@@ -495,7 +495,7 @@ const ITSMData = {
         {
             id: 'INC-001',
             // Short description and details
-            summary: 'VPN connection drops frequently',
+            title: 'VPN connection drops frequently',
             description: 'User reports VPN disconnects every 15-20 minutes. Started after recent Windows update. Error log attached.',
             // Caller Information (who the incident is for)
             caller: 'CUST-001',
@@ -556,7 +556,7 @@ const ITSMData = {
         },
         {
             id: 'INC-002',
-            summary: 'Application crash - ntdll.dll error',
+            title: 'Application crash - ntdll.dll error',
             description: 'CRM application crashes on startup with ntdll.dll access violation. Multiple users affected.',
             // Caller Information
             caller: 'CUST-002',
@@ -606,7 +606,7 @@ const ITSMData = {
         },
         {
             id: 'INC-003',
-            summary: 'Email not syncing on mobile device',
+            title: 'Email not syncing on mobile device',
             description: 'Outlook app on iPhone not syncing emails since yesterday. Already tried removing and re-adding account.',
             // Caller Information
             caller: 'CUST-003',
@@ -657,7 +657,7 @@ const ITSMData = {
         },
         {
             id: 'INC-004',
-            summary: 'Printer paper jam - 3rd floor',
+            title: 'Printer paper jam - 3rd floor',
             description: 'HP LaserJet on 3rd floor showing persistent paper jam error. Already cleared visible paper.',
             // Caller Information
             caller: 'CUST-004',
@@ -700,7 +700,7 @@ const ITSMData = {
         },
         {
             id: 'INC-005',
-            summary: 'Server high CPU - WEBSRV-03',
+            title: 'Server high CPU - WEBSRV-03',
             description: 'Monitoring alert: WEBSRV-03 showing 94% CPU utilization for past 2 hours. Website response times degraded.',
             // Caller Information (auto-generated from monitoring)
             caller: null,
@@ -747,7 +747,7 @@ const ITSMData = {
         },
         {
             id: 'INC-006',
-            summary: 'Password reset not working',
+            title: 'Password reset not working',
             description: 'Self-service password reset portal shows "service unavailable" error.',
             // Caller Information
             caller: null,

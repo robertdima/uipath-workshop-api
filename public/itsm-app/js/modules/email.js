@@ -431,7 +431,7 @@ IT Support Team`
         const placeholders = {
             '{{incident_id}}': incident.id || incident.incident_id || '',
             '{{customer_name}}': incident.customer_name || incident.customerName || 'Valued Customer',
-            '{{summary}}': incident.summary || incident.title || '',
+            '{{summary}}': incident.title || '',
             '{{status}}': incident.status || '',
             '{{technician_name}}': incident.assigned_to || incident.assignedTo || 'Support Team',
             '{{resolution}}': incident.resolution || incident.resolution_notes || 'N/A',

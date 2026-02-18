@@ -183,7 +183,7 @@ const ITSMApi = (() => {
 
     async function createIncident(data) {
         const payload = {
-            summary: data.summary,
+            title: data.title,
             description: data.description,
             callerEmail: data.callerEmail,
             callerName: data.callerName,

@@ -232,7 +232,7 @@ const SLAModule = {
                 const sla = this.calculateSLA(inc);
                 return `<div class="sla-urgent-item" onclick="openIncidentDetail('${inc.id}')">
                     <span class="sla-urgent-id">${inc.id}</span>
-                    <span class="sla-urgent-summary">${inc.summary.substring(0, 30)}...</span>
+                    <span class="sla-urgent-summary">${inc.title.substring(0, 30)}...</span>
                     <span class="sla-badge sla-${sla.color} sla-badge-sm">${sla.status === 'breached' ? 'BREACHED' : sla.text}</span>
                 </div>`;
             }).join('')}

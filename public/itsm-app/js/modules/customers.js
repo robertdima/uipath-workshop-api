@@ -115,7 +115,7 @@ const CustomersModule = {
                             if (!ticket) return '';
                             return `<div class="history-item" onclick="openIncidentDetail('${ticketId}')">
                                 <span class="history-id">${ticketId}</span>
-                                <span class="history-summary">${ticket.summary.substring(0, 25)}...</span>
+                                <span class="history-summary">${ticket.title.substring(0, 25)}...</span>
                             </div>`;
                         }).join('')}
                     </div>

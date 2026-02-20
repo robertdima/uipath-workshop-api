@@ -437,6 +437,7 @@ const ProblemsModule = {
             showToast('Problem not found', 'error');
             return;
         }
+        if (typeof updateHash === 'function') updateHash('problems', problemId);
 
         const linkedIncidentsList = this.renderLinkedIncidents(problem);
         const affectedAssetsList = this.renderAffectedAssets(problem);

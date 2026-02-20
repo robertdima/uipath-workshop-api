@@ -5,6 +5,71 @@
 // State
 let currentModule = 'dashboard';
 let selectedIncident = null;
+let _skipHashUpdate = false; // prevents hash→navigate→hash loops
+
+// ==================== HASH ROUTING ====================
+
+function parseHash() {
+    // Parse location.hash into { module, itemId }
+    // Examples: #/incidents → { module: 'incidents' }
+    //           #/incidents/INC-003 → { module: 'incidents', itemId: 'INC-003' }
+    const hash = location.hash.replace(/^#\/?/, '').replace(/\/$/, ''); // strip #/ prefix and trailing /
+    if (!hash) return { module: 'dashboard', itemId: null };
+    const parts = hash.split('/');
+    return { module: parts[0], itemId: parts.slice(1).join('/') || null };
+}
+
+function updateHash(moduleKey, itemId) {
+    const path = itemId ? `#/${moduleKey}/${itemId}` : `#/${moduleKey}`;
+    if (location.hash !== path) {
+        _skipHashUpdate = true;
+        location.hash = path;
+    }
+}
+
+function navigateToHash() {
+    const { module: moduleKey, itemId } = parseHash();
+    // Validate module exists
+    const validModules = [
+        'dashboard', 'incidents', 'my-tickets', 'knowledge-base', 'runbooks',
+        'changes', 'cab-calendar', 'assets', 'policies', 'reports',
+        'audit-log', 'settings', 'demo-reset', 'problems', 'requests',
+        'service-catalog', 'my-requests'
+    ];
+    if (!validModules.includes(moduleKey)) {
+        setActiveModule('dashboard');
+        return;
+    }
+    setActiveModule(moduleKey, itemId);
+}
+
+// Deep-link into a specific item after module renders
+function deepLinkToItem(moduleKey, itemId) {
+    if (!itemId) return;
+    // Small delay to let the DOM render
+    setTimeout(() => {
+        switch (moduleKey) {
+            case 'incidents':
+                if (typeof selectIncident === 'function') selectIncident(itemId);
+                break;
+            case 'requests':
+                if (typeof RequestsModule !== 'undefined') RequestsModule.selectRequest(itemId);
+                break;
+            case 'problems':
+                if (typeof ProblemsModule !== 'undefined') ProblemsModule.viewProblem(itemId);
+                break;
+            case 'changes':
+                if (typeof ChangesModule !== 'undefined') ChangesModule.viewChange(itemId);
+                break;
+            case 'assets':
+                if (typeof AssetsModule !== 'undefined') AssetsModule.viewAsset(itemId);
+                break;
+            case 'knowledge-base':
+                if (typeof KnowledgeModule !== 'undefined') KnowledgeModule.viewKBArticle(itemId);
+                break;
+        }
+    }, 50);
+}
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,8 +85,18 @@ async function initializeApp() {
         showToast('Using offline data — API unavailable', 'warning');
     }
     updateSidebarBadges();
-    renderModule('dashboard');
+
+    // Route based on URL hash (defaults to dashboard if no hash)
+    const { module: startModule, itemId } = parseHash();
+    setActiveModule(startModule, itemId);
+
     loadRecentActivity();
+
+    // Listen for browser back/forward
+    window.addEventListener('hashchange', () => {
+        if (_skipHashUpdate) { _skipHashUpdate = false; return; }
+        navigateToHash();
+    });
 }
 
 function updateSidebarBadges() {
@@ -70,7 +145,7 @@ function setupNavigation() {
     });
 }
 
-function setActiveModule(moduleKey) {
+function setActiveModule(moduleKey, itemId) {
     // Update nav state
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
@@ -81,7 +156,9 @@ function setActiveModule(moduleKey) {
     }
 
     currentModule = moduleKey;
+    updateHash(moduleKey, itemId);
     renderModule(moduleKey);
+    if (itemId) deepLinkToItem(moduleKey, itemId);
 }
 
 // ==================== MODULE RENDERING ====================
@@ -392,6 +469,7 @@ function filterIncidents() {
 
 function selectIncident(incidentId) {
     selectedIncident = incidentId;
+    updateHash('incidents', incidentId);
 
     // Update list selection
     document.querySelectorAll('.ticket-row').forEach(row => {
@@ -1214,7 +1292,7 @@ function showModal(content) {
 }
 
 function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('active');
+    Modals.close();
 }
 
 // ==================== ACTION FUNCTIONS ====================

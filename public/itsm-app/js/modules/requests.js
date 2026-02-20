@@ -172,6 +172,7 @@ const RequestsModule = {
      */
     selectRequest: function(requestId) {
         this.selectedRequest = requestId;
+        if (typeof updateHash === 'function') updateHash('requests', requestId);
         this.refreshList();
         const request = this.getRequest(requestId);
         if (!request) return;
@@ -665,7 +666,7 @@ const RequestsModule = {
                                 <td><span class="badge ${this.statusBadgeClass[r.status]}">${r.status}</span></td>
                                 <td>${r.priority}</td>
                                 <td>${new Date(r.createdAt).toLocaleDateString()}</td>
-                                <td><button class="btn btn-sm btn-secondary" onclick="setActiveModule('requests'); setTimeout(() => RequestsModule.selectRequest('${r.id}'), 100);">View</button></td>
+                                <td><button class="btn btn-sm btn-secondary" onclick="setActiveModule('requests', '${r.id}');">View</button></td>
                             </tr>
                         `).join('')}
                     </tbody>

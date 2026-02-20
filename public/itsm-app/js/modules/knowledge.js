@@ -168,6 +168,7 @@ const KnowledgeModule = {
             }
             return;
         }
+        if (typeof updateHash === 'function') updateHash('knowledge-base', kbId);
 
         // Increment view count (fire-and-forget API call)
         kb.views = (kb.views || 0) + 1;

@@ -12,6 +12,14 @@ const Modals = {
     // Close modal
     close() {
         document.getElementById('modal-overlay').classList.remove('active');
+        // Revert hash to module-only for modal-based modules (not split-pane ones like incidents/requests)
+        if (typeof currentModule !== 'undefined' && typeof updateHash === 'function' && typeof parseHash === 'function') {
+            const splitPaneModules = ['incidents', 'requests'];
+            const { itemId } = parseHash();
+            if (itemId && !splitPaneModules.includes(currentModule)) {
+                updateHash(currentModule, null);
+            }
+        }
     },
 
     // Confirmation modal

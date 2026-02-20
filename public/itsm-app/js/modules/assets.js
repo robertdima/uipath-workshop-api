@@ -167,6 +167,7 @@ const AssetsModule = {
             showToast('Asset not found', 'error');
             return;
         }
+        if (typeof updateHash === 'function') updateHash('assets', assetId);
 
         // Get related incidents
         const relatedIncidents = ITSMData.incidents.filter(inc => inc.affectedAsset === assetId);

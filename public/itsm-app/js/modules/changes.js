@@ -714,6 +714,7 @@ const ChangesModule = {
             showToast('Change not found', 'error');
             return;
         }
+        if (typeof updateHash === 'function') updateHash('changes', changeId);
 
         const affectedAssetsList = change.affectedAssets && change.affectedAssets.length > 0
             ? change.affectedAssets.map(assetId => {

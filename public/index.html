@@ -158,7 +158,7 @@
         <!-- Header -->
         <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
             <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
-            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 116 endpoints</p>
+            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 154 endpoints</p>
             <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
                 View Complete API Documentation →
             </a>
@@ -254,7 +254,7 @@
 
     <script>
         const API_BASE = window.location.origin + '/api';
-        let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null, itsm_incident: null, itsm_change: null, itsm_request: null, itsm_problem: null, itsm_asset: null, itsm_knowledge: null };
+        let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null, onboarding: null, legacy_submission: null, itsm_incident: null, itsm_change: null, itsm_request: null, itsm_problem: null, itsm_asset: null, itsm_knowledge: null, itsm_runbook: null, itsm_catalog: null, itsm_notification: null };
         let apiHealth = { isOnline: false, responseTime: 0 };
         let onboardingData = [];
         let updatedByMap = {};
@@ -267,7 +267,7 @@
                     <div class="text-center py-16 px-8">
                         <div class="text-6xl mb-6">🚀</div>
                         <h2 class="text-4xl font-bold text-deepblue mb-4">UiPath Workshop API</h2>
-                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 116 endpoints across all business modules!</p>
+                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 154 endpoints across all business modules!</p>
                         <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -299,7 +299,7 @@
                 content: `
                     <div class="grid grid-cols-4 gap-6 mb-8">
                         <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">116</div>
+                            <div class="text-5xl font-bold mb-2">154</div>
                             <div class="text-xs uppercase tracking-wide">API Endpoints</div>
                         </div>
                         <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
@@ -511,15 +511,20 @@
                     { method: 'GET', path: '/itsm/incidents', description: 'Get all incidents in the ITSM system' },
                     { method: 'GET', path: '/itsm/incidents/:id', description: 'Get specific incident details', needsId: 'itsm_incident' },
                     { method: 'POST', path: '/itsm/incidents', description: 'Create new incident with auto-priority calculation',
-                        body: {summary: 'Email service unavailable', description: 'Users reporting inability to send/receive emails since 9am', impact: 2, urgency: 1} },
+                        body: {title: 'Email service unavailable', description: 'Users reporting inability to send/receive emails since 9am', impact: 'High', urgency: 'High'} },
+                    { method: 'PATCH', path: '/itsm/incidents/:id', description: 'Update any incident fields (general-purpose)', needsId: 'itsm_incident',
+                        body: {impact: 'High', urgency: 'High', assignmentGroup: 'Escalation Team', status: 'In Progress'} },
                     { method: 'PATCH', path: '/itsm/incidents/:id/status', description: 'Update incident status (enforces workflow transitions)', needsId: 'itsm_incident',
                         body: {status: 'Open'} },
                     { method: 'POST', path: '/itsm/incidents/:id/notes', description: 'Add work note or customer comment to incident', needsId: 'itsm_incident',
                         body: {content: 'Investigating the root cause', type: 'comment', visibility: 'technicians-only'} },
                     { method: 'POST', path: '/itsm/incidents/:id/assign', description: 'Assign incident to team/technician', needsId: 'itsm_incident',
-                        body: {team: 'Network Team'} },
+                        body: {assignmentGroup: 'Network Team', assignee: 'tech001', assigneeName: 'John Smith'} },
+                    { method: 'POST', path: '/itsm/incidents/:id/escalate', description: 'Escalate incident priority (P4 -> P3 -> P2 -> P1)', needsId: 'itsm_incident' },
                     { method: 'POST', path: '/itsm/incidents/:id/resolve', description: 'Resolve incident with resolution details', needsId: 'itsm_incident',
-                        body: {resolutionCode: 'Fixed', notes: 'Restarted email relay service, confirmed emails flowing'} },
+                        body: {resolutionCode: 'Fixed', resolutionNotes: 'Restarted email relay service, confirmed emails flowing'} },
+                    { method: 'POST', path: '/itsm/incidents/:id/link', description: 'Link incident to problem/change/KB', needsId: 'itsm_incident',
+                        body: {targetId: 'PRB-001', linkType: 'problem'} },
                     { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics (counts by status/priority, SLA compliance)' }
                 ]
             },
@@ -536,6 +541,11 @@
                         body: {status: 'Approved'} },
                     { method: 'POST', path: '/itsm/changes/:id/approve', description: 'CAB approve a change request', needsId: 'itsm_change',
                         body: {approver: 'CAB Board', comments: 'Approved - low risk, proceed as scheduled'} },
+                    { method: 'POST', path: '/itsm/changes/:id/reject', description: 'Reject a change request', needsId: 'itsm_change',
+                        body: {rejectedBy: 'CAB Board', reason: 'Insufficient testing evidence'} },
+                    { method: 'POST', path: '/itsm/changes/:id/implement', description: 'Start change implementation', needsId: 'itsm_change' },
+                    { method: 'POST', path: '/itsm/changes/:id/complete', description: 'Complete/close a change', needsId: 'itsm_change',
+                        body: {outcome: 'Successful', notes: 'Firmware updated successfully'} },
                     { method: 'GET', path: '/itsm/changes/stats', description: 'Get change statistics (success rate, by status/type/risk)' },
                     { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar grouped by scheduled date' }
                 ]
@@ -553,10 +563,14 @@
                         body: {status: 'In Progress'} },
                     { method: 'POST', path: '/itsm/requests/:id/approve', description: 'Approve a pending service request', needsId: 'itsm_request',
                         body: {approver: 'manager@acme.com', comments: 'Approved for department budget'} },
+                    { method: 'POST', path: '/itsm/requests/:id/reject', description: 'Reject a service request', needsId: 'itsm_request',
+                        body: {rejectedBy: 'manager@acme.com', reason: 'Budget not approved'} },
                     { method: 'POST', path: '/itsm/requests/:id/fulfill', description: 'Mark service request as fulfilled', needsId: 'itsm_request',
                         body: {notes: 'Software installed and configured'} },
                     { method: 'POST', path: '/itsm/requests/:id/assign', description: 'Assign service request to team', needsId: 'itsm_request',
                         body: {team: 'Application Support'} },
+                    { method: 'POST', path: '/itsm/requests/:id/notes', description: 'Add note to service request', needsId: 'itsm_request',
+                        body: {content: 'Waiting for license key', type: 'comment', visibility: 'customer-visible'} },
                     { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics (by status/category)' },
                     { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
                 ]
@@ -570,10 +584,12 @@
                     { method: 'GET', path: '/itsm/problems/:id', description: 'Get specific problem details', needsId: 'itsm_problem' },
                     { method: 'POST', path: '/itsm/problems', description: 'Create new problem record',
                         body: {title: 'Recurring VPN disconnections', description: 'Multiple incidents reported for VPN drops during peak hours', category: 'Network', priority: 'P2'} },
+                    { method: 'PATCH', path: '/itsm/problems/:id/status', description: 'Update problem status', needsId: 'itsm_problem',
+                        body: {status: 'Under Investigation'} },
                     { method: 'PATCH', path: '/itsm/problems/:id/root-cause', description: 'Update root cause analysis', needsId: 'itsm_problem',
-                        body: {rootCause: 'VPN concentrator running outdated firmware with known memory leak', workaround: 'Restart VPN service every 4 hours until patched'} },
-                    { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link an incident to this problem', needsId: 'itsm_problem',
-                        body: {incidentId: 'INC-001'} },
+                        body: {rootCause: 'VPN concentrator running outdated firmware with known memory leak', workaround: 'Restart VPN service every 4 hours until patched', convertToKnownError: true} },
+                    { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident(s) to problem (supports single ID or array)', needsId: 'itsm_problem',
+                        body: {incidentIds: ['INC-001', 'INC-002', 'INC-003']} },
                     { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get all known errors with workarounds' }
                 ]
             },
@@ -588,6 +604,7 @@
                         body: {name: 'Dell Latitude 5540', type: 'Workstation', status: 'Active', owner: 'John Doe', location: 'Building A, Floor 2'} },
                     { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
                         body: {status: 'Maintenance'} },
+                    { method: 'GET', path: '/itsm/assets/by-type', description: 'Get assets filtered by type (use ?type=Server)' },
                     { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset statistics (count by type/status)' },
                     { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history from audit log', needsId: 'itsm_asset' }
                 ]
@@ -601,12 +618,15 @@
                     { method: 'GET', path: '/itsm/knowledge/:id', description: 'Get specific knowledge article', needsId: 'itsm_knowledge' },
                     { method: 'POST', path: '/itsm/knowledge', description: 'Create new knowledge article',
                         body: {title: 'How to Reset VPN Configuration', category: 'Network', content: 'Step 1: Open VPN client settings...', tags: ['vpn', 'network', 'connectivity']} },
-                    { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge',
-                        body: {} },
-                    { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful (increment counter)', needsId: 'itsm_knowledge',
-                        body: {} },
+                    { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge' },
+                    { method: 'PATCH', path: '/itsm/knowledge/:id/archive', description: 'Archive a knowledge article', needsId: 'itsm_knowledge' },
+                    { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful (increment counter)', needsId: 'itsm_knowledge' },
+                    { method: 'POST', path: '/itsm/knowledge/:id/view', description: 'Track article view count', needsId: 'itsm_knowledge' },
                     { method: 'GET', path: '/itsm/knowledge/search', description: 'Search knowledge base articles (use ?q=keyword)' },
-                    { method: 'GET', path: '/itsm/runbooks', description: 'Get all runbooks / standard operating procedures' }
+                    { method: 'GET', path: '/itsm/runbooks', description: 'Get all runbooks / standard operating procedures' },
+                    { method: 'POST', path: '/itsm/runbooks', description: 'Create a new runbook',
+                        body: {title: 'Server Restart Procedure', category: 'Infrastructure', steps: ['Notify users', 'Stop services', 'Restart server', 'Verify services']} },
+                    { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' }
                 ]
             },
             'itsm-reports': {
@@ -620,7 +640,9 @@
                     { method: 'GET', path: '/itsm/reports/team-performance', description: 'Team performance report (tickets per team, resolution rate)' },
                     { method: 'GET', path: '/itsm/reports/change-success-rate', description: 'Change success rate report (by type, avg implementation time)' },
                     { method: 'GET', path: '/itsm/reports/request-fulfillment', description: 'Request fulfillment report (avg time by category)' },
-                    { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get most recent audit log entries (last 50)' }
+                    { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get most recent audit log entries (last 50)' },
+                    { method: 'GET', path: '/itsm/audit-log/by-target', description: 'Get audit log entries for a specific target (use ?targetId=INC-001)' },
+                    { method: 'GET', path: '/itsm/audit-log/by-actor', description: 'Get audit log entries by actor (use ?actor=System)' }
                 ]
             },
             'itsm-config': {
@@ -631,10 +653,17 @@
                     { method: 'GET', path: '/itsm/teams', description: 'Get all support teams and their members' },
                     { method: 'GET', path: '/itsm/technicians', description: 'Get all technicians with skills and availability' },
                     { method: 'GET', path: '/itsm/catalog', description: 'Get service catalog items' },
+                    { method: 'GET', path: '/itsm/catalog/:id', description: 'Get specific catalog item details', needsId: 'itsm_catalog' },
                     { method: 'GET', path: '/itsm/customers', description: 'Get ITSM customer records' },
                     { method: 'GET', path: '/itsm/policies', description: 'Get IT governance policies' },
+                    { method: 'GET', path: '/itsm/policies/by-category', description: 'Get policies filtered by category (use ?category=Security)' },
+                    { method: 'GET', path: '/itsm/policies/search', description: 'Search policies by keyword (use ?q=password)' },
                     { method: 'GET', path: '/itsm/sla/configs', description: 'Get SLA configurations by priority' },
-                    { method: 'GET', path: '/itsm/email-templates', description: 'Get notification email templates' }
+                    { method: 'GET', path: '/itsm/email-templates', description: 'Get notification email templates' },
+                    { method: 'GET', path: '/itsm/notifications', description: 'Get all ITSM notifications' },
+                    { method: 'PATCH', path: '/itsm/notifications/:id/read', description: 'Mark notification as read', needsId: 'itsm_notification' },
+                    { method: 'POST', path: '/itsm/notifications/mark-all-read', description: 'Mark all notifications as read' },
+                    { method: 'POST', path: '/itsm/reset', description: 'Reset all ITSM data to defaults (regenerates seed data)' }
                 ]
             }
         };
@@ -1307,12 +1336,16 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
                 device: '/iot/devices',
                 opportunity: '/crm/opportunities',
                 onboarding: '/hr/onboarding',
+                legacy_submission: '/hr/legacy-portal/submissions',
                 itsm_incident: '/itsm/incidents',
                 itsm_change: '/itsm/changes',
                 itsm_request: '/itsm/requests',
                 itsm_problem: '/itsm/problems',
                 itsm_asset: '/itsm/assets',
-                itsm_knowledge: '/itsm/knowledge'
+                itsm_knowledge: '/itsm/knowledge',
+                itsm_runbook: '/itsm/runbooks',
+                itsm_catalog: '/itsm/catalog',
+                itsm_notification: '/itsm/notifications'
             };
 
             const endpoint = endpoints[type];
@@ -1357,7 +1390,7 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
             }
         }
 
-        console.log('🚀 UiPath Workshop API Interface - All 116 endpoints ready!');
+        console.log('🚀 UiPath Workshop API Interface - All 154 endpoints ready!');
     </script>
 </body>
 </html>

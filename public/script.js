@@ -13,12 +13,17 @@ const state = {
     customer: null,
     device: null,
     opportunity: null,
+    onboarding: null,
+    legacy_submission: null,
     itsm_incident: null,
     itsm_change: null,
     itsm_request: null,
     itsm_problem: null,
     itsm_asset: null,
-    itsm_knowledge: null
+    itsm_knowledge: null,
+    itsm_runbook: null,
+    itsm_catalog: null,
+    itsm_notification: null
   },
   apiHealth: {
     isOnline: false,
@@ -76,7 +81,21 @@ const modules = {
     endpoints: [
       { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
       { method: 'GET', path: '/hr/onboarding/inProgress', description: 'Get active onboarding processes (filtered in UiPath)' },
-      { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' }
+      { method: 'GET', path: '/hr/onboarding/enriched', description: 'Get enriched onboarding data with worker details' },
+      { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding',
+        body: { status: 'In Progress' } },
+      { method: 'POST', path: '/hr/onboarding/:id/equipment', description: 'Add equipment to onboarding', needsId: 'onboarding',
+        body: { item: 'Laptop', status: 'Ordered' } },
+      { method: 'POST', path: '/hr/onboarding/:id/access', description: 'Add system access to onboarding', needsId: 'onboarding',
+        body: { system: 'Email', status: 'Provisioned' } },
+      { method: 'DELETE', path: '/hr/onboarding/:id', description: 'Delete onboarding record', needsId: 'onboarding' },
+      { method: 'POST', path: '/hr/onboarding/generate', description: 'Generate onboarding records for workers' },
+      { method: 'POST', path: '/hr/onboarding/reset', description: 'Reset all onboarding data' },
+      { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' },
+      { method: 'POST', path: '/hr/legacy-portal/submit', description: 'Submit legacy HR form',
+        body: { employeeName: 'John Doe', requestType: 'Leave Request', details: 'Annual leave 5 days' } },
+      { method: 'GET', path: '/hr/legacy-portal/submissions', description: 'Get all legacy form submissions' },
+      { method: 'GET', path: '/hr/legacy-portal/verify/:id', description: 'Verify legacy form submission', needsId: 'legacy_submission' }
     ]
   },
   'finance-invoices': {
@@ -247,6 +266,11 @@ const modules = {
         body: { status: 'Approved' } },
       { method: 'POST', path: '/itsm/changes/:id/approve', description: 'Approve a change request', needsId: 'itsm_change',
         body: { approver: 'CAB Board', comments: 'Approved - low risk window' } },
+      { method: 'POST', path: '/itsm/changes/:id/reject', description: 'Reject a change request', needsId: 'itsm_change',
+        body: { rejectedBy: 'CAB Board', reason: 'Insufficient testing evidence' } },
+      { method: 'POST', path: '/itsm/changes/:id/implement', description: 'Start change implementation', needsId: 'itsm_change' },
+      { method: 'POST', path: '/itsm/changes/:id/complete', description: 'Complete/close a change', needsId: 'itsm_change',
+        body: { outcome: 'Successful', notes: 'Firmware updated successfully' } },
       { method: 'GET', path: '/itsm/changes/stats', description: 'Get change management statistics' },
       { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar / freeze windows' }
     ]
@@ -264,10 +288,14 @@ const modules = {
         body: { status: 'In Progress' } },
       { method: 'POST', path: '/itsm/requests/:id/approve', description: 'Approve a service request', needsId: 'itsm_request',
         body: { approver: 'manager@acme.com', comments: 'Approved' } },
+      { method: 'POST', path: '/itsm/requests/:id/reject', description: 'Reject a service request', needsId: 'itsm_request',
+        body: { rejectedBy: 'manager@acme.com', reason: 'Budget not approved' } },
       { method: 'POST', path: '/itsm/requests/:id/fulfill', description: 'Mark request as fulfilled', needsId: 'itsm_request',
         body: { notes: 'Software installed and configured' } },
       { method: 'POST', path: '/itsm/requests/:id/assign', description: 'Assign request to team', needsId: 'itsm_request',
         body: { team: 'Service Desk' } },
+      { method: 'POST', path: '/itsm/requests/:id/notes', description: 'Add note to service request', needsId: 'itsm_request',
+        body: { content: 'Waiting for license key', type: 'comment', visibility: 'customer-visible' } },
       { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics' },
       { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
     ]
@@ -301,6 +329,7 @@ const modules = {
         body: { name: 'LAPTOP-NEW-001', type: 'Workstation', status: 'Active', owner: 'john.doe@acme.com', location: 'Building A - Floor 3' } },
       { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
         body: { status: 'Maintenance' } },
+      { method: 'GET', path: '/itsm/assets/by-type/:type', description: 'Get assets filtered by type (Server, Workstation, Network, etc.)' },
       { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset inventory statistics' },
       { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history', needsId: 'itsm_asset' }
     ]
@@ -315,9 +344,14 @@ const modules = {
       { method: 'POST', path: '/itsm/knowledge', description: 'Create a new knowledge article',
         body: { title: 'How to reset MFA token', category: 'Security', content: 'Step 1: Navigate to security settings...', tags: ['mfa', 'security', 'authentication'] } },
       { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge' },
+      { method: 'PATCH', path: '/itsm/knowledge/:id/archive', description: 'Archive a knowledge article', needsId: 'itsm_knowledge' },
       { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful', needsId: 'itsm_knowledge' },
+      { method: 'POST', path: '/itsm/knowledge/:id/view', description: 'Track article view count', needsId: 'itsm_knowledge' },
       { method: 'GET', path: '/itsm/knowledge/search', description: 'Search knowledge base (append ?q=keyword)' },
-      { method: 'GET', path: '/itsm/runbooks', description: 'Get all operational runbooks' }
+      { method: 'GET', path: '/itsm/runbooks', description: 'Get all operational runbooks' },
+      { method: 'POST', path: '/itsm/runbooks', description: 'Create a new runbook',
+        body: { title: 'Server Restart Procedure', category: 'Infrastructure', steps: ['Check dependencies', 'Notify users', 'Restart service'] } },
+      { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' }
     ]
   },
   'itsm-reports': {
@@ -331,7 +365,9 @@ const modules = {
       { method: 'GET', path: '/itsm/reports/team-performance', description: 'Get team performance metrics' },
       { method: 'GET', path: '/itsm/reports/change-success-rate', description: 'Get change success rate report' },
       { method: 'GET', path: '/itsm/reports/request-fulfillment', description: 'Get request fulfillment report' },
-      { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get recent audit log entries' }
+      { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get recent audit log entries' },
+      { method: 'GET', path: '/itsm/audit-log/by-target/:targetId', description: 'Get audit log entries for a specific entity (e.g. INC-001)' },
+      { method: 'GET', path: '/itsm/audit-log/by-actor/:actor', description: 'Get audit log entries by actor' }
     ]
   },
   'itsm-config': {
@@ -342,10 +378,17 @@ const modules = {
       { method: 'GET', path: '/itsm/teams', description: 'Get all support teams' },
       { method: 'GET', path: '/itsm/technicians', description: 'Get all technicians' },
       { method: 'GET', path: '/itsm/catalog', description: 'Get service catalog items' },
+      { method: 'GET', path: '/itsm/catalog/:id', description: 'Get specific catalog item', needsId: 'itsm_catalog' },
       { method: 'GET', path: '/itsm/customers', description: 'Get ITSM customer records' },
       { method: 'GET', path: '/itsm/policies', description: 'Get IT policies' },
+      { method: 'GET', path: '/itsm/policies/by-category/:category', description: 'Get policies by category (Security, Access, etc.)' },
+      { method: 'GET', path: '/itsm/policies/search', description: 'Search policies (append ?q=keyword)' },
       { method: 'GET', path: '/itsm/sla/configs', description: 'Get SLA configuration rules' },
-      { method: 'GET', path: '/itsm/email-templates', description: 'Get email notification templates' }
+      { method: 'GET', path: '/itsm/email-templates', description: 'Get email notification templates' },
+      { method: 'GET', path: '/itsm/notifications', description: 'Get ITSM notifications' },
+      { method: 'PATCH', path: '/itsm/notifications/:id/read', description: 'Mark notification as read', needsId: 'itsm_notification' },
+      { method: 'POST', path: '/itsm/notifications/mark-all-read', description: 'Mark all notifications as read' },
+      { method: 'POST', path: '/itsm/reset', description: 'Reset all ITSM data to defaults (admin)' }
     ]
   }
 };
@@ -774,12 +817,17 @@ async function getSampleId(type) {
     customer: '/crm/customers',
     device: '/iot/devices',
     opportunity: '/crm/opportunities',
+    onboarding: '/hr/onboarding',
+    legacy_submission: '/hr/legacy-portal/submissions',
     itsm_incident: '/itsm/incidents',
     itsm_change: '/itsm/changes',
     itsm_request: '/itsm/requests',
     itsm_problem: '/itsm/problems',
     itsm_asset: '/itsm/assets',
-    itsm_knowledge: '/itsm/knowledge'
+    itsm_knowledge: '/itsm/knowledge',
+    itsm_runbook: '/itsm/runbooks',
+    itsm_catalog: '/itsm/catalog',
+    itsm_notification: '/itsm/notifications'
   };
 
   try {

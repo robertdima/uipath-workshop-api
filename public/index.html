@@ -158,7 +158,7 @@
         <!-- Header -->
         <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
             <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
-            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 154 endpoints</p>
+            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 161 endpoints</p>
             <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
                 View Complete API Documentation →
             </a>
@@ -267,7 +267,7 @@
                     <div class="text-center py-16 px-8">
                         <div class="text-6xl mb-6">🚀</div>
                         <h2 class="text-4xl font-bold text-deepblue mb-4">UiPath Workshop API</h2>
-                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 154 endpoints across all business modules!</p>
+                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 161 endpoints across all business modules!</p>
                         <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -299,7 +299,7 @@
                 content: `
                     <div class="grid grid-cols-4 gap-6 mb-8">
                         <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">154</div>
+                            <div class="text-5xl font-bold mb-2">161</div>
                             <div class="text-xs uppercase tracking-wide">API Endpoints</div>
                         </div>
                         <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
@@ -525,6 +525,7 @@
                         body: {resolutionCode: 'Fixed', resolutionNotes: 'Restarted email relay service, confirmed emails flowing'} },
                     { method: 'POST', path: '/itsm/incidents/:id/link', description: 'Link incident to problem/change/KB', needsId: 'itsm_incident',
                         body: {targetId: 'PRB-001', linkType: 'problem'} },
+                    { method: 'DELETE', path: '/itsm/incidents/:id', description: 'Delete an incident permanently', needsId: 'itsm_incident' },
                     { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics (counts by status/priority, SLA compliance)' }
                 ]
             },
@@ -546,6 +547,7 @@
                     { method: 'POST', path: '/itsm/changes/:id/implement', description: 'Start change implementation', needsId: 'itsm_change' },
                     { method: 'POST', path: '/itsm/changes/:id/complete', description: 'Complete/close a change', needsId: 'itsm_change',
                         body: {outcome: 'Successful', notes: 'Firmware updated successfully'} },
+                    { method: 'DELETE', path: '/itsm/changes/:id', description: 'Delete a change request permanently', needsId: 'itsm_change' },
                     { method: 'GET', path: '/itsm/changes/stats', description: 'Get change statistics (success rate, by status/type/risk)' },
                     { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar grouped by scheduled date' }
                 ]
@@ -571,6 +573,7 @@
                         body: {team: 'Application Support'} },
                     { method: 'POST', path: '/itsm/requests/:id/notes', description: 'Add note to service request', needsId: 'itsm_request',
                         body: {content: 'Waiting for license key', type: 'comment', visibility: 'customer-visible'} },
+                    { method: 'DELETE', path: '/itsm/requests/:id', description: 'Delete a service request permanently', needsId: 'itsm_request' },
                     { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics (by status/category)' },
                     { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
                 ]
@@ -590,6 +593,7 @@
                         body: {rootCause: 'VPN concentrator running outdated firmware with known memory leak', workaround: 'Restart VPN service every 4 hours until patched', convertToKnownError: true} },
                     { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident(s) to problem (supports single ID or array)', needsId: 'itsm_problem',
                         body: {incidentIds: ['INC-001', 'INC-002', 'INC-003']} },
+                    { method: 'DELETE', path: '/itsm/problems/:id', description: 'Delete a problem record permanently', needsId: 'itsm_problem' },
                     { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get all known errors with workarounds' }
                 ]
             },
@@ -606,7 +610,8 @@
                         body: {status: 'Maintenance'} },
                     { method: 'GET', path: '/itsm/assets/by-type', description: 'Get assets filtered by type (use ?type=Server)' },
                     { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset statistics (count by type/status)' },
-                    { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history from audit log', needsId: 'itsm_asset' }
+                    { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history from audit log', needsId: 'itsm_asset' },
+                    { method: 'DELETE', path: '/itsm/assets/:id', description: 'Delete an asset permanently', needsId: 'itsm_asset' }
                 ]
             },
             'itsm-knowledge': {
@@ -626,7 +631,8 @@
                     { method: 'GET', path: '/itsm/runbooks', description: 'Get all runbooks / standard operating procedures' },
                     { method: 'POST', path: '/itsm/runbooks', description: 'Create a new runbook',
                         body: {title: 'Server Restart Procedure', category: 'Infrastructure', steps: ['Notify users', 'Stop services', 'Restart server', 'Verify services']} },
-                    { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' }
+                    { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' },
+                    { method: 'DELETE', path: '/itsm/knowledge/:id', description: 'Delete a knowledge article permanently', needsId: 'itsm_knowledge' }
                 ]
             },
             'itsm-reports': {
@@ -663,6 +669,8 @@
                     { method: 'GET', path: '/itsm/notifications', description: 'Get all ITSM notifications' },
                     { method: 'PATCH', path: '/itsm/notifications/:id/read', description: 'Mark notification as read', needsId: 'itsm_notification' },
                     { method: 'POST', path: '/itsm/notifications/mark-all-read', description: 'Mark all notifications as read' },
+                    { method: 'POST', path: '/itsm/bulk-delete', description: 'Bulk delete multiple items from any ITSM collection',
+                        body: {collection: 'incidents', ids: ['INC-001', 'INC-002']} },
                     { method: 'POST', path: '/itsm/reset', description: 'Reset all ITSM data to defaults (regenerates seed data)' }
                 ]
             }
@@ -752,7 +760,8 @@
             const methodColors = {
                 'GET': 'bg-teal-100 text-teal-700 border-teal-200',
                 'POST': 'bg-green-100 text-green-700 border-green-200',
-                'PATCH': 'bg-orange-100 text-orange-700 border-orange-200'
+                'PATCH': 'bg-orange-100 text-orange-700 border-orange-200',
+                'DELETE': 'bg-red-100 text-red-700 border-red-200'
             };
             const methodClass = methodColors[endpoint.method] || 'bg-zinc-100 text-zinc-700 border-zinc-200';
             const hasBody = endpoint.body;
@@ -1390,7 +1399,7 @@ ${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}
             }
         }
 
-        console.log('🚀 UiPath Workshop API Interface - All 154 endpoints ready!');
+        console.log('🚀 UiPath Workshop API Interface - All 161 endpoints ready!');
     </script>
 </body>
 </html>

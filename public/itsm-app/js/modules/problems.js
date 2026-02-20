@@ -4,6 +4,9 @@
  */
 
 const ProblemsModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Current filter state
     currentFilters: {
         status: '',
@@ -90,6 +93,8 @@ const ProblemsModule = {
             </div>
             <div class="toolbar">
                 <button class="btn btn-primary btn-sm" onclick="ProblemsModule.createNewProblem()">+ New Problem</button>
+                <button class="btn btn-secondary btn-sm btn-refresh" onclick="ProblemsModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+                <span id="problems-bulk-actions"></span>
                 <div class="toolbar-separator"></div>
                 <div class="toolbar-group">
                     <select class="form-control" style="width: 150px; padding: 4px;" id="filter-problem-status" onchange="ProblemsModule.filterProblems()">
@@ -134,6 +139,7 @@ const ProblemsModule = {
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width:30px"><input type="checkbox" id="problems-select-all" onchange="ProblemsModule.toggleSelectAll()"></th>
                         <th>ID</th>
                         <th>Title</th>
                         <th>Status</th>
@@ -147,7 +153,8 @@ const ProblemsModule = {
                 </thead>
                 <tbody>
                     ${filteredProblems.map(prb => `
-                        <tr>
+                        <tr class="${this.selectedIds.has(prb.id) ? 'row-selected' : ''}">
+                            <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-problems" value="${prb.id}" onchange="ProblemsModule.toggleSelection('${prb.id}')" ${this.selectedIds.has(prb.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${prb.id}</td>
                             <td>${prb.title}</td>
                             <td><span class="badge ${this.getStatusBadgeClass(prb.status)}">${prb.status}</span></td>
@@ -958,6 +965,100 @@ const ProblemsModule = {
             this.viewProblem(problemId);
         } catch (err) {
             showToast('Failed to unlink incident: ' + err.message, 'error');
+        }
+    },
+
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        const row = document.querySelector(`.row-check-problems[value="${id}"]`);
+        if (row) row.closest('tr').classList.toggle('row-selected', this.selectedIds.has(id));
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    toggleSelectAll() {
+        const filtered = this.getFilteredProblems();
+        const allChecked = filtered.length > 0 && filtered.every(p => this.selectedIds.has(p.id));
+        filtered.forEach(p => {
+            if (allChecked) this.selectedIds.delete(p.id); else this.selectedIds.add(p.id);
+        });
+        document.querySelectorAll('.row-check-problems').forEach(cb => {
+            cb.checked = this.selectedIds.has(cb.value);
+            cb.closest('tr').classList.toggle('row-selected', cb.checked);
+        });
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    updateSelectAll() {
+        const el = document.getElementById('problems-select-all');
+        if (!el) return;
+        const filtered = this.getFilteredProblems();
+        const count = filtered.filter(p => this.selectedIds.has(p.id)).length;
+        el.checked = count === filtered.length && filtered.length > 0;
+        el.indeterminate = count > 0 && count < filtered.length;
+    },
+
+    updateBulkActions() {
+        const el = document.getElementById('problems-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="ProblemsModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    async refreshData() {
+        const btn = document.querySelector('#problems-bulk-actions')?.closest('.toolbar')?.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('problems');
+            this.selectedIds.clear();
+            const container = document.getElementById('problems-table-container');
+            if (container) container.innerHTML = this.renderProblemsTable();
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Problems refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Problem${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="ProblemsModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    async confirmDeleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('problems', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                const container = document.getElementById('problems-table-container');
+                if (container) container.innerHTML = this.renderProblemsTable();
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} problem(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
         }
     }
 };

@@ -4,6 +4,9 @@
  */
 
 const KnowledgeModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Available categories for knowledge articles
     categories: ['Network', 'Application', 'Hardware', 'Infrastructure', 'Email', 'Identity', 'Security', 'General'],
 
@@ -88,8 +91,9 @@ const KnowledgeModule = {
         }
 
         return articles.map(kb => `
-            <div class="card kb-card" data-kb-id="${kb.id}">
+            <div class="card kb-card ${this.selectedIds.has(kb.id) ? 'row-selected' : ''}" data-kb-id="${kb.id}">
                 <div class="card-header">
+                    <input type="checkbox" class="row-check-knowledge" value="${kb.id}" onchange="KnowledgeModule.toggleSelection('${kb.id}')" ${this.selectedIds.has(kb.id) ? 'checked' : ''}>
                     <span class="kb-id">${kb.id}</span>
                     <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}">${kb.status}</span>
                 </div>
@@ -718,6 +722,8 @@ const KnowledgeModule = {
             <div class="toolbar">
                 <div class="toolbar-group">
                     <button class="btn btn-primary btn-sm" onclick="KnowledgeModule.createKBArticle()">+ New Article</button>
+                    <button class="btn btn-secondary btn-sm btn-refresh" onclick="KnowledgeModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+                    <span id="knowledge-bulk-actions"></span>
                 </div>
                 <div class="toolbar-separator"></div>
                 <div class="toolbar-search">
@@ -737,6 +743,88 @@ const KnowledgeModule = {
                 </div>
             </div>
         `;
+    },
+
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection: function(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        const card = document.querySelector(`.kb-card[data-kb-id="${id}"]`);
+        if (card) card.classList.toggle('row-selected', this.selectedIds.has(id));
+        this.updateBulkActions();
+    },
+
+    toggleSelectAll: function() {
+        const articles = ITSMData.knowledgeArticles;
+        const allChecked = articles.length > 0 && articles.every(a => this.selectedIds.has(a.id));
+        articles.forEach(a => { if (allChecked) this.selectedIds.delete(a.id); else this.selectedIds.add(a.id); });
+        document.querySelectorAll('.row-check-knowledge').forEach(cb => {
+            cb.checked = this.selectedIds.has(cb.value);
+            const card = cb.closest('.kb-card');
+            if (card) card.classList.toggle('row-selected', cb.checked);
+        });
+        this.updateBulkActions();
+    },
+
+    updateBulkActions: function() {
+        const el = document.getElementById('knowledge-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="KnowledgeModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    refreshData: async function() {
+        const btn = document.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('knowledgeArticles');
+            this.selectedIds.clear();
+            const container = document.getElementById('kb-cards-container');
+            if (container) container.innerHTML = this.renderKBCards(ITSMData.knowledgeArticles);
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Knowledge base refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected: function() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Article${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="KnowledgeModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    confirmDeleteSelected: async function() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('knowledge', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                const container = document.getElementById('kb-cards-container');
+                if (container) container.innerHTML = this.renderKBCards(ITSMData.knowledgeArticles);
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} article(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
+        }
     },
 
     /**

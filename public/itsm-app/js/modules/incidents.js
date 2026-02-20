@@ -4,6 +4,9 @@
  */
 
 const IncidentsModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Category/Subcategory mappings
     categorySubcategories: {
         'Network': ['VPN', 'Firewall', 'DNS', 'Connectivity'],
@@ -1781,6 +1784,87 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                 </div>
             `).join('')
             : '<div class="empty-state"><div class="empty-state-text">No incidents match your filters</div></div>';
+    },
+
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        const row = document.querySelector(`.row-check-incidents[value="${id}"]`);
+        if (row) row.closest('.ticket-row').classList.toggle('row-selected', this.selectedIds.has(id));
+        this.updateBulkActions();
+    },
+
+    toggleSelectAll() {
+        const allChecked = ITSMData.incidents.length > 0 && ITSMData.incidents.every(i => this.selectedIds.has(i.id));
+        ITSMData.incidents.forEach(i => { if (allChecked) this.selectedIds.delete(i.id); else this.selectedIds.add(i.id); });
+        document.querySelectorAll('.row-check-incidents').forEach(cb => {
+            cb.checked = this.selectedIds.has(cb.value);
+            cb.closest('.ticket-row').classList.toggle('row-selected', cb.checked);
+        });
+        this.updateBulkActions();
+    },
+
+    updateBulkActions() {
+        const el = document.getElementById('incidents-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="IncidentsModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    async refreshData() {
+        const btn = document.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('incidents');
+            this.selectedIds.clear();
+            this.refreshIncidentList();
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Incidents refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Incident${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="IncidentsModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    async confirmDeleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('incidents', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                selectedIncident = null;
+                this.refreshIncidentList();
+                const detail = document.getElementById('incident-detail');
+                if (detail) detail.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No Incident Selected</div></div>';
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} incident(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
+        }
     }
 };
 

@@ -4,6 +4,9 @@
  */
 
 const AssetsModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Asset type options
     assetTypes: ['Server', 'Workstation', 'Network', 'Printer', 'Mobile', 'Other'],
 
@@ -93,6 +96,7 @@ const AssetsModule = {
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th style="width:30px"><input type="checkbox" id="assets-select-all" onchange="AssetsModule.toggleSelectAll()"></th>
                             <th>Asset ID</th>
                             <th>Name</th>
                             <th>Type</th>
@@ -121,7 +125,7 @@ const AssetsModule = {
         if (!assets || assets.length === 0) {
             return `
                 <tr>
-                    <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
                         No assets found matching your criteria
                     </td>
                 </tr>
@@ -131,7 +135,8 @@ const AssetsModule = {
         return assets.map(asset => {
             const statusInfo = this.assetStatuses[asset.status] || this.assetStatuses['Active'];
             return `
-                <tr class="clickable" onclick="AssetsModule.viewAsset('${asset.id}')">
+                <tr class="clickable ${this.selectedIds.has(asset.id) ? 'row-selected' : ''}" onclick="AssetsModule.viewAsset('${asset.id}')">
+                    <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-assets" value="${asset.id}" onchange="AssetsModule.toggleSelection('${asset.id}')" ${this.selectedIds.has(asset.id) ? 'checked' : ''}></td>
                     <td class="cell-id">${asset.id}</td>
                     <td>${asset.name}</td>
                     <td>${asset.type}</td>
@@ -922,6 +927,98 @@ const AssetsModule = {
      * Render the full Assets page
      * @returns {string} - HTML for the assets page
      */
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        const row = document.querySelector(`.row-check-assets[value="${id}"]`);
+        if (row) row.closest('tr').classList.toggle('row-selected', this.selectedIds.has(id));
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    toggleSelectAll() {
+        const assets = ITSMData.assets;
+        const allChecked = assets.length > 0 && assets.every(a => this.selectedIds.has(a.id));
+        assets.forEach(a => { if (allChecked) this.selectedIds.delete(a.id); else this.selectedIds.add(a.id); });
+        document.querySelectorAll('.row-check-assets').forEach(cb => {
+            cb.checked = this.selectedIds.has(cb.value);
+            cb.closest('tr').classList.toggle('row-selected', cb.checked);
+        });
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    updateSelectAll() {
+        const el = document.getElementById('assets-select-all');
+        if (!el) return;
+        const assets = ITSMData.assets;
+        const count = assets.filter(a => this.selectedIds.has(a.id)).length;
+        el.checked = count === assets.length && assets.length > 0;
+        el.indeterminate = count > 0 && count < assets.length;
+    },
+
+    updateBulkActions() {
+        const el = document.getElementById('assets-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="AssetsModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    async refreshData() {
+        const btn = document.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('assets');
+            this.selectedIds.clear();
+            const content = document.querySelector('.page-content');
+            if (content) content.innerHTML = this.renderAssetsTable(ITSMData.assets);
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Assets refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Asset${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="AssetsModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    async confirmDeleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('assets', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                const content = document.querySelector('.page-content');
+                if (content) content.innerHTML = this.renderAssetsTable(ITSMData.assets);
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} asset(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
+        }
+    },
+
     renderAssetsPage() {
         return `
             <div class="page-header">
@@ -931,6 +1028,8 @@ const AssetsModule = {
             <div class="toolbar">
                 <div class="toolbar-group">
                     <button class="btn btn-primary btn-sm" onclick="AssetsModule.createAsset()">+ New Asset</button>
+                    <button class="btn btn-secondary btn-sm btn-refresh" onclick="AssetsModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+                    <span id="assets-bulk-actions"></span>
                 </div>
                 <div class="toolbar-separator"></div>
                 <div class="toolbar-search">

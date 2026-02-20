@@ -56,6 +56,7 @@ const ITSMApi = (() => {
     function _post(url, data)     { return _fetch(url, { method: 'POST', body: JSON.stringify(data) }); }
     function _patch(url, data)    { return _fetch(url, { method: 'PATCH', body: JSON.stringify(data) }); }
     function _put(url, data)      { return _fetch(url, { method: 'PUT', body: JSON.stringify(data) }); }
+    function _del(url)             { return _fetch(url, { method: 'DELETE' }); }
 
     // ─── Collection loading ───
 
@@ -576,6 +577,47 @@ const ITSMApi = (() => {
         return false;
     }
 
+    // ─── Delete Operations ───
+
+    async function deleteIncident(id) {
+        const result = await _del(`/api/itsm/incidents/${id}`);
+        if (result.success) await loadCollection('incidents');
+        return result;
+    }
+    async function deleteProblem(id) {
+        const result = await _del(`/api/itsm/problems/${id}`);
+        if (result.success) await loadCollection('problems');
+        return result;
+    }
+    async function deleteChange(id) {
+        const result = await _del(`/api/itsm/changes/${id}`);
+        if (result.success) await loadCollection('changes');
+        return result;
+    }
+    async function deleteRequest(id) {
+        const result = await _del(`/api/itsm/requests/${id}`);
+        if (result.success) await loadCollection('serviceRequests');
+        return result;
+    }
+    async function deleteAsset(id) {
+        const result = await _del(`/api/itsm/assets/${id}`);
+        if (result.success) await loadCollection('assets');
+        return result;
+    }
+    async function deleteKBArticle(id) {
+        const result = await _del(`/api/itsm/knowledge/${id}`);
+        if (result.success) await loadCollection('knowledgeArticles');
+        return result;
+    }
+    async function bulkDelete(collection, ids) {
+        const result = await _post('/api/itsm/bulk-delete', { collection, ids });
+        if (result.success) {
+            const keyMap = { incidents: 'incidents', problems: 'problems', changes: 'changes', requests: 'serviceRequests', assets: 'assets', knowledge: 'knowledgeArticles' };
+            if (keyMap[collection]) await loadCollection(keyMap[collection]);
+        }
+        return result;
+    }
+
     // ─── Public API ───
 
     return {
@@ -634,6 +676,15 @@ const ITSMApi = (() => {
         // Notifications
         markNotificationRead,
         markAllNotificationsRead,
+
+        // Delete Operations
+        deleteIncident,
+        deleteProblem,
+        deleteChange,
+        deleteRequest,
+        deleteAsset,
+        deleteKBArticle,
+        bulkDelete,
 
         // Reset
         resetDemoData

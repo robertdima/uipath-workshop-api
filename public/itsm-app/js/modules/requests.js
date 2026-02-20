@@ -4,6 +4,9 @@
  */
 
 const RequestsModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Status workflow
     statuses: ['Draft', 'Submitted', 'Pending Approval', 'Approved', 'Rejected', 'In Progress', 'Fulfilled', 'Closed', 'Cancelled'],
 
@@ -77,6 +80,8 @@ const RequestsModule = {
                     <div class="toolbar">
                         <div class="toolbar-group">
                             <button class="btn btn-primary btn-sm" onclick="RequestsModule.showCreateRequest()">+ New Request</button>
+                            <button class="btn btn-secondary btn-sm btn-refresh" onclick="RequestsModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+                            <span id="requests-bulk-actions"></span>
                         </div>
                         <div class="toolbar-separator"></div>
                         <div class="toolbar-group">
@@ -128,6 +133,7 @@ const RequestsModule = {
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width:30px"><input type="checkbox" id="requests-select-all" onchange="RequestsModule.toggleSelectAll()"></th>
                         <th>ID</th>
                         <th>Service</th>
                         <th>Status</th>
@@ -138,7 +144,8 @@ const RequestsModule = {
                 </thead>
                 <tbody>
                     ${requests.map(r => `
-                        <tr class="clickable ${this.selectedRequest === r.id ? 'selected' : ''}" onclick="RequestsModule.selectRequest('${r.id}')">
+                        <tr class="clickable ${this.selectedRequest === r.id ? 'selected' : ''} ${this.selectedIds.has(r.id) ? 'row-selected' : ''}" onclick="RequestsModule.selectRequest('${r.id}')">
+                            <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-requests" value="${r.id}" onchange="RequestsModule.toggleSelection('${r.id}')" ${this.selectedIds.has(r.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${r.id}</td>
                             <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.catalogItemName || r.title}">${r.catalogItemName || r.title}</td>
                             <td><span class="badge ${this.statusBadgeClass[r.status] || 'badge-new'}">${r.status}</span></td>
@@ -671,6 +678,95 @@ const RequestsModule = {
 
     addAuditLog: function(action, target, details) {
         // No-op: audit logging is now handled server-side by the API
+    },
+
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection: function(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        this.updateSelectAll();
+        this.updateBulkActions();
+        this.refreshList();
+    },
+
+    toggleSelectAll: function() {
+        const filtered = this.getFilteredRequests();
+        const allChecked = filtered.length > 0 && filtered.every(r => this.selectedIds.has(r.id));
+        filtered.forEach(r => { if (allChecked) this.selectedIds.delete(r.id); else this.selectedIds.add(r.id); });
+        this.updateSelectAll();
+        this.updateBulkActions();
+        this.refreshList();
+    },
+
+    updateSelectAll: function() {
+        const el = document.getElementById('requests-select-all');
+        if (!el) return;
+        const filtered = this.getFilteredRequests();
+        const count = filtered.filter(r => this.selectedIds.has(r.id)).length;
+        el.checked = count === filtered.length && filtered.length > 0;
+        el.indeterminate = count > 0 && count < filtered.length;
+    },
+
+    updateBulkActions: function() {
+        const el = document.getElementById('requests-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="RequestsModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    refreshData: async function() {
+        const btn = document.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('serviceRequests');
+            this.selectedIds.clear();
+            this.refreshList();
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Requests refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected: function() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Request${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="RequestsModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    confirmDeleteSelected: async function() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('requests', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                this.selectedRequest = null;
+                this.refreshList();
+                const detail = document.getElementById('request-detail');
+                if (detail) detail.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No Request Selected</div></div>';
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} request(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
+        }
     }
 };
 

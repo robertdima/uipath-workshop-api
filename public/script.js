@@ -250,6 +250,7 @@ const modules = {
         body: { resolutionCode: 'Fixed', resolutionNotes: 'Issue resolved by restarting mail service' } },
       { method: 'POST', path: '/itsm/incidents/:id/link', description: 'Link incident to problem/change/KB', needsId: 'itsm_incident',
         body: { targetId: 'PRB-001', linkType: 'problem' } },
+      { method: 'DELETE', path: '/itsm/incidents/:id', description: 'Delete an incident permanently', needsId: 'itsm_incident' },
       { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics and metrics' }
     ]
   },
@@ -271,6 +272,7 @@ const modules = {
       { method: 'POST', path: '/itsm/changes/:id/implement', description: 'Start change implementation', needsId: 'itsm_change' },
       { method: 'POST', path: '/itsm/changes/:id/complete', description: 'Complete/close a change', needsId: 'itsm_change',
         body: { outcome: 'Successful', notes: 'Firmware updated successfully' } },
+      { method: 'DELETE', path: '/itsm/changes/:id', description: 'Delete a change request permanently', needsId: 'itsm_change' },
       { method: 'GET', path: '/itsm/changes/stats', description: 'Get change management statistics' },
       { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar / freeze windows' }
     ]
@@ -296,6 +298,7 @@ const modules = {
         body: { team: 'Service Desk' } },
       { method: 'POST', path: '/itsm/requests/:id/notes', description: 'Add note to service request', needsId: 'itsm_request',
         body: { content: 'Waiting for license key', type: 'comment', visibility: 'customer-visible' } },
+      { method: 'DELETE', path: '/itsm/requests/:id', description: 'Delete a service request permanently', needsId: 'itsm_request' },
       { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics' },
       { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
     ]
@@ -315,6 +318,7 @@ const modules = {
         body: { rootCause: 'VPN concentrator memory leak', workaround: 'Restart VPN service during off-hours', convertToKnownError: true } },
       { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident(s) to problem (single or multiple)', needsId: 'itsm_problem',
         body: { incidentIds: ['INC-001', 'INC-002', 'INC-003'] } },
+      { method: 'DELETE', path: '/itsm/problems/:id', description: 'Delete a problem record permanently', needsId: 'itsm_problem' },
       { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get known error database' }
     ]
   },
@@ -330,6 +334,7 @@ const modules = {
       { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
         body: { status: 'Maintenance' } },
       { method: 'GET', path: '/itsm/assets/by-type/:type', description: 'Get assets filtered by type (Server, Workstation, Network, etc.)' },
+      { method: 'DELETE', path: '/itsm/assets/:id', description: 'Delete an asset permanently', needsId: 'itsm_asset' },
       { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset inventory statistics' },
       { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history', needsId: 'itsm_asset' }
     ]
@@ -351,7 +356,8 @@ const modules = {
       { method: 'GET', path: '/itsm/runbooks', description: 'Get all operational runbooks' },
       { method: 'POST', path: '/itsm/runbooks', description: 'Create a new runbook',
         body: { title: 'Server Restart Procedure', category: 'Infrastructure', steps: ['Check dependencies', 'Notify users', 'Restart service'] } },
-      { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' }
+      { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' },
+      { method: 'DELETE', path: '/itsm/knowledge/:id', description: 'Delete a knowledge article permanently', needsId: 'itsm_knowledge' }
     ]
   },
   'itsm-reports': {
@@ -388,6 +394,8 @@ const modules = {
       { method: 'GET', path: '/itsm/notifications', description: 'Get ITSM notifications' },
       { method: 'PATCH', path: '/itsm/notifications/:id/read', description: 'Mark notification as read', needsId: 'itsm_notification' },
       { method: 'POST', path: '/itsm/notifications/mark-all-read', description: 'Mark all notifications as read' },
+      { method: 'POST', path: '/itsm/bulk-delete', description: 'Bulk delete multiple items from any collection',
+        body: { collection: 'incidents', ids: ['INC-001', 'INC-002'] } },
       { method: 'POST', path: '/itsm/reset', description: 'Reset all ITSM data to defaults (admin)' }
     ]
   }

@@ -285,6 +285,8 @@ function renderIncidents() {
                 <div class="toolbar">
                     <div class="toolbar-group">
                         <button class="btn btn-primary btn-sm" onclick="createNewIncident()">+ New Incident</button>
+                        <button class="btn btn-secondary btn-sm btn-refresh" onclick="IncidentsModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+                        <span id="incidents-bulk-actions"></span>
                     </div>
                     <div class="toolbar-separator"></div>
                     <div class="toolbar-group">
@@ -330,8 +332,10 @@ function renderIncidents() {
 }
 
 function renderIncidentList() {
+    const selIds = (typeof IncidentsModule !== 'undefined' && IncidentsModule.selectedIds) ? IncidentsModule.selectedIds : new Set();
     return ITSMData.incidents.map(inc => `
-        <div class="ticket-row ${selectedIncident === inc.id ? 'selected' : ''}" data-incident-id="${inc.id}" onclick="selectIncident('${inc.id}')">
+        <div class="ticket-row ${selectedIncident === inc.id ? 'selected' : ''} ${selIds.has(inc.id) ? 'row-selected' : ''}" data-incident-id="${inc.id}" onclick="selectIncident('${inc.id}')">
+            <div onclick="event.stopPropagation()" style="padding:0 6px;display:flex;align-items:center;"><input type="checkbox" class="row-check-incidents" value="${inc.id}" onchange="IncidentsModule.toggleSelection('${inc.id}')" ${selIds.has(inc.id) ? 'checked' : ''}></div>
             <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
             <div class="ticket-id">${inc.id}</div>
             <div style="flex: 1;">

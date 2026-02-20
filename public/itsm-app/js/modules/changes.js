@@ -4,6 +4,9 @@
  */
 
 const ChangesModule = {
+    // Selection state
+    selectedIds: new Set(),
+
     // Current filter state
     currentFilters: {
         status: '',
@@ -1378,6 +1381,7 @@ const ChangesModule = {
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width:30px"><input type="checkbox" id="changes-select-all" onchange="ChangesModule.toggleSelectAll()"></th>
                         <th>ID</th>
                         <th>Title</th>
                         <th>Type</th>
@@ -1390,7 +1394,8 @@ const ChangesModule = {
                 </thead>
                 <tbody>
                     ${filteredChanges.map(chg => `
-                        <tr>
+                        <tr class="${this.selectedIds.has(chg.id) ? 'row-selected' : ''}">
+                            <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-changes" value="${chg.id}" onchange="ChangesModule.toggleSelection('${chg.id}')" ${this.selectedIds.has(chg.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${chg.id}</td>
                             <td>${chg.title}</td>
                             <td><span class="badge ${this.getTypeBadgeClass(chg.type)}">${chg.type}</span></td>
@@ -1451,6 +1456,98 @@ const ChangesModule = {
                 this.filterChanges(statusFilter?.value || '', typeFilter.value);
             });
         }
+    },
+
+    // ── Selection & Bulk Operations ──
+
+    toggleSelection(id) {
+        if (this.selectedIds.has(id)) this.selectedIds.delete(id);
+        else this.selectedIds.add(id);
+        const row = document.querySelector(`.row-check-changes[value="${id}"]`);
+        if (row) row.closest('tr').classList.toggle('row-selected', this.selectedIds.has(id));
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    toggleSelectAll() {
+        const filtered = this.getFilteredChanges();
+        const allChecked = filtered.length > 0 && filtered.every(c => this.selectedIds.has(c.id));
+        filtered.forEach(c => { if (allChecked) this.selectedIds.delete(c.id); else this.selectedIds.add(c.id); });
+        document.querySelectorAll('.row-check-changes').forEach(cb => {
+            cb.checked = this.selectedIds.has(cb.value);
+            cb.closest('tr').classList.toggle('row-selected', cb.checked);
+        });
+        this.updateSelectAll();
+        this.updateBulkActions();
+    },
+
+    updateSelectAll() {
+        const el = document.getElementById('changes-select-all');
+        if (!el) return;
+        const filtered = this.getFilteredChanges();
+        const count = filtered.filter(c => this.selectedIds.has(c.id)).length;
+        el.checked = count === filtered.length && filtered.length > 0;
+        el.indeterminate = count > 0 && count < filtered.length;
+    },
+
+    updateBulkActions() {
+        const el = document.getElementById('changes-bulk-actions');
+        if (!el) return;
+        const n = this.selectedIds.size;
+        el.innerHTML = n > 0
+            ? `<button class="btn btn-danger btn-sm" onclick="ChangesModule.deleteSelected()">Delete Selected (${n})</button>`
+            : '';
+    },
+
+    async refreshData() {
+        const btn = document.querySelector('.btn-refresh');
+        if (btn) btn.classList.add('refreshing');
+        try {
+            await ITSMApi.loadCollection('changes');
+            this.selectedIds.clear();
+            const container = document.getElementById('changes-table-container');
+            if (container) container.innerHTML = this.renderChangesTable();
+            if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+            showToast('Changes refreshed', 'success');
+        } catch (err) {
+            showToast('Failed to refresh: ' + err.message, 'error');
+        } finally {
+            if (btn) btn.classList.remove('refreshing');
+        }
+    },
+
+    deleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        if (ids.length === 0) return;
+        showModal(`
+            <div class="modal-header"><span>Delete ${ids.length} Change${ids.length !== 1 ? 's' : ''}</span><button class="panel-close" onclick="closeModal()">x</button></div>
+            <div class="modal-body" style="width:450px;">
+                <p>Are you sure you want to permanently delete:</p>
+                <div style="margin:var(--spacing-sm) 0;padding:var(--spacing-sm);background:var(--bg-secondary);border-radius:4px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:12px;">${ids.join(', ')}</div>
+                <p style="color:#cc4444;font-size:12px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="ChangesModule.confirmDeleteSelected()">Delete</button>
+            </div>
+        `);
+    },
+
+    async confirmDeleteSelected() {
+        const ids = Array.from(this.selectedIds);
+        closeModal();
+        try {
+            const result = await ITSMApi.bulkDelete('changes', ids);
+            if (result.success) {
+                this.selectedIds.clear();
+                const container = document.getElementById('changes-table-container');
+                if (container) container.innerHTML = this.renderChangesTable();
+                if (typeof updateSidebarBadges === 'function') updateSidebarBadges();
+                showToast(`Deleted ${result.deleted.length} change(s)`, 'success');
+            }
+        } catch (err) {
+            showToast('Failed to delete: ' + err.message, 'error');
+        }
     }
 };
 
@@ -1475,6 +1572,8 @@ window.renderChangesWithModule = function() {
         </div>
         <div class="toolbar">
             <button class="btn btn-primary btn-sm" onclick="ChangesModule.createNewChange()">+ New Change Request</button>
+            <button class="btn btn-secondary btn-sm btn-refresh" onclick="ChangesModule.refreshData()" title="Refresh data from server"><img src="icons/refresh-alt.png" alt=""> Refresh</button>
+            <span id="changes-bulk-actions"></span>
             <div class="toolbar-separator"></div>
             <div class="toolbar-group">
                 <select class="form-control" style="width: 150px; padding: 4px;" id="filter-change-status">

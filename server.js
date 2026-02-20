@@ -2805,6 +2805,48 @@ server.get('/api/itsm/notifications/unread', (req, res) => {
   res.json({ success: true, data: unread, count: unread.length });
 });
 
+// ── ITSM Delete Operations ──
+
+const itsmDeleteConfigs = [
+  { path: 'incidents', key: 'itsm_incidents', type: 'incident', label: 'Incident' },
+  { path: 'problems', key: 'itsm_problems', type: 'problem', label: 'Problem' },
+  { path: 'changes', key: 'itsm_changes', type: 'change', label: 'Change' },
+  { path: 'requests', key: 'itsm_requests', type: 'request', label: 'Request' },
+  { path: 'assets', key: 'itsm_assets', type: 'asset', label: 'Asset' },
+  { path: 'knowledge', key: 'itsm_knowledge', type: 'kb', label: 'KB Article' }
+];
+
+itsmDeleteConfigs.forEach(cfg => {
+  server.delete(`/api/itsm/${cfg.path}/:id`, (req, res) => {
+    const idx = db[cfg.key].findIndex(item => item.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: `${cfg.label} not found` });
+    const removed = db[cfg.key].splice(idx, 1)[0];
+    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Deleted: ${removed.title || removed.name || removed.id}`);
+    res.json({ success: true, message: `${cfg.label} ${removed.id} deleted`, data: removed });
+  });
+});
+
+server.post('/api/itsm/bulk-delete', (req, res) => {
+  const { collection, ids } = req.body;
+  const cfgMap = {};
+  itsmDeleteConfigs.forEach(c => { cfgMap[c.path] = c; });
+  const cfg = cfgMap[collection];
+  if (!cfg) return res.status(400).json({ success: false, error: `Invalid collection: ${collection}` });
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ success: false, error: 'ids must be a non-empty array' });
+
+  const deleted = [];
+  const notFound = [];
+  ids.forEach(id => {
+    const idx = db[cfg.key].findIndex(item => item.id === id);
+    if (idx === -1) { notFound.push(id); return; }
+    const removed = db[cfg.key].splice(idx, 1)[0];
+    deleted.push(removed.id);
+    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Bulk deleted: ${removed.title || removed.name || removed.id}`);
+  });
+
+  res.json({ success: true, message: `Deleted ${deleted.length} ${collection}`, deleted, notFound });
+});
+
 // ── ITSM Data Reset ──
 
 server.post('/api/itsm/reset', (req, res) => {

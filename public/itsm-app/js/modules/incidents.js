@@ -1767,9 +1767,11 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
             });
         }
 
+        const selIds = this.selectedIds || new Set();
         listContainer.innerHTML = filtered.length > 0
             ? filtered.map(inc => `
-                <div class="ticket-row ${selectedIncident === inc.id ? 'selected' : ''}" data-incident-id="${inc.id}" onclick="selectIncident('${inc.id}')">
+                <div class="ticket-row ${selectedIncident === inc.id ? 'selected' : ''} ${selIds.has(inc.id) ? 'row-selected' : ''}" data-incident-id="${inc.id}" onclick="selectIncident('${inc.id}')">
+                    <div onclick="event.stopPropagation()" style="padding:0 6px;display:flex;align-items:center;"><input type="checkbox" class="row-check-incidents" value="${inc.id}" onchange="IncidentsModule.toggleSelection('${inc.id}')" ${selIds.has(inc.id) ? 'checked' : ''}></div>
                     <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
                     <div class="ticket-id">${inc.id}</div>
                     <div style="flex: 1;">

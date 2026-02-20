@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UiPath Workshop API Documentation</title>
+    <link rel="icon" type="image/svg+xml" href="/acme-favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -946,6 +947,44 @@
 
             <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
                 <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-orange-100 text-orange-700 border border-orange-200">PATCH</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents/:id</span>
+                </div>
+                <p class="text-zinc-700 mb-4">General-purpose partial update for any incident field. Read-only fields (id, createdAt, notes, attachments) are ignored. Priority auto-recalculates if impact or urgency change.</p>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Request Body</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{
+  "status": "In Progress",
+  "impact": "High",
+  "urgency": 2,
+  "assignmentGroup": "Network Operations",
+  "assignedTo": "Jane Doe",
+  "description": "Updated description with new findings"
+}</pre>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Response</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{
+  "message": "Incident INC-001 updated successfully",
+  "incident": { "..." },
+  "changes": [
+    { "field": "status", "from": "New", "to": "In Progress" },
+    { "field": "impact", "from": 3, "to": 1 },
+    { "field": "priority", "from": "P3", "to": "P1" }
+  ]
+}</pre>
+                    </div>
+                </div>
+                <div class="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-3">
+                    <p class="text-sm text-zinc-700"><strong>Note:</strong> Accepts string values (<code>"High"</code>, <code>"Medium"</code>, <code>"Low"</code>) or numeric (1&ndash;4) for impact and urgency. Any subset of fields can be sent &mdash; only provided fields are updated.</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
                     <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
                     <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/incidents</span>
                 </div>
@@ -1264,7 +1303,35 @@
                     <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
                     <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/:id/link-incident</span>
                 </div>
-                <p class="text-zinc-700 mb-4">Link an incident to a problem record for tracking related occurrences</p>
+                <p class="text-zinc-700 mb-4">Link one or more incidents to a problem record for tracking related occurrences. Supports multiple input formats for flexibility.</p>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Request Body Options</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono"><span class="text-zinc-400">// Option 1: Array of IDs (preferred for multiple)</span>
+{ "incidentIds": ["INC-001", "INC-002", "INC-003"] }
+
+<span class="text-zinc-400">// Option 2: Semicolon-separated string</span>
+{ "incidentIds": "INC-001; INC-002; INC-003" }
+
+<span class="text-zinc-400">// Option 3: Single ID (backward compatible)</span>
+{ "incidentId": "INC-001" }
+
+<span class="text-zinc-400">// Option 4: Comma/semicolon-separated via incidentId</span>
+{ "incidentId": "INC-001, INC-002; INC-003" }</pre>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Response</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{
+  "message": "Linked 3 incident(s) to problem PRB-001",
+  "problem": { "..." },
+  "linked": ["INC-001", "INC-002", "INC-003"],
+  "linkedCount": 3,
+  "notFound": []
+}</pre>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#002244"/>
+      <stop offset="100%" style="stop-color:#003d66"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square badge -->
+  <rect x="4" y="4" width="120" height="120" rx="20" ry="20" fill="url(#bg)"/>
+
+  <!-- ID badge/card outline -->
+  <rect x="30" y="20" width="68" height="88" rx="8" ry="8" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.85"/>
+
+  <!-- Badge clip at top -->
+  <rect x="52" y="14" width="24" height="14" rx="4" ry="4" fill="#ffffff" opacity="0.85"/>
+
+  <!-- Person silhouette (head) -->
+  <circle cx="64" cy="52" r="12" fill="none" stroke="#00b4d8" stroke-width="3.5"/>
+
+  <!-- Person silhouette (shoulders) -->
+  <path d="M44,80 Q44,66 64,66 Q84,66 84,80" fill="none" stroke="#00b4d8" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- "A" monogram on badge bottom -->
+  <g transform="translate(64, 96)">
+    <polygon points="0,-9 -7,7 -4,7 -3,2 3,2 4,7 7,7" fill="#00b4d8" opacity="0.7"/>
+    <polygon points="0,-3 -2,2 2,2" fill="url(#bg)"/>
+  </g>
+</svg>

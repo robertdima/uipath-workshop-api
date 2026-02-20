@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#002244"/>
+      <stop offset="100%" style="stop-color:#003d66"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square badge -->
+  <rect x="4" y="4" width="120" height="120" rx="20" ry="20" fill="url(#bg)"/>
+
+  <!-- Monitor/screen outline -->
+  <rect x="24" y="24" width="80" height="56" rx="6" ry="6" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.85"/>
+
+  <!-- Monitor stand -->
+  <line x1="64" y1="80" x2="64" y2="94" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+  <line x1="48" y1="94" x2="80" y2="94" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- "A" monogram on screen -->
+  <g transform="translate(52, 52)">
+    <polygon points="0,-14 -11,10 -7,10 -5,3 5,3 7,10 11,10" fill="#00b4d8"/>
+    <polygon points="0,-5 -3,3 3,3" fill="url(#bg)"/>
+  </g>
+
+  <!-- Ticket lines on screen (right side of A) -->
+  <line x1="68" y1="42" x2="88" y2="42" stroke="#00b4d8" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  <line x1="68" y1="52" x2="84" y2="52" stroke="#00b4d8" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+  <line x1="68" y1="62" x2="80" y2="62" stroke="#00b4d8" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
+
+  <!-- Small notification dot -->
+  <circle cx="98" cy="28" r="6" fill="#00b4d8" opacity="0.8"/>
+  <text x="98" y="32" font-family="Arial, sans-serif" font-weight="700" font-size="9" fill="#ffffff" text-anchor="middle">!</text>
+</svg>

@@ -1911,8 +1911,19 @@ function addItsmAudit(actor, action, target, targetType, details) {
 }
 
 // Helper: priority from impact+urgency
+function normalizeImpactUrgency(val) {
+  if (typeof val === 'number') return Math.max(1, Math.min(4, val));
+  if (typeof val === 'string') {
+    const num = parseInt(val, 10);
+    if (!isNaN(num)) return Math.max(1, Math.min(4, num));
+    const map = { 'critical': 1, 'high': 1, 'medium': 2, 'low': 3, 'very low': 4, 'none': 4 };
+    return map[val.toLowerCase()] || 2;
+  }
+  return 2;
+}
+
 function calcPriority(impact, urgency) {
-  const s = (impact || 2) + (urgency || 2);
+  const s = normalizeImpactUrgency(impact) + normalizeImpactUrgency(urgency);
   return s <= 2 ? 'P1' : s <= 3 ? 'P2' : s <= 5 ? 'P3' : 'P4';
 }
 
@@ -2005,6 +2016,36 @@ server.post('/api/itsm/incidents/:id/escalate', (req, res) => {
   inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Escalated from ${oldPriority} to ${inc.priority}`, timestamp: inc.updatedAt });
   addItsmAudit('api', 'Incident Updated', inc.id, 'incident', `Priority escalated: ${oldPriority} → ${inc.priority}`);
   res.json({ success: true, message: `Escalated to ${inc.priority}`, data: inc });
+});
+
+server.patch('/api/itsm/incidents/:id', (req, res) => {
+  const inc = db.itsm_incidents.find(i => i.id === req.params.id);
+  if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
+  const body = req.body;
+  if (!body || Object.keys(body).length === 0) {
+    return res.status(400).json({ success: false, error: 'Request body cannot be empty' });
+  }
+  const readOnly = ['id', 'createdAt', 'notes', 'attachments', 'linkedKB', 'linkedProblems', 'linkedChanges', 'watchList', 'additionalCommentsNotify', 'workNotesNotify'];
+  const changes = [];
+  for (const [key, value] of Object.entries(body)) {
+    if (readOnly.includes(key)) continue;
+    if (inc[key] !== value) {
+      changes.push(`${key}: ${inc[key]} → ${value}`);
+      inc[key] = value;
+    }
+  }
+  if (body.impact !== undefined || body.urgency !== undefined) {
+    const oldPriority = inc.priority;
+    inc.priority = calcPriority(inc.impact, inc.urgency);
+    if (oldPriority !== inc.priority) changes.push(`priority: ${oldPriority} → ${inc.priority} (auto-calculated)`);
+  }
+  if (changes.length === 0) {
+    return res.json({ success: true, message: 'No changes detected', data: inc });
+  }
+  inc.updatedAt = new Date().toISOString();
+  inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Fields updated: ${changes.join(', ')}`, timestamp: inc.updatedAt });
+  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', changes.join('; '));
+  res.json({ success: true, message: `Incident ${inc.id} updated`, changes, data: inc });
 });
 
 server.post('/api/itsm/incidents/:id/resolve', (req, res) => {
@@ -2394,12 +2435,40 @@ server.patch('/api/itsm/problems/:id/root-cause', (req, res) => {
 server.post('/api/itsm/problems/:id/link-incident', (req, res) => {
   const p = db.itsm_problems.find(p => p.id === req.params.id);
   if (!p) return res.status(404).json({ success: false, error: 'Problem not found' });
-  const { incidentId } = req.body;
-  if (!incidentId) return res.status(400).json({ success: false, error: 'incidentId is required' });
-  if (!p.linkedIncidents.includes(incidentId)) p.linkedIncidents.push(incidentId);
-  const inc = db.itsm_incidents.find(i => i.id === incidentId);
-  if (inc && !inc.linkedProblems.includes(p.id)) inc.linkedProblems.push(p.id);
-  res.json({ success: true, message: `Incident ${incidentId} linked to problem ${p.id}`, data: p });
+  let ids = [];
+  if (req.body.incidentIds) {
+    if (Array.isArray(req.body.incidentIds)) {
+      ids = req.body.incidentIds;
+    } else if (typeof req.body.incidentIds === 'string') {
+      ids = req.body.incidentIds.split(/[;,]\s*/).map(s => s.trim()).filter(Boolean);
+    }
+  } else if (req.body.incidentId) {
+    if (typeof req.body.incidentId === 'string' && /[;,]/.test(req.body.incidentId)) {
+      ids = req.body.incidentId.split(/[;,]\s*/).map(s => s.trim()).filter(Boolean);
+    } else {
+      ids = [req.body.incidentId];
+    }
+  }
+  if (ids.length === 0) return res.status(400).json({ success: false, error: 'incidentId or incidentIds is required' });
+  const linked = [];
+  const notFound = [];
+  for (const incId of ids) {
+    if (!p.linkedIncidents.includes(incId)) p.linkedIncidents.push(incId);
+    const inc = db.itsm_incidents.find(i => i.id === incId);
+    if (inc) {
+      if (!inc.linkedProblems.includes(p.id)) inc.linkedProblems.push(p.id);
+      linked.push(incId);
+    } else {
+      linked.push(incId);
+      notFound.push(incId);
+    }
+  }
+  p.updatedAt = new Date().toISOString();
+  addItsmAudit('api', 'Incidents Linked', p.id, 'problem', `Linked incidents: ${linked.join(', ')}`);
+  const msg = notFound.length > 0
+    ? `${linked.length} incident(s) linked to problem ${p.id}. Warning: ${notFound.join(', ')} not found in incidents database`
+    : `${linked.length} incident(s) linked to problem ${p.id}`;
+  res.json({ success: true, message: msg, linkedCount: linked.length, linked, notFound, data: p });
 });
 
 server.get('/api/itsm/problems/known-errors', (req, res) => {

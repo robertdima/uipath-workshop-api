@@ -1,0 +1,272 @@
+{
+  "_info": {
+    "description": "Example POST bodies for creating service requests via POST /api/itsm/requests",
+    "note": "The 'catalogItem' field is required. The 'formData' object should match the catalog item's form fields. Category, title, cost, fulfillmentTime, and approvalRequired are auto-populated from the catalog item."
+  },
+
+  "CAT-001_New_Laptop_Request": {
+    "catalogItem": "CAT-001",
+    "requestedBy": "john.doe@acme.com",
+    "requestedByName": "John Doe",
+    "requestedFor": "john.doe@acme.com",
+    "requestedForName": "John Doe",
+    "requestedForDepartment": "Engineering",
+    "requestedForLocation": "Building A, Floor 3",
+    "priority": "Normal",
+    "impact": 2,
+    "urgency": 2,
+    "formData": {
+      "employee_name": "John Doe",
+      "department": "Engineering",
+      "laptop_type": "Developer",
+      "justification": "Current laptop is 4 years old and no longer meets performance requirements for development work"
+    }
+  },
+
+  "CAT-002_Software_Installation": {
+    "catalogItem": "CAT-002",
+    "requestedBy": "jane.smith@acme.com",
+    "requestedByName": "Jane Smith",
+    "requestedFor": "jane.smith@acme.com",
+    "requestedForName": "Jane Smith",
+    "requestedForDepartment": "Marketing",
+    "priority": "Normal",
+    "formData": {
+      "software_name": "Adobe Creative Suite",
+      "version": "2025",
+      "asset_id": "LAPTOP-042",
+      "reason": "Need design tools for upcoming Q3 marketing campaign materials"
+    }
+  },
+
+  "CAT-003_VPN_Access_Request": {
+    "catalogItem": "CAT-003",
+    "requestedBy": "mike.wilson@acme.com",
+    "requestedByName": "Mike Wilson",
+    "requestedFor": "mike.wilson@acme.com",
+    "requestedForName": "Mike Wilson",
+    "requestedForDepartment": "Sales",
+    "priority": "Normal",
+    "formData": {
+      "employee_email": "mike.wilson@acme.com",
+      "start_date": "2026-03-01",
+      "end_date": "2026-06-30",
+      "manager_approval": "sarah.chen@acme.com"
+    }
+  },
+
+  "CAT-004_New_User_Account": {
+    "catalogItem": "CAT-004",
+    "requestedBy": "hr.admin@acme.com",
+    "requestedByName": "HR Admin",
+    "requestedFor": "emily.johnson@acme.com",
+    "requestedForName": "Emily Johnson",
+    "requestedForDepartment": "Finance",
+    "priority": "Normal",
+    "formData": {
+      "first_name": "Emily",
+      "last_name": "Johnson",
+      "department": "Finance",
+      "manager": "robert.taylor@acme.com",
+      "start_date": "2026-03-15"
+    }
+  },
+
+  "CAT-005_Password_Reset": {
+    "catalogItem": "CAT-005",
+    "requestedBy": "alex.brown@acme.com",
+    "requestedByName": "Alex Brown",
+    "requestedFor": "alex.brown@acme.com",
+    "requestedForName": "Alex Brown",
+    "requestedForDepartment": "HR",
+    "priority": "Normal",
+    "urgency": 1,
+    "formData": {
+      "username": "alex.brown",
+      "verification": "Riverside High School"
+    }
+  },
+
+  "CAT-006_New_Monitor_Peripheral": {
+    "catalogItem": "CAT-006",
+    "requestedBy": "lisa.wang@acme.com",
+    "requestedByName": "Lisa Wang",
+    "requestedFor": "lisa.wang@acme.com",
+    "requestedForName": "Lisa Wang",
+    "requestedForDepartment": "Engineering",
+    "priority": "Normal",
+    "formData": {
+      "employee_name": "Lisa Wang",
+      "department": "Engineering",
+      "device_type": "Monitor",
+      "quantity": 2,
+      "justification": "Dual monitor setup required for code review and debugging workflows"
+    }
+  },
+
+  "CAT-007_Mobile_Device_Request": {
+    "catalogItem": "CAT-007",
+    "requestedBy": "tom.garcia@acme.com",
+    "requestedByName": "Tom Garcia",
+    "requestedFor": "tom.garcia@acme.com",
+    "requestedForName": "Tom Garcia",
+    "requestedForDepartment": "Sales",
+    "priority": "Normal",
+    "formData": {
+      "employee_name": "Tom Garcia",
+      "department": "Sales",
+      "device_type": "iPhone",
+      "justification": "Field sales role requires mobile access to CRM and email while traveling",
+      "manager_approval": "sarah.chen@acme.com"
+    }
+  },
+
+  "CAT-008_Software_License_Request": {
+    "catalogItem": "CAT-008",
+    "requestedBy": "maria.santos@acme.com",
+    "requestedByName": "Maria Santos",
+    "requestedFor": "maria.santos@acme.com",
+    "requestedForName": "Maria Santos",
+    "requestedForDepartment": "Engineering",
+    "priority": "Normal",
+    "formData": {
+      "employee_name": "Maria Santos",
+      "software_name": "JetBrains IntelliJ IDEA Ultimate",
+      "license_type": "Individual",
+      "duration": "1 Year",
+      "justification": "Primary IDE for Java microservices development on the platform team"
+    }
+  },
+
+  "CAT-009_Shared_Mailbox_Distribution_List": {
+    "catalogItem": "CAT-009",
+    "requestedBy": "david.kim@acme.com",
+    "requestedByName": "David Kim",
+    "requestedFor": "david.kim@acme.com",
+    "requestedForName": "David Kim",
+    "requestedForDepartment": "Marketing",
+    "priority": "Normal",
+    "formData": {
+      "mailbox_name": "marketing-campaigns@acme.com",
+      "type": "Distribution List",
+      "owner_email": "david.kim@acme.com",
+      "members": "david.kim@acme.com\njane.smith@acme.com\nanna.lee@acme.com",
+      "justification": "Central distribution list for the Q3 campaign team communications"
+    }
+  },
+
+  "CAT-010_Shipping_Delivery_Request": {
+    "catalogItem": "CAT-010",
+    "requestedBy": "chris.martinez@acme.com",
+    "requestedByName": "Chris Martinez",
+    "requestedFor": "chris.martinez@acme.com",
+    "requestedForName": "Chris Martinez",
+    "requestedForDepartment": "IT",
+    "priority": "High",
+    "impact": 2,
+    "urgency": 1,
+    "formData": {
+      "sender_name": "Chris Martinez",
+      "sender_location": "HQ - IT Storage Room B2",
+      "recipient_name": "Remote Office Admin",
+      "recipient_location": "Chicago Branch, 200 Michigan Ave, Suite 400",
+      "package_description": "2x Dell laptops and docking stations for new hires starting Monday",
+      "urgency": "Next Day"
+    }
+  },
+
+  "CAT-011_Office_Supplies_Request": {
+    "catalogItem": "CAT-011",
+    "requestedBy": "rachel.adams@acme.com",
+    "requestedByName": "Rachel Adams",
+    "requestedFor": "rachel.adams@acme.com",
+    "requestedForName": "Rachel Adams",
+    "requestedForDepartment": "Finance",
+    "priority": "Low",
+    "formData": {
+      "requester_name": "Rachel Adams",
+      "department": "Finance",
+      "items_needed": "1x whiteboard markers (assorted colors)\n2x packs of sticky notes\n1x paper shredder bags",
+      "delivery_location": "Building A, Floor 2, Finance Area"
+    }
+  },
+
+  "CAT-012_Meeting_Room_AV_Setup": {
+    "catalogItem": "CAT-012",
+    "requestedBy": "kevin.patel@acme.com",
+    "requestedByName": "Kevin Patel",
+    "requestedFor": "kevin.patel@acme.com",
+    "requestedForName": "Kevin Patel",
+    "requestedForDepartment": "Engineering",
+    "priority": "Normal",
+    "formData": {
+      "meeting_room": "Boardroom",
+      "date": "2026-03-05",
+      "time_start": "10:00 AM",
+      "time_end": "12:00 PM",
+      "requirements": "Dual screen setup for presentation and live demo. Need HDMI and USB-C adapters. Video conferencing with Zoom for 3 remote participants."
+    }
+  },
+
+  "CAT-013_Security_Breach_Report": {
+    "catalogItem": "CAT-013",
+    "requestedBy": "sarah.miller@acme.com",
+    "requestedByName": "Sarah Miller",
+    "requestedFor": "sarah.miller@acme.com",
+    "requestedForName": "Sarah Miller",
+    "requestedForDepartment": "IT",
+    "priority": "High",
+    "impact": 1,
+    "urgency": 1,
+    "formData": {
+      "reporter_name": "Sarah Miller",
+      "reporter_email": "sarah.miller@acme.com",
+      "reporter_employee_id": "EMP-2847",
+      "reporter_phone": "+1-555-0142",
+      "report_type": "Incident",
+      "incident_type": "Phishing",
+      "summary": "Multiple employees received targeted phishing emails impersonating CEO",
+      "description": "At least 5 employees in Finance received emails from ceo@acme-corp.net (note: not our domain) requesting urgent wire transfers. Two employees clicked the link before IT was notified. The landing page collected credentials.",
+      "affected_system": "Email / Exchange Online",
+      "environment": "Production",
+      "asset_tag": "",
+      "owner_team": "Security Team",
+      "time_detected": "2026-02-23 09:15 AM",
+      "duration": "1-4 hours",
+      "ioc_indicators": "Sender: ceo@acme-corp.net\nURL: https://acme-corp.net/login\nIP: 185.234.72.19",
+      "consent": true,
+      "severity": "High"
+    }
+  },
+
+  "CAT-014_Account_Issue_Report": {
+    "catalogItem": "CAT-014",
+    "requestedBy": "peter.nguyen@acme.com",
+    "requestedByName": "Peter Nguyen",
+    "requestedFor": "peter.nguyen@acme.com",
+    "requestedForName": "Peter Nguyen",
+    "requestedForDepartment": "Finance",
+    "priority": "Normal",
+    "urgency": 1,
+    "formData": {
+      "reporter_name": "Peter Nguyen",
+      "reporter_email": "peter.nguyen@acme.com",
+      "reporter_employee_id": "EMP-1593",
+      "reporter_phone": "+1-555-0198",
+      "issue_category": "Lockout",
+      "issue_type": "Too Many Failed Attempts",
+      "summary": "Locked out of AD account after password change failed to sync",
+      "description": "Changed password via the self-service portal yesterday. The new password works for email but AD login on my workstation still expects the old password. After 5 attempts with the new password, the account locked.",
+      "affected_username": "peter.nguyen@acme.com",
+      "affected_app": "Active Directory / Windows Logon",
+      "auth_provider": "Active Directory",
+      "environment": "Production",
+      "last_successful_login": "2026-02-22 5:30 PM",
+      "device": "LAPTOP-0159",
+      "requested_action": "Unlock Account",
+      "approver_email": "robert.taylor@acme.com",
+      "consent": true,
+      "severity": "Normal"
+    }
+  }
+}

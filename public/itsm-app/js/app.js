@@ -192,6 +192,10 @@ function renderModule(moduleKey) {
         // Post-render setup
         if (moduleKey === 'incidents') {
             setupIncidentListeners();
+            // Auto-select first incident if none selected
+            if (!selectedIncident && ITSMData.incidents.length > 0) {
+                selectIncident(ITSMData.incidents[0].id);
+            }
         }
         // Setup asset search listeners when assets module is loaded
         if (moduleKey === 'assets' && typeof AssetsModule !== 'undefined') {
@@ -201,6 +205,8 @@ function renderModule(moduleKey) {
         if (moduleKey === 'knowledge-base' && typeof KnowledgeModule !== 'undefined') {
             KnowledgeModule.setupKBSearch();
         }
+        // Init draggable split-pane resizers if present
+        if (typeof initSplitResizers === 'function') initSplitResizers();
     } else {
         contentArea.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚧</div><div class="empty-state-title">Module not found</div></div>`;
     }
@@ -392,6 +398,8 @@ function renderIncidents() {
                     ${renderIncidentList()}
                 </div>
             </div>
+
+            <div class="split-resizer"></div>
 
             <!-- Right: Incident Detail -->
             <div class="split-right">

@@ -107,6 +107,7 @@ const RequestsModule = {
                         ${this.renderRequestList()}
                     </div>
                 </div>
+                <div class="split-resizer"></div>
                 <div class="split-right">
                     <div class="split-header" id="req-detail-header">Select a request to view details</div>
                     <div class="split-content" id="request-detail">

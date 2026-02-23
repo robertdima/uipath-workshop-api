@@ -122,3 +122,40 @@ const Utils = {
 };
 
 window.Utils = Utils;
+
+/**
+ * Initialise draggable split-pane resizers.
+ * Call after rendering any view that contains .split-pane.
+ * Safe to call multiple times — only binds resizers that exist in the DOM.
+ */
+function initSplitResizers() {
+    document.querySelectorAll('.split-resizer').forEach(resizer => {
+        if (resizer._bound) return;
+        resizer._bound = true;
+
+        resizer.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            const pane = resizer.closest('.split-pane');
+            const left = pane.querySelector('.split-left');
+            if (!pane || !left) return;
+
+            resizer.classList.add('dragging');
+            const startX = e.clientX;
+            const startW = left.getBoundingClientRect().width;
+
+            function onMove(ev) {
+                const newW = Math.max(200, Math.min(startW + ev.clientX - startX, pane.clientWidth - 200));
+                left.style.width = newW + 'px';
+                left.style.flexShrink = '0';
+            }
+            function onUp() {
+                resizer.classList.remove('dragging');
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    });
+}
+window.initSplitResizers = initSplitResizers;

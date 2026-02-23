@@ -376,15 +376,28 @@ select.form-control {
 
 .split-left {
     width: 40%;
-    min-width: 300px;
-    border-right: 3px solid var(--border-dark);
+    min-width: 200px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
+.split-resizer {
+    width: 5px;
+    cursor: col-resize;
+    background: var(--border-dark);
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.split-resizer:hover,
+.split-resizer.dragging {
+    background: var(--accent-blue, #4a90d9);
+}
+
 .split-right {
     flex: 1;
+    min-width: 200px;
     overflow: hidden;
     display: flex;
     flex-direction: column;

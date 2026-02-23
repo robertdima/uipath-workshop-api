@@ -2401,6 +2401,11 @@ server.post('/api/itsm/problems', (req, res) => {
     createdAt: now, updatedAt: now, resolvedAt: null
   };
   db.itsm_problems.push(problem);
+  // Back-link: add this problem to each linked incident's linkedProblems
+  for (const incId of problem.linkedIncidents) {
+    const inc = db.itsm_incidents.find(i => i.id === incId);
+    if (inc && !inc.linkedProblems.includes(id)) inc.linkedProblems.push(id);
+  }
   addItsmAudit('api', 'Problem Created', id, 'problem', `Created: ${title}`);
   res.status(201).json({ success: true, message: `Problem ${id} created`, data: problem });
 });

@@ -434,7 +434,9 @@ const ITSMApi = (() => {
             assignee: data.assignee,
             assigneeName: data.assigneeName
         });
-        if (result.success) await loadCollection('problems');
+        if (result.success) {
+            await Promise.all([loadCollection('problems'), loadCollection('incidents')]);
+        }
         return result;
     }
 

@@ -561,19 +561,21 @@ const ProblemsModule = {
             <div style="border: 1px solid var(--border-color); border-radius: 4px;">
                 ${problem.linkedIncidents.map(incId => {
                     const incident = ITSMData.incidents.find(i => i.id === incId);
-                    if (!incident) return '';
+                    const title = incident ? incident.title : 'Loading...';
+                    const status = incident ? incident.status : 'Unknown';
+                    const category = incident ? incident.category : '';
                     return `
                         <div style="padding: var(--spacing-sm); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${incident.id}</strong>: ${incident.title}
+                                <strong>${incId}</strong>: ${title}
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-                                    <span class="badge ${incident.status.toLowerCase().replace(' ', '-')}">${incident.status}</span>
-                                    <span style="margin-left: 8px;">${incident.category}</span>
+                                    <span class="badge ${status.toLowerCase().replace(' ', '-')}">${status}</span>
+                                    ${category ? `<span style="margin-left: 8px;">${category}</span>` : ''}
                                 </div>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-secondary" onclick="openIncidentDetail('${incident.id}'); closeModal();">View</button>
-                                <button class="btn btn-sm btn-danger" onclick="ProblemsModule.unlinkIncident('${problem.id}', '${incident.id}')">Unlink</button>
+                                ${incident ? `<button class="btn btn-sm btn-secondary" onclick="openIncidentDetail('${incId}'); closeModal();">View</button>` : ''}
+                                <button class="btn btn-sm btn-danger" onclick="ProblemsModule.unlinkIncident('${problem.id}', '${incId}')">Unlink</button>
                             </div>
                         </div>
                     `;

@@ -2070,7 +2070,12 @@ server.post('/api/itsm/incidents/:id/link', (req, res) => {
   const { targetId, linkType } = req.body;
   if (!targetId || !linkType) return res.status(400).json({ success: false, error: 'targetId and linkType are required' });
   if (linkType === 'change') { if (!inc.linkedChanges.includes(targetId)) inc.linkedChanges.push(targetId); }
-  else if (linkType === 'problem') { if (!inc.linkedProblems.includes(targetId)) inc.linkedProblems.push(targetId); }
+  else if (linkType === 'problem') {
+    if (!inc.linkedProblems.includes(targetId)) inc.linkedProblems.push(targetId);
+    // Back-link: add incident to problem's linkedIncidents
+    const prb = db.itsm_problems.find(p => p.id === targetId);
+    if (prb && !prb.linkedIncidents.includes(inc.id)) prb.linkedIncidents.push(inc.id);
+  }
   else if (linkType === 'kb') { if (!inc.linkedKB.includes(targetId)) inc.linkedKB.push(targetId); }
   inc.updatedAt = new Date().toISOString();
   res.json({ success: true, message: `Linked ${linkType} ${targetId} to ${inc.id}`, data: inc });
@@ -2478,6 +2483,18 @@ server.post('/api/itsm/problems/:id/link-incident', (req, res) => {
 
 server.get('/api/itsm/problems/known-errors', (req, res) => {
   res.json({ success: true, data: db.itsm_problems.filter(p => p.status === 'Known Error') });
+});
+
+server.get('/api/itsm/problems/:id', (req, res) => {
+  const p = db.itsm_problems.find(p => p.id === req.params.id);
+  if (!p) return res.status(404).json({ success: false, error: 'Problem not found' });
+  const enriched = { ...p };
+  enriched.linkedIncidentDetails = (p.linkedIncidents || []).map(incId => {
+    const inc = db.itsm_incidents.find(i => i.id === incId);
+    if (!inc) return { id: incId, title: 'Unknown', status: 'Unknown', priority: 'Unknown', callerEmail: null };
+    return { id: inc.id, title: inc.title, status: inc.status, priority: inc.priority, callerEmail: inc.callerEmail };
+  });
+  res.json({ success: true, data: enriched });
 });
 
 // ── Assets / CMDB ──

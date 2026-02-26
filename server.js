@@ -1,4 +1,4 @@
-/* server.js - Self-Contained UiPath Workshop API */
+/* server.js - ACME Corp Mock Platform API */
 const jsonServer = require('json-server');
 const { faker } = require('@faker-js/faker');
 const fs = require('fs');
@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const PORT = process.env.PORT || 4000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-console.log(`🌍 Starting UiPath Workshop API in ${NODE_ENV} mode`);
+console.log(`🌍 Starting ACME Corp Mock Platform in ${NODE_ENV} mode`);
 console.log(`🚀 Port: ${PORT}`);
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1218,7 +1218,7 @@ server.use((req, res, next) => {
   // CSP: scripts from self only; styles allow inline (Tailwind) + CDNs; no framing
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
     "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
     "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
     "img-src 'self' data:; " +
@@ -1243,7 +1243,7 @@ server.use((req, res, next) => {
     res.header('Vary', 'Origin');
   }
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cache-Control');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cache-Control, x-api-key');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -1279,6 +1279,20 @@ server.use((req, res, next) => {
   }
   next();
 });
+
+// ── API Key Authentication (gate all /api/* routes) ──
+const API_KEY = process.env.API_KEY;
+if (API_KEY) {
+  console.log('🔑 API key authentication enabled');
+  server.use('/api', (req, res, next) => {
+    if (req.method === 'OPTIONS') return next(); // CORS preflight
+    const provided = req.headers['x-api-key'];
+    if (provided === API_KEY) return next();
+    return res.status(401).json({ error: 'Unauthorized', message: 'Valid API key required' });
+  });
+} else {
+  console.log('🔓 No API_KEY set — running without authentication (local dev mode)');
+}
 
 /* ---------- Custom Endpoints ---------- */
 
@@ -1658,21 +1672,14 @@ server.post('/api/hr/onboarding/generate', (req, res) => {
   });
 });
 
-// Root endpoint
-server.get('/', (req, res) => {
-  res.json({
-    message: 'UiPath Workshop API',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: {
-      health: '/health',
-      workers: '/api/hr/workers',
-      invoices: '/api/finance/invoices',
-      customers: '/api/crm/customers',
-      devices: '/api/iot/devices'
-    },
-    documentation: 'Enterprise API for UiPath workshop demonstrations'
-  });
+// Portal stats — live tile badges for the ACME Corp portal
+server.get('/api/portal/stats', (req, res) => {
+  const openIncidents = (db.itsm_incidents || []).filter(i => i.status !== 'Closed' && i.status !== 'Resolved').length;
+  const openRequests = (db.itsm_requests || []).filter(r => r.status !== 'Closed' && r.status !== 'Fulfilled').length;
+  const workerCount = (db.hr_workers || []).length;
+  const collectionCount = Object.keys(db).length;
+  const endpointCount = Object.keys(rewrites).length;
+  res.json({ openIncidents, openRequests, workerCount, collectionCount, endpointCount });
 });
 
 /* ---------- Legacy Portal Routes ---------- */
@@ -3196,11 +3203,11 @@ server.use((err, req, res, _next) => {
 
 /* ---------- Start Server ---------- */
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🎉 UiPath Workshop API is live!`);
+  console.log(`\n🎉 ACME Corp Mock Platform is live!`);
   console.log(`🌐 Port: ${PORT}`);
   console.log(`📊 Collections: ${Object.keys(db).length}`);
   console.log(`🛣️  Routes: ${Object.keys(rewrites).length}`);
-  console.log(`💾 Total Records: ${Object.values(db).reduce((total, collection) => 
+  console.log(`💾 Total Records: ${Object.values(db).reduce((total, collection) =>
     total + (Array.isArray(collection) ? collection.length : 1), 0)}`);
-  console.log(`\n🚀 Ready for UiPath workshops!`);
+  console.log(`\n🚀 Ready at http://localhost:${PORT}`);
 });

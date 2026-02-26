@@ -326,6 +326,10 @@
     </style>
 </head>
 <body>
+    <script>
+        if (!sessionStorage.getItem('acme_api_key')) window.location.href = '/';
+        function _apiHeaders(extra) { const h = extra || {}; const k = sessionStorage.getItem('acme_api_key'); if (k) h['x-api-key'] = k; return h; }
+    </script>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
@@ -478,7 +482,7 @@
                 await new Promise(resolve => setTimeout(resolve, 600));
 
                 // Fetch from onboarding API
-                const response = await fetch('/api/hr/onboarding/' + recordId);
+                const response = await fetch('/api/hr/onboarding/' + recordId, { headers: _apiHeaders() });
 
                 if (!response.ok) {
                     if (response.status === 404) {
@@ -634,7 +638,8 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const response = await fetch('/api/hr/onboarding/' + id, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: _apiHeaders()
                 });
 
                 if (!response.ok) {

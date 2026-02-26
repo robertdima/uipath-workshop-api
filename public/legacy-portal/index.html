@@ -417,6 +417,7 @@
   </style>
 </head>
 <body>
+  <script>if (!sessionStorage.getItem('acme_api_key')) window.location.href = '/';</script>
   <div class="container">
     <div class="header">
       <h1>🏢 ACME Corporation</h1>
@@ -877,9 +878,10 @@
         const lastName = nameParts.slice(1).join(' ') || nameParts[0] || '';
 
         // Submit to backend API
+        const _apiKey = sessionStorage.getItem('acme_api_key');
         const response = await fetch('/api/hr/legacy-portal/submit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(_apiKey ? { 'x-api-key': _apiKey } : {}) },
           body: JSON.stringify({
             employeeId,
             firstName,

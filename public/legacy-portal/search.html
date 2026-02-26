@@ -381,6 +381,7 @@
     </style>
 </head>
 <body>
+    <script>if (!sessionStorage.getItem('acme_api_key')) window.location.href = '/';</script>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
@@ -628,7 +629,8 @@
                 showLoading('Retrieving records...');
                 await new Promise(resolve => setTimeout(resolve, 600));
 
-                const response = await fetch('/api/hr/onboarding');
+                const _hdr = {}; const _k = sessionStorage.getItem('acme_api_key'); if (_k) _hdr['x-api-key'] = _k;
+                const response = await fetch('/api/hr/onboarding', { headers: _hdr });
 
                 if (!response.ok) {
                     throw new Error('Failed to retrieve records from database');

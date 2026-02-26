@@ -3,1409 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UiPath Workshop API Interface</title>
+    <title>ACME Corp Mock Platform</title>
     <link rel="icon" type="image/svg+xml" href="/acme-favicon.svg">
-
-    <!-- External Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
-                        // === PRIMARY COLORS ===
-                        // Robotic Orange - hero color for robots/RPA
-                        orange: {
-                            DEFAULT: '#FA4616',
-                            50: '#FFF5F2',
-                            100: '#FCC0C5',
-                            200: '#FA7678',
-                            300: '#FB6B45',
-                            400: '#FA4616',
-                            500: '#FA4616',
-                            600: '#CE340B',
-                            700: '#A32200',
-                            800: '#7A1A00',
-                            900: '#521100'
-                        },
-                        // Agentic Teal - for agents/AI
-                        teal: {
-                            DEFAULT: '#0BA2B3',
-                            50: '#E6F7F9',
-                            100: '#CCF2FF',
-                            200: '#A5E2F0',
-                            300: '#5BCBDE',
-                            400: '#3CB5C2',
-                            500: '#0BA2B3',
-                            600: '#15839A',
-                            700: '#1E6482',
-                            800: '#0D5A6A',
-                            900: '#083C47'
-                        },
-                        // Deep Blue - primary dark
-                        deepblue: {
-                            DEFAULT: '#182126',
-                            50: '#A0AAB9',
-                            100: '#646E78',
-                            200: '#3C464B',
-                            300: '#2D373C',
-                            400: '#182126',
-                            500: '#182126',
-                            600: '#131A1E',
-                            700: '#0E1316',
-                            800: '#090C0E',
-                            900: '#040506'
-                        },
-                        // Bright White
-                        white: '#FFFFFF',
-
-                        // === SECONDARY COLORS ===
-                        // Bright Blue
-                        brightblue: '#CCF2FF',
-                        // Dark Blue
-                        darkblue: '#1E6482',
-                        // Offset Orange
-                        offsetorange: '#A32200',
-                        // Offset Grey
-                        offsetgrey: '#D9D9D9',
-                        // Testing Purple
-                        purple: {
-                            DEFAULT: '#8B288A',
-                            50: '#FFCBFF',
-                            100: '#C862C8',
-                            200: '#8B288A',
-                            300: '#721472',
-                            400: '#5A005A',
-                            500: '#8B288A',
-                            600: '#721472',
-                            700: '#5A005A',
-                            800: '#400040',
-                            900: '#260026'
-                        },
-                        // Black
-                        black: '#000000',
-
-                        // === NEUTRAL COLORS ===
-                        neutral: {
-                            DEFAULT: '#9D9D9D',
-                            50: '#F6F6F6',
-                            100: '#D9D9D9',
-                            200: '#B9B9B9',
-                            300: '#9D9D9D',
-                            400: '#616161',
-                            500: '#484848',
-                            600: '#343434',
-                            700: '#262626',
-                            800: '#1A1A1A',
-                            900: '#0D0D0D'
-                        },
-
-                        // === LEGACY ALIASES ===
-                        lightblue: '#CCF2FF'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        navy: { DEFAULT: '#002244', 50: '#e6f0ff', 100: '#b3d1ff', 600: '#003366', 700: '#002244', 800: '#001a33', 900: '#00111f' },
+                        teal: { DEFAULT: '#00b4d8', 50: '#e6f9fc', 100: '#b3eef7', 400: '#00c4eb', 500: '#00b4d8', 600: '#0096b4' }
                     }
                 }
             }
         }
     </script>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #e4e4e7;
-            border-radius: 50%;
-            border-top-color: #FA4616;
-            animation: spin 1s linear infinite;
-        }
-
-        .row-updated {
-            animation: highlight 0.3s ease;
-        }
-
-        @keyframes highlight {
-            0% { background-color: rgba(250, 70, 22, 0.2); }
-            100% { background-color: rgba(250, 70, 22, 0.05); }
-        }
-
-        .row-updated-fading {
-            transition: all 5s ease;
-            background-color: transparent !important;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .tile-card { transition: all 0.15s ease; }
+        .tile-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .key-input:focus { outline: none; box-shadow: 0 0 0 2px #00b4d8; }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .badge { font-variant-numeric: tabular-nums; }
     </style>
 </head>
-
 <body class="bg-zinc-50 min-h-screen">
-    <div class="max-w-[95%] mx-auto p-6">
-        <!-- Header -->
-        <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
-            <h1 class="text-3xl font-bold text-deepblue mb-2">🚀 UiPath Workshop API</h1>
-            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 161 endpoints</p>
-            <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
-                View Complete API Documentation →
-            </a>
 
-            <!-- Status Indicators -->
-            <div class="mt-6 grid grid-cols-3 gap-4">
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="connection-status" class="text-2xl font-bold text-deepblue">●</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Connection</div>
+    <!-- KEY ENTRY SCREEN -->
+    <div id="key-screen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="w-full max-w-md">
+            <div class="bg-white rounded-xl border border-zinc-200 p-8 shadow-sm">
+                <div class="flex flex-col items-center mb-8">
+                    <img src="/acme-logo.svg" alt="ACME Corp" class="h-12 mb-4">
+                    <h1 class="text-xl font-semibold text-zinc-900">ACME Corp Mock Platform</h1>
+                    <p class="text-sm text-zinc-500 mt-1">Enterprise API sandbox for automation workshops</p>
                 </div>
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="api-url-display" class="text-sm font-mono font-bold text-deepblue truncate">Loading...</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">API URL</div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="api-key-input" class="block text-sm font-medium text-zinc-700 mb-1.5">API Key</label>
+                        <input id="api-key-input" type="password" placeholder="Enter your API key"
+                            class="key-input w-full px-3.5 py-2.5 rounded-lg border border-zinc-300 text-sm placeholder:text-zinc-400 bg-white">
+                    </div>
+                    <button id="unlock-btn" onclick="validateKey()"
+                        class="w-full px-4 py-2.5 bg-navy-700 text-white rounded-lg text-sm font-medium hover:bg-navy-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Unlock &rarr;
+                    </button>
+                    <div id="key-error" class="hidden text-sm text-red-600 text-center"></div>
                 </div>
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="response-time" class="text-2xl font-bold text-deepblue">--ms</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Response Time</div>
+
+                <div class="mt-6 pt-5 border-t border-zinc-100">
+                    <p class="text-xs text-zinc-400 text-center leading-relaxed">
+                        Get your key from <strong class="text-zinc-500">1Password</strong>: ACME Mock Platform - API Key
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PORTAL SCREEN -->
+    <div id="portal-screen" class="hidden">
+        <!-- Header -->
+        <header class="bg-white border-b border-zinc-200 sticky top-0 z-10">
+            <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="/acme-logo.svg" alt="ACME Corp" class="h-8">
+                    <div>
+                        <h1 class="text-base font-semibold text-zinc-900 leading-tight">ACME Corp Mock Platform</h1>
+                        <p class="text-xs text-zinc-400">Enterprise API Sandbox</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="status-indicator" class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs text-zinc-500">Online</span>
+                    </div>
+                    <button onclick="changeKey()" class="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Change Key</button>
                 </div>
             </div>
         </header>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-12 gap-6">
-            <!-- Sidebar -->
-            <aside class="col-span-3 space-y-2 sticky top-6 self-start">
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Overview</h3>
-                    <a href="#" class="nav-item active block rounded-lg px-3 py-2 text-sm font-medium transition-colors" data-module="welcome">👋 Welcome</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="stats">📊 Statistics</a>
+        <main class="max-w-6xl mx-auto px-6 py-8 fade-in">
+            <!-- Quick Start -->
+            <section class="mb-10">
+                <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Quick Start</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg border border-zinc-200 p-5">
+                        <div class="text-sm font-medium text-zinc-900 mb-1.5">What is this?</div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">A fully functional mock enterprise platform with 145+ REST API endpoints across 6 business domains. All data is in-memory and resets on restart.</p>
+                    </div>
+                    <div class="bg-white rounded-lg border border-zinc-200 p-5">
+                        <div class="text-sm font-medium text-zinc-900 mb-1.5">Available Apps</div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">Use the ITSM Console to manage incidents, changes, and requests. The HR Portal simulates legacy form submission. The API Explorer lets you test any endpoint.</p>
+                    </div>
+                    <div class="bg-white rounded-lg border border-zinc-200 p-5">
+                        <div class="text-sm font-medium text-zinc-900 mb-1.5">Using the API Key</div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">All API calls require the <code class="text-xs bg-zinc-100 px-1 py-0.5 rounded">x-api-key</code> header. Sub-apps inherit your key automatically via sessionStorage.</p>
+                    </div>
                 </div>
+            </section>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">HR Module</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-workers">👤 Workers</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-performance">📈 Performance</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-onboarding">🎯 Onboarding</a>
-                    <a href="/legacy-portal/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🏢 Legacy Portal ↗</a>
+            <!-- Applications -->
+            <section class="mb-10">
+                <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Applications</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- ITSM Console -->
+                    <a href="/itsm-app/" class="tile-card bg-white rounded-lg border border-zinc-200 p-5 block no-underline group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-zinc-900 group-hover:text-teal-600 transition-colors">ITSM Console</div>
+                                    <div class="text-xs text-zinc-400">IT Service Management</div>
+                                </div>
+                            </div>
+                            <span id="badge-incidents" class="badge hidden px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 border border-amber-200"></span>
+                        </div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">Manage incidents, problems, changes, service requests, assets, and knowledge articles.</p>
+                        <div class="mt-3 text-xs font-medium text-teal-600 group-hover:text-teal-700">Launch &rarr;</div>
+                    </a>
+
+                    <!-- HR Portal -->
+                    <a href="/legacy-portal/" class="tile-card bg-white rounded-lg border border-zinc-200 p-5 block no-underline group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-zinc-900 group-hover:text-indigo-600 transition-colors">HR Portal</div>
+                                    <div class="text-xs text-zinc-400">Legacy Onboarding System</div>
+                                </div>
+                            </div>
+                            <span id="badge-workers" class="badge hidden px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
+                        </div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">Simulated legacy HR onboarding portal for form-filling automation scenarios.</p>
+                        <div class="mt-3 text-xs font-medium text-indigo-600 group-hover:text-indigo-700">Launch &rarr;</div>
+                    </a>
                 </div>
+            </section>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Finance</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-invoices">📄 Invoices</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-expenses">💳 Expenses</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-analytics">📊 Analytics</a>
+            <!-- Developer Tools -->
+            <section class="mb-10">
+                <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Developer Tools</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- API Explorer -->
+                    <a href="/explorer/" class="tile-card bg-white rounded-lg border border-zinc-200 p-5 block no-underline group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-zinc-900 group-hover:text-emerald-600 transition-colors">API Explorer</div>
+                                    <div class="text-xs text-zinc-400">Interactive Testing</div>
+                                </div>
+                            </div>
+                            <span id="badge-endpoints" class="badge hidden px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"></span>
+                        </div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">Browse and test all 145+ API endpoints interactively with live request/response views.</p>
+                        <div class="mt-3 text-xs font-medium text-emerald-600 group-hover:text-emerald-700">Launch &rarr;</div>
+                    </a>
+
+                    <!-- API Documentation -->
+                    <a href="/api-documentation.html" class="tile-card bg-white rounded-lg border border-zinc-200 p-5 block no-underline group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-zinc-900 group-hover:text-zinc-700 transition-colors">API Documentation</div>
+                                    <div class="text-xs text-zinc-400">Reference Guide</div>
+                                </div>
+                            </div>
+                            <span id="badge-collections" class="badge hidden px-2 py-0.5 text-xs font-medium rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200"></span>
+                        </div>
+                        <p class="text-xs text-zinc-500 leading-relaxed">Complete API reference with endpoint schemas, example payloads, and usage tips.</p>
+                        <div class="mt-3 text-xs font-medium text-zinc-500 group-hover:text-zinc-700">Launch &rarr;</div>
+                    </a>
                 </div>
+            </section>
+        </main>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">CRM</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-customers">🏢 Customers</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-sales">💼 Sales</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-support">🎧 Support</a>
+        <!-- Footer -->
+        <footer class="border-t border-zinc-200 bg-white">
+            <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="text-xs text-zinc-400">
+                    <span id="footer-stats"></span>
                 </div>
-
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">IoT</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-devices">📱 Devices</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-monitoring">📡 Monitoring</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-maintenance">🔧 Maintenance</a>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Analytics</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="reports">📈 Reports</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="projects">📋 Projects</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="workflows">⚙️ Workflows</a>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">ITSM</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-incidents">🎫 Incidents</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-changes">🔄 Changes</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-requests">📝 Requests</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-problems">🔍 Problems</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-assets">🖥️ Assets</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-knowledge">📚 Knowledge</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-reports">📊 Reports</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-config">⚙️ Config</a>
-                    <a href="/itsm-app/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🖥️ ITSM Console ↗</a>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="col-span-9" id="content-area">
-                <!-- Dynamic content will be injected here -->
-            </main>
-        </div>
-    </div>
-
-    <!-- Notification Toast -->
-    <div id="notification-toast" class="fixed top-6 right-6 bg-teal text-white px-6 py-4 rounded-lg shadow-lg hidden transform transition-all duration-300">
-        <!-- Notification message -->
+                <button onclick="changeKey()" class="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Change API Key</button>
+            </div>
+        </footer>
     </div>
 
     <script>
-        // XSS protection
-        function escapeHtml(str) {
-            if (typeof str !== 'string') return str || '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const KEY_NAME = 'acme_api_key';
+
+        // On load: check for existing key
+        (async function init() {
+            const key = sessionStorage.getItem(KEY_NAME);
+            if (key) {
+                const valid = await testKey(key);
+                if (valid) return showPortal();
+            }
+            showKeyScreen();
+        })();
+
+        function showKeyScreen() {
+            document.getElementById('key-screen').classList.remove('hidden');
+            document.getElementById('portal-screen').classList.add('hidden');
+            document.getElementById('key-error').classList.add('hidden');
+            const input = document.getElementById('api-key-input');
+            input.value = '';
+            setTimeout(() => input.focus(), 100);
         }
 
-        const API_BASE = window.location.origin + '/api';
-        let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null, onboarding: null, legacy_submission: null, itsm_incident: null, itsm_change: null, itsm_request: null, itsm_problem: null, itsm_asset: null, itsm_knowledge: null, itsm_runbook: null, itsm_catalog: null, itsm_notification: null };
-        let apiHealth = { isOnline: false, responseTime: 0 };
-        let onboardingData = [];
-        let updatedByMap = {};
-        let activeStatusFilter = 'all'; // Track active status filter: 'all', 'pending', 'in-progress', 'completed'
+        function showPortal() {
+            document.getElementById('key-screen').classList.add('hidden');
+            document.getElementById('portal-screen').classList.remove('hidden');
+            loadStats();
+        }
 
-        // ALL ENDPOINTS - Complete Module Definitions
-        const modules = {
-            welcome: {
-                content: `
-                    <div class="text-center py-16 px-8">
-                        <div class="text-6xl mb-6">🚀</div>
-                        <h2 class="text-4xl font-bold text-deepblue mb-4">UiPath Workshop API</h2>
-                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 161 endpoints across all business modules!</p>
-                        <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
+        async function testKey(key) {
+            try {
+                const res = await fetch('/api/portal/stats', { headers: { 'x-api-key': key } });
+                return res.ok;
+            } catch { return false; }
+        }
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('hr-onboarding')">
-                                <h4 class="text-orange text-lg font-bold mb-3">👥 Employee Onboarding</h4>
-                                <p class="text-sm text-zinc-600">Track employee progress and onboarding status</p>
-                            </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('finance-invoices')">
-                                <h4 class="text-orange text-lg font-bold mb-3">💰 Invoice Approval</h4>
-                                <p class="text-sm text-zinc-600">Automate invoice routing and approval workflows</p>
-                            </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-customers')">
-                                <h4 class="text-orange text-lg font-bold mb-3">🎯 Customer Health</h4>
-                                <p class="text-sm text-zinc-600">Analyze customer risk and relationship metrics</p>
-                            </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('iot-maintenance')">
-                                <h4 class="text-orange text-lg font-bold mb-3">🔧 IoT Maintenance</h4>
-                                <p class="text-sm text-zinc-600">Optimize device maintenance and prevent failures</p>
-                            </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-sales')">
-                                <h4 class="text-orange text-lg font-bold mb-3">📊 Sales Intelligence</h4>
-                                <p class="text-sm text-zinc-600">Forecast pipeline and prioritize deals</p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            },
-            stats: {
-                content: `
-                    <div class="grid grid-cols-4 gap-6 mb-8">
-                        <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">161</div>
-                            <div class="text-xs uppercase tracking-wide">API Endpoints</div>
-                        </div>
-                        <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">42</div>
-                            <div class="text-xs uppercase tracking-wide">Collections</div>
-                        </div>
-                        <div class="rounded-xl bg-gradient-to-br from-deepblue to-zinc-700 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">900+</div>
-                            <div class="text-xs uppercase tracking-wide">Records</div>
-                        </div>
-                        <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">🟢</div>
-                            <div class="text-xs uppercase tracking-wide">Status</div>
-                        </div>
-                    </div>
-                    <div class="text-center mt-12">
-                        <h3 class="text-3xl font-bold text-deepblue mb-4">Production API Status</h3>
-                        <p class="text-lg text-zinc-600">All business modules deployed with enterprise capabilities</p>
-                    </div>
-                `
-            },
-            'hr-workers': {
-                title: 'HR Workers Management',
-                icon: '👥',
-                description: 'Employee records, departments, and organizational hierarchy',
-                endpoints: [
-                    { method: 'GET', path: '/hr/workers', description: 'Get all workers in the system' },
-                    { method: 'GET', path: '/hr/workers/active', description: 'Get active employees only (filtered in UiPath)' },
-                    { method: 'GET', path: '/hr/workers/search', description: 'Search employees with criteria' },
-                    { method: 'GET', path: '/hr/workers/:id', description: 'Get specific employee details', needsId: 'worker' },
-                    { method: 'GET', path: '/hr/workers/:id/directReports', description: 'Get employee direct reports', needsId: 'worker' },
-                    { method: 'GET', path: '/hr/workers/:id/performance', description: 'Get employee performance data', needsId: 'worker' }
-                ]
-            },
-            'hr-performance': {
-                title: 'HR Performance & Reviews',
-                icon: '📈',
-                description: 'Performance reviews, ratings, and goal tracking',
-                endpoints: [
-                    { method: 'GET', path: '/hr/performance', description: 'Get all performance review records' },
-                    { method: 'GET', path: '/hr/performance/lowPerformers', description: 'Get underperforming employees (filtered in UiPath)' },
-                    { method: 'GET', path: '/hr/performance/reviews/due', description: 'Get upcoming performance reviews (filtered in UiPath)' },
-                    { method: 'GET', path: '/hr/supervisoryOrganizations', description: 'Get organizational structure' }
-                ]
-            },
-            'hr-onboarding': {
-                title: 'HR Onboarding Management',
-                icon: '🎯',
-                description: 'New employee onboarding process tracking',
-                endpoints: [
-                    { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
-                    { method: 'GET', path: '/hr/onboarding/inProgress', description: 'Get active onboarding processes (filtered in UiPath)' },
-                    { method: 'GET', path: '/hr/onboarding/pending', description: 'Get pending onboarding records with enriched worker data (firstName, lastName, email, department, position)' },
-                    { method: 'PATCH', path: '/hr/onboarding/:id/status', description: 'Update onboarding status', needsId: 'onboarding', body: {status: 'in-progress'} },
-                    { method: 'POST', path: '/hr/onboarding', description: 'Create new onboarding record', body: {workerId: '', status: 'pending', startDate: '2025-01-15'} },
-                    { method: 'GET', path: '/hr/onboarding/:id', description: 'Get single onboarding record by ID', needsId: 'onboarding' },
-                    { method: 'DELETE', path: '/hr/onboarding/:id', description: 'Delete onboarding record', needsId: 'onboarding' },
-                    { method: 'GET', path: '/hr/org/headcount', description: 'Get departmental headcount analytics' },
-                    { method: 'POST', path: '/hr/legacy-portal/submit', description: 'Submit registration from Legacy Portal', body: {employeeId: 'EMP001', firstName: 'John', lastName: 'Doe', email: 'john@company.com', department: 'Engineering', startDate: '2025-01-15'} },
-                    { method: 'GET', path: '/hr/legacy-portal/submissions', description: 'Get all Legacy Portal submissions' },
-                    { method: 'GET', path: '/hr/legacy-portal/verify/:id', description: 'Verify registration by ID', needsId: 'onboarding' }
-                ],
-                hasLiveData: true
-            },
-            'finance-invoices': {
-                title: 'Finance Invoice Management',
-                icon: '📄',
-                description: 'Invoice processing, approval workflows, and vendor management',
-                endpoints: [
-                    { method: 'GET', path: '/finance/invoices', description: 'Get all invoices in the system' },
-                    { method: 'GET', path: '/finance/invoices/pending', description: 'Get pending invoice approvals (filtered in UiPath)' },
-                    { method: 'GET', path: '/finance/invoices/overdue', description: 'Get overdue invoices (filtered in UiPath)' },
-                    { method: 'GET', path: '/finance/invoices/approval/queue', description: 'Get approval queue for managers' },
-                    { method: 'GET', path: '/finance/invoices/:id', description: 'Get specific invoice details', needsId: 'invoice' },
-                    { method: 'PATCH', path: '/finance/invoices/:id/approve', description: 'Approve invoice for payment', needsId: 'invoice', body: {status: 'approved'} },
-                    { method: 'GET', path: '/finance/vendors/performance', description: 'Get vendor performance metrics' }
-                ]
-            },
-            'finance-expenses': {
-                title: 'Finance Expense Management',
-                icon: '💳',
-                description: 'Employee expense reports and reimbursement tracking',
-                endpoints: [
-                    { method: 'GET', path: '/finance/expenses', description: 'Get all employee expense reports' },
-                    { method: 'GET', path: '/finance/expenses/pending', description: 'Get pending expense approvals (filtered in UiPath)' },
-                    { method: 'POST', path: '/finance/expenses', description: 'Create new expense report',
-                        body: {workerId: '', description: 'Conference travel', amount: 450.00, currency: 'USD', category: 'Travel'} }
-                ]
-            },
-            'finance-analytics': {
-                title: 'Finance Analytics & Reporting',
-                icon: '📊',
-                description: 'Financial summaries, budget variance, and cash flow analysis',
-                endpoints: [
-                    { method: 'GET', path: '/finance/budget/variance', description: 'Get budget vs actual spending by department' },
-                    { method: 'GET', path: '/finance/summaries', description: 'Get monthly financial summary reports' },
-                    { method: 'GET', path: '/reports/financial/monthly', description: 'Get detailed monthly financial analytics' }
-                ]
-            },
-            'crm-customers': {
-                title: 'CRM Customer Management',
-                icon: '🏢',
-                description: 'Customer records, relationship management, and account health',
-                endpoints: [
-                    { method: 'GET', path: '/crm/customers', description: 'Get all customer records' },
-                    { method: 'GET', path: '/crm/customers/enterprise', description: 'Get enterprise-tier customers (filtered in UiPath)' },
-                    { method: 'GET', path: '/crm/customers/atrisk', description: 'Get at-risk customers (filtered in UiPath)' },
-                    { method: 'GET', path: '/crm/customers/:id', description: 'Get specific customer details', needsId: 'customer' },
-                    { method: 'GET', path: '/crm/customers/:id/360', description: 'Get customer 360-degree view', needsId: 'customer' },
-                    { method: 'GET', path: '/analytics/customer/relationships', description: 'Get customer relationship analytics' }
-                ]
-            },
-            'crm-sales': {
-                title: 'CRM Sales & Opportunities',
-                icon: '💼',
-                description: 'Sales pipeline, opportunities, and revenue forecasting',
-                endpoints: [
-                    { method: 'GET', path: '/crm/opportunities', description: 'Get all sales opportunities' },
-                    { method: 'GET', path: '/crm/opportunities/highValue', description: 'Get high-value opportunities (filtered in UiPath)' },
-                    { method: 'PATCH', path: '/crm/opportunities/:id/score', description: 'Update opportunity score', needsId: 'opportunity', body: {score: 85} },
-                    { method: 'GET', path: '/crm/pipeline/forecast', description: 'Get sales pipeline forecast data' },
-                    { method: 'GET', path: '/crm/renewals/upcoming', description: 'Get upcoming contract renewals (filtered in UiPath)' },
-                    { method: 'GET', path: '/reports/sales/pipeline', description: 'Get detailed sales pipeline reports' }
-                ]
-            },
-            'crm-support': {
-                title: 'CRM Support & Service',
-                icon: '🎧',
-                description: 'Support tickets, customer service, and issue tracking',
-                endpoints: [
-                    { method: 'GET', path: '/crm/support/tickets', description: 'Get all customer support tickets' },
-                    { method: 'GET', path: '/crm/support/tickets/open', description: 'Get open support tickets (filtered in UiPath)' },
-                    { method: 'GET', path: '/crm/renewals', description: 'Get contract renewal information' },
-                    { method: 'GET', path: '/crm/renewals/atrisk', description: 'Get at-risk renewals (filtered in UiPath)' }
-                ]
-            },
-            'iot-devices': {
-                title: 'IoT Device Management',
-                icon: '📱',
-                description: 'Device inventory, status monitoring, and assignments',
-                endpoints: [
-                    { method: 'GET', path: '/iot/devices', description: 'Get all IoT devices in the system' },
-                    { method: 'GET', path: '/iot/devices/online', description: 'Get online devices (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/devices/offline', description: 'Get offline devices (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/devices/:id', description: 'Get specific device details', needsId: 'device' },
-                    { method: 'PATCH', path: '/iot/devices/:id/assign', description: 'Assign device to technician', needsId: 'device', body: {assignedTo: ''} }
-                ]
-            },
-            'iot-monitoring': {
-                title: 'IoT Monitoring & Telemetry',
-                icon: '📡',
-                description: 'Real-time data, telemetry, and device performance',
-                endpoints: [
-                    { method: 'GET', path: '/iot/telemetry', description: 'Get all telemetry data from devices' },
-                    { method: 'GET', path: '/iot/telemetry/recent', description: 'Get recent telemetry data (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/devices/:id/telemetry', description: 'Get real-time device telemetry', needsId: 'device' }
-                ]
-            },
-            'iot-maintenance': {
-                title: 'IoT Maintenance & Alerts',
-                icon: '🔧',
-                description: 'Maintenance scheduling, alerts, and predictive analytics',
-                endpoints: [
-                    { method: 'GET', path: '/iot/alerts', description: 'Get all IoT device alerts' },
-                    { method: 'GET', path: '/iot/alerts/critical', description: 'Get critical alerts (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/alerts/unacknowledged', description: 'Get unacknowledged alerts (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/maintenance', description: 'Get device maintenance schedule' },
-                    { method: 'GET', path: '/iot/maintenance/due', description: 'Get due maintenance tasks (filtered in UiPath)' },
-                    { method: 'GET', path: '/iot/maintenance/overdue', description: 'Get overdue maintenance (filtered in UiPath)' }
-                ]
-            },
-            'reports': {
-                title: 'Reports & Analytics',
-                icon: '📈',
-                description: 'Business intelligence, KPIs, and executive dashboards',
-                endpoints: [
-                    { method: 'GET', path: '/reports/employee/summary', description: 'Get employee analytics by department' },
-                    { method: 'GET', path: '/analytics/employee/profiles', description: 'Get detailed employee profiles' },
-                    { method: 'GET', path: '/notifications', description: 'Get system notifications' },
-                    { method: 'GET', path: '/notifications/unread', description: 'Get unread notifications (filtered in UiPath)' }
-                ]
-            },
-            'projects': {
-                title: 'Project Management',
-                icon: '📋',
-                description: 'Project tracking, resource allocation, and deliverables',
-                endpoints: [
-                    { method: 'GET', path: '/projects', description: 'Get all projects in the system' },
-                    { method: 'GET', path: '/projects/active', description: 'Get active projects (filtered in UiPath)' },
-                    { method: 'GET', path: '/projects/atrisk', description: 'Get at-risk projects (filtered in UiPath)' }
-                ]
-            },
-            'workflows': {
-                title: 'Workflow Management',
-                icon: '⚙️',
-                description: 'Automation workflows, triggers, and process monitoring',
-                endpoints: [
-                    { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
-                    { method: 'GET', path: '/workflows/triggers/active', description: 'Get active workflow triggers (filtered in UiPath)' },
-                    { method: 'GET', path: '/workflows/triggers/errors', description: 'Get failed workflow triggers (filtered in UiPath)' }
-                ]
-            },
-            // ═══ ITSM MODULES ═══
-            'itsm-incidents': {
-                title: 'ITSM Incident Management',
-                icon: '🎫',
-                description: 'IT incident tracking, assignment, escalation, and resolution workflows',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/incidents', description: 'Get all incidents in the ITSM system' },
-                    { method: 'GET', path: '/itsm/incidents/:id', description: 'Get specific incident details', needsId: 'itsm_incident' },
-                    { method: 'POST', path: '/itsm/incidents', description: 'Create new incident with auto-priority calculation',
-                        body: {title: 'Email service unavailable', description: 'Users reporting inability to send/receive emails since 9am', impact: 'High', urgency: 'High'} },
-                    { method: 'PATCH', path: '/itsm/incidents/:id', description: 'Update any incident fields (general-purpose)', needsId: 'itsm_incident',
-                        body: {impact: 'High', urgency: 'High', assignmentGroup: 'Escalation Team', status: 'In Progress'} },
-                    { method: 'PATCH', path: '/itsm/incidents/:id/status', description: 'Update incident status (enforces workflow transitions)', needsId: 'itsm_incident',
-                        body: {status: 'Open'} },
-                    { method: 'POST', path: '/itsm/incidents/:id/notes', description: 'Add work note or customer comment to incident', needsId: 'itsm_incident',
-                        body: {content: 'Investigating the root cause', type: 'comment', visibility: 'technicians-only'} },
-                    { method: 'POST', path: '/itsm/incidents/:id/assign', description: 'Assign incident to team/technician', needsId: 'itsm_incident',
-                        body: {assignmentGroup: 'Network Team', assignee: 'tech001', assigneeName: 'John Smith'} },
-                    { method: 'POST', path: '/itsm/incidents/:id/escalate', description: 'Escalate incident priority (P4 -> P3 -> P2 -> P1)', needsId: 'itsm_incident' },
-                    { method: 'POST', path: '/itsm/incidents/:id/resolve', description: 'Resolve incident with resolution details', needsId: 'itsm_incident',
-                        body: {resolutionCode: 'Fixed', resolutionNotes: 'Restarted email relay service, confirmed emails flowing'} },
-                    { method: 'POST', path: '/itsm/incidents/:id/link', description: 'Link incident to problem/change/KB', needsId: 'itsm_incident',
-                        body: {targetId: 'PRB-001', linkType: 'problem'} },
-                    { method: 'DELETE', path: '/itsm/incidents/:id', description: 'Delete an incident permanently', needsId: 'itsm_incident' },
-                    { method: 'GET', path: '/itsm/incidents/stats', description: 'Get incident statistics (counts by status/priority, SLA compliance)' }
-                ]
-            },
-            'itsm-changes': {
-                title: 'ITSM Change Management',
-                icon: '🔄',
-                description: 'Change request lifecycle, CAB approvals, and implementation tracking',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/changes', description: 'Get all change requests' },
-                    { method: 'GET', path: '/itsm/changes/:id', description: 'Get specific change request details', needsId: 'itsm_change' },
-                    { method: 'POST', path: '/itsm/changes', description: 'Create new change request',
-                        body: {title: 'Upgrade mail server to v12.5', type: 'Normal', risk: 'Medium', description: 'Scheduled upgrade of primary mail server during maintenance window'} },
-                    { method: 'PATCH', path: '/itsm/changes/:id/status', description: 'Update change request status (enforces workflow)', needsId: 'itsm_change',
-                        body: {status: 'Approved'} },
-                    { method: 'POST', path: '/itsm/changes/:id/approve', description: 'CAB approve a change request', needsId: 'itsm_change',
-                        body: {approver: 'CAB Board', comments: 'Approved - low risk, proceed as scheduled'} },
-                    { method: 'POST', path: '/itsm/changes/:id/reject', description: 'Reject a change request', needsId: 'itsm_change',
-                        body: {rejectedBy: 'CAB Board', reason: 'Insufficient testing evidence'} },
-                    { method: 'POST', path: '/itsm/changes/:id/implement', description: 'Start change implementation', needsId: 'itsm_change' },
-                    { method: 'POST', path: '/itsm/changes/:id/complete', description: 'Complete/close a change', needsId: 'itsm_change',
-                        body: {outcome: 'Successful', notes: 'Firmware updated successfully'} },
-                    { method: 'DELETE', path: '/itsm/changes/:id', description: 'Delete a change request permanently', needsId: 'itsm_change' },
-                    { method: 'GET', path: '/itsm/changes/stats', description: 'Get change statistics (success rate, by status/type/risk)' },
-                    { method: 'GET', path: '/itsm/changes/calendar', description: 'Get change calendar grouped by scheduled date' }
-                ]
-            },
-            'itsm-requests': {
-                title: 'ITSM Service Requests',
-                icon: '📝',
-                description: 'Service request submission, approval workflows, and fulfillment tracking',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/requests', description: 'Get all service requests' },
-                    { method: 'GET', path: '/itsm/requests/:id', description: 'Get specific service request details', needsId: 'itsm_request' },
-                    { method: 'POST', path: '/itsm/requests', description: 'Create new service request from catalog',
-                        body: {catalogItem: 'CAT-002', title: 'Software Installation Request', requestedBy: 'john.doe@acme.com', requestedFor: 'john.doe@acme.com', priority: 'Normal', formData: {software_name: 'Visual Studio Code', justification: 'Development work'}} },
-                    { method: 'PATCH', path: '/itsm/requests/:id/status', description: 'Update service request status', needsId: 'itsm_request',
-                        body: {status: 'In Progress'} },
-                    { method: 'POST', path: '/itsm/requests/:id/approve', description: 'Approve a pending service request', needsId: 'itsm_request',
-                        body: {approver: 'manager@acme.com', comments: 'Approved for department budget'} },
-                    { method: 'POST', path: '/itsm/requests/:id/reject', description: 'Reject a service request', needsId: 'itsm_request',
-                        body: {rejectedBy: 'manager@acme.com', reason: 'Budget not approved'} },
-                    { method: 'POST', path: '/itsm/requests/:id/fulfill', description: 'Mark service request as fulfilled', needsId: 'itsm_request',
-                        body: {notes: 'Software installed and configured'} },
-                    { method: 'POST', path: '/itsm/requests/:id/assign', description: 'Assign service request to team', needsId: 'itsm_request',
-                        body: {team: 'Application Support'} },
-                    { method: 'POST', path: '/itsm/requests/:id/notes', description: 'Add note to service request', needsId: 'itsm_request',
-                        body: {content: 'Waiting for license key', type: 'comment', visibility: 'customer-visible'} },
-                    { method: 'DELETE', path: '/itsm/requests/:id', description: 'Delete a service request permanently', needsId: 'itsm_request' },
-                    { method: 'GET', path: '/itsm/requests/stats', description: 'Get service request statistics (by status/category)' },
-                    { method: 'GET', path: '/itsm/requests/pending-approval', description: 'Get requests pending approval' }
-                ]
-            },
-            'itsm-problems': {
-                title: 'ITSM Problem Management',
-                icon: '🔍',
-                description: 'Root cause analysis, known error database, and problem-incident linking',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/problems', description: 'Get all problem records' },
-                    { method: 'GET', path: '/itsm/problems/:id', description: 'Get specific problem details', needsId: 'itsm_problem' },
-                    { method: 'POST', path: '/itsm/problems', description: 'Create new problem record',
-                        body: {title: 'Recurring VPN disconnections', description: 'Multiple incidents reported for VPN drops during peak hours', category: 'Network', priority: 'P2'} },
-                    { method: 'PATCH', path: '/itsm/problems/:id/status', description: 'Update problem status', needsId: 'itsm_problem',
-                        body: {status: 'Under Investigation'} },
-                    { method: 'PATCH', path: '/itsm/problems/:id/root-cause', description: 'Update root cause analysis', needsId: 'itsm_problem',
-                        body: {rootCause: 'VPN concentrator running outdated firmware with known memory leak', workaround: 'Restart VPN service every 4 hours until patched', convertToKnownError: true} },
-                    { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident(s) to problem (supports single ID or array)', needsId: 'itsm_problem',
-                        body: {incidentIds: ['INC-001', 'INC-002', 'INC-003']} },
-                    { method: 'DELETE', path: '/itsm/problems/:id', description: 'Delete a problem record permanently', needsId: 'itsm_problem' },
-                    { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get all known errors with workarounds' }
-                ]
-            },
-            'itsm-assets': {
-                title: 'ITSM Assets / CMDB',
-                icon: '🖥️',
-                description: 'Configuration management database, asset tracking, and lifecycle management',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/assets', description: 'Get all assets in the CMDB' },
-                    { method: 'GET', path: '/itsm/assets/:id', description: 'Get specific asset details', needsId: 'itsm_asset' },
-                    { method: 'POST', path: '/itsm/assets', description: 'Register new asset in CMDB',
-                        body: {name: 'Dell Latitude 5540', type: 'Workstation', status: 'Active', owner: 'John Doe', location: 'Building A, Floor 2'} },
-                    { method: 'PATCH', path: '/itsm/assets/:id/status', description: 'Update asset status', needsId: 'itsm_asset',
-                        body: {status: 'Maintenance'} },
-                    { method: 'GET', path: '/itsm/assets/by-type', description: 'Get assets filtered by type (use ?type=Server)' },
-                    { method: 'GET', path: '/itsm/assets/stats', description: 'Get asset statistics (count by type/status)' },
-                    { method: 'GET', path: '/itsm/assets/:id/history', description: 'Get asset change history from audit log', needsId: 'itsm_asset' },
-                    { method: 'DELETE', path: '/itsm/assets/:id', description: 'Delete an asset permanently', needsId: 'itsm_asset' }
-                ]
-            },
-            'itsm-knowledge': {
-                title: 'ITSM Knowledge Base',
-                icon: '📚',
-                description: 'Knowledge articles, runbooks, and self-service documentation',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/knowledge', description: 'Get all knowledge base articles' },
-                    { method: 'GET', path: '/itsm/knowledge/:id', description: 'Get specific knowledge article', needsId: 'itsm_knowledge' },
-                    { method: 'POST', path: '/itsm/knowledge', description: 'Create new knowledge article',
-                        body: {title: 'How to Reset VPN Configuration', category: 'Network', content: 'Step 1: Open VPN client settings...', tags: ['vpn', 'network', 'connectivity']} },
-                    { method: 'PATCH', path: '/itsm/knowledge/:id/publish', description: 'Publish a draft article', needsId: 'itsm_knowledge' },
-                    { method: 'PATCH', path: '/itsm/knowledge/:id/archive', description: 'Archive a knowledge article', needsId: 'itsm_knowledge' },
-                    { method: 'POST', path: '/itsm/knowledge/:id/helpful', description: 'Mark article as helpful (increment counter)', needsId: 'itsm_knowledge' },
-                    { method: 'POST', path: '/itsm/knowledge/:id/view', description: 'Track article view count', needsId: 'itsm_knowledge' },
-                    { method: 'GET', path: '/itsm/knowledge/search', description: 'Search knowledge base articles (use ?q=keyword)' },
-                    { method: 'GET', path: '/itsm/runbooks', description: 'Get all runbooks / standard operating procedures' },
-                    { method: 'POST', path: '/itsm/runbooks', description: 'Create a new runbook',
-                        body: {title: 'Server Restart Procedure', category: 'Infrastructure', steps: ['Notify users', 'Stop services', 'Restart server', 'Verify services']} },
-                    { method: 'POST', path: '/itsm/runbooks/:id/execute', description: 'Execute a runbook', needsId: 'itsm_runbook' },
-                    { method: 'DELETE', path: '/itsm/knowledge/:id', description: 'Delete a knowledge article permanently', needsId: 'itsm_knowledge' }
-                ]
-            },
-            'itsm-reports': {
-                title: 'ITSM Reports & Dashboard',
-                icon: '📊',
-                description: 'Operational dashboards, SLA compliance, and team performance analytics',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/dashboard/stats', description: 'Get aggregate dashboard statistics across all ITSM modules' },
-                    { method: 'GET', path: '/itsm/reports/incident-summary', description: 'Incident summary report (by priority, top categories)' },
-                    { method: 'GET', path: '/itsm/reports/sla-compliance', description: 'SLA compliance report (compliance %, breached tickets)' },
-                    { method: 'GET', path: '/itsm/reports/team-performance', description: 'Team performance report (tickets per team, resolution rate)' },
-                    { method: 'GET', path: '/itsm/reports/change-success-rate', description: 'Change success rate report (by type, avg implementation time)' },
-                    { method: 'GET', path: '/itsm/reports/request-fulfillment', description: 'Request fulfillment report (avg time by category)' },
-                    { method: 'GET', path: '/itsm/audit-log/recent', description: 'Get most recent audit log entries (last 50)' },
-                    { method: 'GET', path: '/itsm/audit-log/by-target', description: 'Get audit log entries for a specific target (use ?targetId=INC-001)' },
-                    { method: 'GET', path: '/itsm/audit-log/by-actor', description: 'Get audit log entries by actor (use ?actor=System)' }
-                ]
-            },
-            'itsm-config': {
-                title: 'ITSM Configuration & Admin',
-                icon: '⚙️',
-                description: 'Teams, technicians, service catalog, policies, and SLA configurations',
-                endpoints: [
-                    { method: 'GET', path: '/itsm/teams', description: 'Get all support teams and their members' },
-                    { method: 'GET', path: '/itsm/technicians', description: 'Get all technicians with skills and availability' },
-                    { method: 'GET', path: '/itsm/catalog', description: 'Get service catalog items' },
-                    { method: 'GET', path: '/itsm/catalog/:id', description: 'Get specific catalog item details', needsId: 'itsm_catalog' },
-                    { method: 'GET', path: '/itsm/customers', description: 'Get ITSM customer records' },
-                    { method: 'GET', path: '/itsm/policies', description: 'Get IT governance policies' },
-                    { method: 'GET', path: '/itsm/policies/by-category', description: 'Get policies filtered by category (use ?category=Security)' },
-                    { method: 'GET', path: '/itsm/policies/search', description: 'Search policies by keyword (use ?q=password)' },
-                    { method: 'GET', path: '/itsm/sla/configs', description: 'Get SLA configurations by priority' },
-                    { method: 'GET', path: '/itsm/email-templates', description: 'Get notification email templates' },
-                    { method: 'GET', path: '/itsm/notifications', description: 'Get all ITSM notifications' },
-                    { method: 'PATCH', path: '/itsm/notifications/:id/read', description: 'Mark notification as read', needsId: 'itsm_notification' },
-                    { method: 'POST', path: '/itsm/notifications/mark-all-read', description: 'Mark all notifications as read' },
-                    { method: 'POST', path: '/itsm/bulk-delete', description: 'Bulk delete multiple items from any ITSM collection',
-                        body: {collection: 'incidents', ids: ['INC-001', 'INC-002']} },
-                    { method: 'POST', path: '/itsm/reset', description: 'Reset all ITSM data to defaults (regenerates seed data)' }
-                ]
-            }
-        };
+        async function validateKey() {
+            const input = document.getElementById('api-key-input');
+            const btn = document.getElementById('unlock-btn');
+            const errEl = document.getElementById('key-error');
+            const key = input.value.trim();
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async function() {
-            document.getElementById('api-url-display').textContent = API_BASE;
-
-            // Load updatedBy map from localStorage
-            const stored = localStorage.getItem('onboarding_updatedBy');
-            if (stored) {
-                try {
-                    updatedByMap = JSON.parse(stored);
-                } catch (e) {
-                    console.warn('Failed to parse updatedBy map from localStorage');
-                }
+            if (!key) {
+                errEl.textContent = 'Please enter an API key';
+                errEl.classList.remove('hidden');
+                return;
             }
 
-            setupNavigation();
-            await checkApiHealth();
-            await loadSampleIds();
-            renderModule('welcome');
-            setInterval(checkApiHealth, 30000);
+            btn.disabled = true;
+            btn.textContent = 'Validating...';
+            errEl.classList.add('hidden');
+
+            const valid = await testKey(key);
+            if (valid) {
+                sessionStorage.setItem(KEY_NAME, key);
+                showPortal();
+            } else {
+                errEl.textContent = 'Invalid API key. Check your key and try again.';
+                errEl.classList.remove('hidden');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Unlock \u2192';
+        }
+
+        function changeKey() {
+            sessionStorage.removeItem(KEY_NAME);
+            showKeyScreen();
+        }
+
+        async function loadStats() {
+            const key = sessionStorage.getItem(KEY_NAME);
+            try {
+                const res = await fetch('/api/portal/stats', { headers: { 'x-api-key': key } });
+                if (!res.ok) return;
+                const stats = await res.json();
+
+                setBadge('badge-incidents', stats.openIncidents + ' open');
+                setBadge('badge-workers', stats.workerCount + ' workers');
+                setBadge('badge-endpoints', stats.endpointCount + ' routes');
+                setBadge('badge-collections', stats.collectionCount + ' collections');
+
+                document.getElementById('footer-stats').textContent =
+                    stats.collectionCount + ' collections \u00b7 ' + stats.endpointCount + ' routes \u00b7 All data in-memory';
+            } catch { /* silently fail */ }
+        }
+
+        function setBadge(id, text) {
+            const el = document.getElementById(id);
+            if (el) { el.textContent = text; el.classList.remove('hidden'); }
+        }
+
+        // Enter key submits
+        document.getElementById('api-key-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') validateKey();
         });
-
-        function setupNavigation() {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const moduleKey = this.getAttribute('data-module');
-                    if (moduleKey) setActiveModule(moduleKey);
-                });
-            });
-        }
-
-        function setActiveModule(moduleKey) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active', 'bg-orange', 'text-white');
-                item.classList.add('text-deepblue', 'hover:bg-zinc-100');
-            });
-
-            const activeItem = document.querySelector(`[data-module="${moduleKey}"]`);
-            if (activeItem) {
-                activeItem.classList.remove('text-deepblue', 'hover:bg-zinc-100');
-                activeItem.classList.add('active', 'bg-orange', 'text-white');
-            }
-
-            renderModule(moduleKey);
-        }
-
-        function renderModule(moduleKey) {
-            const module = modules[moduleKey];
-            const contentArea = document.getElementById('content-area');
-
-            if (!module) return;
-
-            if (module.content) {
-                contentArea.innerHTML = module.content;
-            } else if (module.endpoints) {
-                contentArea.innerHTML = `
-                    <div class="flex items-start gap-4 mb-8 pb-6 border-b border-zinc-200">
-                        <div class="text-5xl">${module.icon}</div>
-                        <div>
-                            <h2 class="text-3xl font-bold text-deepblue mb-2">${module.title}</h2>
-                            <p class="text-sm text-zinc-600">${module.description}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        ${module.endpoints.map((endpoint, index) =>
-                            createEndpointCard(endpoint, `${moduleKey}-${index}`)
-                        ).join('')}
-                    </div>
-
-                    ${module.hasLiveData ? createLiveDataSection() : ''}
-                `;
-
-                // Load live data if applicable
-                if (module.hasLiveData) {
-                    loadLiveOnboardingData();
-                }
-            }
-        }
-
-        function createEndpointCard(endpoint, cardId) {
-            const methodColors = {
-                'GET': 'bg-teal-100 text-teal-700 border-teal-200',
-                'POST': 'bg-green-100 text-green-700 border-green-200',
-                'PATCH': 'bg-orange-100 text-orange-700 border-orange-200',
-                'DELETE': 'bg-red-100 text-red-700 border-red-200'
-            };
-            const methodClass = methodColors[endpoint.method] || 'bg-zinc-100 text-zinc-700 border-zinc-200';
-            const hasBody = endpoint.body;
-            const needsParam = endpoint.needsId;
-            const isFiltered = endpoint.description.includes('filtered in UiPath');
-
-            return `
-                <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-6">
-                    <div class="flex items-center gap-3 mb-4 flex-wrap">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${methodClass}">${endpoint.method}</span>
-                        <span class="font-mono text-sm font-semibold text-deepblue">${endpoint.path}</span>
-                        ${isFiltered ? '<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-orange text-white">UiPath Filter</span>' : ''}
-                    </div>
-                    <p class="text-sm text-zinc-600 mb-4">${endpoint.description}</p>
-
-                    ${needsParam ? `
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-deepblue mb-2">${endpoint.needsId.toUpperCase()} ID:</label>
-                            <input type="text" id="param-${cardId}" placeholder="Auto-filled from API"
-                                class="w-full h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
-                        </div>
-                    ` : ''}
-
-                    ${hasBody ? `
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-deepblue mb-2">Request Body (JSON):</label>
-                            <textarea id="body-${cardId}" rows="5"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">${JSON.stringify(endpoint.body, null, 2)}</textarea>
-                        </div>
-                    ` : ''}
-
-                    <button id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${!!needsParam}, ${!!hasBody})"
-                        class="w-full rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed">
-                        ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Test Endpoint'} 🚀
-                    </button>
-
-                    <div id="response-${cardId}" class="mt-4 hidden">
-                        <div id="response-content-${cardId}" class="bg-lightblue rounded-lg border border-zinc-200 p-4 text-xs font-mono max-h-96 overflow-y-auto whitespace-pre-wrap"></div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function createLiveDataSection() {
-            return `
-                <div class="mt-12 pt-8 border-t border-zinc-200">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold text-deepblue">📊 Live Onboarding Data</h3>
-                        <div class="flex gap-3">
-                            <button onclick="resetOnboardingData()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-600 text-white hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-600">
-                                🔄 Reset to Defaults
-                            </button>
-                            <button onclick="toggleGeneratePanel()"
-                                id="generate-toggle-btn"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
-                                ➕ Add Sample Records
-                            </button>
-                            <button onclick="loadLiveOnboardingData()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-teal text-white hover:bg-teal-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal">
-                                🔄 Refresh Data
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Generate Panel (hidden by default) -->
-                    <div id="generate-panel" class="hidden mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                        <div class="flex items-center gap-4 flex-wrap">
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm font-semibold text-deepblue">Status:</label>
-                                <select id="generate-status" class="h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-orange focus:border-transparent">
-                                    <option value="pending" selected>Pending</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm font-semibold text-deepblue">Count:</label>
-                                <input type="number" id="generate-count" value="5" min="1" max="20"
-                                    class="w-20 h-10 rounded-lg border border-zinc-300 px-3 text-sm text-center focus:ring-2 focus:ring-orange focus:border-transparent">
-                            </div>
-                            <button onclick="generateOnboardingRecords()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
-                                Generate
-                            </button>
-                            <button onclick="toggleGeneratePanel()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-200 text-zinc-700 hover:bg-zinc-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-300">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div id="filter-all" onclick="setStatusFilter('all')"
-                            class="rounded-xl bg-gradient-to-br from-teal-700 to-teal-800 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105 ring-4 ring-white">
-                            <div id="stat-total" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Total Workers</div>
-                        </div>
-                        <div id="filter-pending" onclick="setStatusFilter('pending')"
-                            class="rounded-xl bg-gradient-to-br from-neutral-400 to-neutral-500 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-pending" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Pending</div>
-                        </div>
-                        <div id="filter-in-progress" onclick="setStatusFilter('in-progress')"
-                            class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-in-progress" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">In Progress</div>
-                        </div>
-                        <div id="filter-completed" onclick="setStatusFilter('completed')"
-                            class="rounded-xl bg-gradient-to-br from-teal-200 to-teal-300 text-teal-900 p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-completed" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Completed</div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="relative mb-2">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔍</span>
-                            <input type="text" id="onboarding-search" placeholder="Search by name, ID, department, or updated by..."
-                                oninput="filterOnboardingTable()"
-                                class="w-full h-12 rounded-lg border border-zinc-300 bg-white pl-12 pr-12 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
-                            <button id="clear-search-btn" onclick="clearSearch()"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-orange transition-colors hidden">✕</button>
-                        </div>
-                        <div id="search-results-info" class="text-xs text-zinc-600"></div>
-                    </div>
-
-                    <div class="rounded-xl border border-zinc-200 shadow-sm">
-                        <table class="w-full table-fixed">
-                            <thead class="bg-zinc-50">
-                                <tr>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Employee ID</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[11%]">Name</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[14%]">Email</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Department</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Position</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Manager</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Status</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Start Date</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Updated By</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Source</th>
-                                </tr>
-                            </thead>
-                            <tbody id="onboarding-table-body" class="divide-y divide-zinc-200">
-                                <tr>
-                                    <td colspan="10" class="px-4 py-8 text-center text-zinc-600">
-                                        <span class="loading"></span> Loading data...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function loadLiveOnboardingData(highlightId = null) {
-            try {
-                // Use the json-server default endpoint for all onboarding records (at root level, not /api)
-                const onboardingRes = await axios.get(`${window.location.origin}/hr_onboardings`);
-                const onboardings = onboardingRes.data;
-
-                // Map the enriched data directly - no need for additional lookups
-                onboardingData = onboardings.map(onboarding => {
-                    return {
-                        id: onboarding.id,
-                        employeeId: onboarding.employeeId || onboarding.workerId,
-                        workerName: onboarding.workerName || `${onboarding.firstName || ''} ${onboarding.lastName || ''}`.trim() || 'Unknown',
-                        email: onboarding.email || 'N/A',
-                        department: onboarding.department || 'N/A',
-                        position: onboarding.position || onboarding.jobTitle || 'N/A',
-                        manager: onboarding.manager || 'Not Assigned',
-                        status: onboarding.status,
-                        startDate: onboarding.startDate,
-                        updatedBy: onboarding.updatedBy || 'N/A',
-                        source: onboarding.source || 'Dashboard',
-                        lastUpdated: onboarding.lastUpdated || onboarding.createdAt || onboarding.updatedAt || ''
-                    };
-                });
-
-                // Sort by lastUpdated descending (newest first)
-                onboardingData.sort((a, b) => {
-                    const dateA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(0);
-                    const dateB = b.lastUpdated ? new Date(b.lastUpdated) : new Date(0);
-                    return dateB - dateA;
-                });
-
-                const stats = {
-                    total: onboardingData.length,
-                    pending: onboardingData.filter(d => d.status === 'pending').length,
-                    inProgress: onboardingData.filter(d => d.status === 'in-progress').length,
-                    completed: onboardingData.filter(d => d.status === 'completed').length
-                };
-
-                document.getElementById('stat-total').textContent = stats.total;
-                document.getElementById('stat-pending').textContent = stats.pending;
-                document.getElementById('stat-in-progress').textContent = stats.inProgress;
-                document.getElementById('stat-completed').textContent = stats.completed;
-
-                // Apply any active filters (status and/or search)
-                filterOnboardingTable();
-
-                // Handle highlighting if needed
-                if (highlightId) {
-                    setTimeout(() => {
-                        const row = document.getElementById(`row-${highlightId}`);
-                        if (row) {
-                            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    }, 100);
-                }
-
-                showNotification(`✅ Loaded ${onboardingData.length} onboarding records`);
-
-            } catch (error) {
-                console.error('Error loading onboarding data:', error);
-                document.getElementById('onboarding-table-body').innerHTML = `
-                    <tr>
-                        <td colspan="10" class="px-4 py-8 text-center text-red-600">
-                            ❌ Error loading data: ${escapeHtml(error.message)}
-                        </td>
-                    </tr>
-                `;
-                showNotification('❌ Failed to load data', 'error');
-            }
-        }
-
-        function renderOnboardingTable(data, highlightId = null) {
-            const tableBody = document.getElementById('onboarding-table-body');
-
-            if (data.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="10" class="px-4 py-12 text-center">
-                            <div class="text-5xl mb-4 opacity-50">🔍</div>
-                            <p class="text-zinc-600">No results found</p>
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tableBody.innerHTML = data.map(record => {
-                    const shouldHighlight = highlightId && record.id === highlightId;
-                    const statusColors = {
-                        'pending': 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300',
-                        'in-progress': 'bg-teal-100 text-teal-800 ring-1 ring-teal-300',
-                        'completed': 'bg-green-100 text-green-800 ring-1 ring-green-300'
-                    };
-                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300';
-
-                    return `
-                        <tr id="row-${record.id}" class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-orange bg-orange-50' : ''}">
-                            <td class="px-4 py-4 text-sm font-mono text-teal break-words">${escapeHtml(record.employeeId)}</td>
-                            <td class="px-4 py-4 text-sm text-deepblue break-words">${escapeHtml(record.workerName)}</td>
-                            <td class="px-4 py-4 text-sm break-words">${escapeHtml(record.email)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.department)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.position)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.manager)}</td>
-                            <td class="px-4 py-4 text-sm">
-                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${escapeHtml(record.status)}</span>
-                            </td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${formatDate(record.startDate)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.updatedBy)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600">
-                                <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${escapeHtml(record.source)}</span>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
-                if (highlightId) {
-                    setTimeout(() => {
-                        const row = document.getElementById(`row-${highlightId}`);
-                        if (row) {
-                            row.classList.remove('ring-2', 'ring-orange', 'bg-orange-50');
-                            row.classList.add('row-updated-fading');
-                            setTimeout(() => {
-                                row.classList.remove('row-updated-fading');
-                            }, 5000);
-                        }
-                    }, 100);
-                }
-            }
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        }
-
-        function showNotification(message, type = 'success') {
-            const toast = document.getElementById('notification-toast');
-            toast.textContent = message;
-            toast.classList.remove('hidden');
-
-            if (type === 'error') {
-                toast.classList.remove('bg-teal');
-                toast.classList.add('bg-red-500');
-            } else {
-                toast.classList.remove('bg-red-500');
-                toast.classList.add('bg-teal');
-            }
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        function setStatusFilter(status) {
-            activeStatusFilter = status;
-
-            // Update visual indicator - add ring to active filter, remove from others
-            document.querySelectorAll('[id^="filter-"]').forEach(card => {
-                card.classList.remove('ring-4', 'ring-white');
-            });
-            document.getElementById(`filter-${status}`).classList.add('ring-4', 'ring-white');
-
-            // Re-apply filters
-            filterOnboardingTable();
-        }
-
-        function filterOnboardingTable() {
-            const searchInput = document.getElementById('onboarding-search');
-            const clearBtn = document.getElementById('clear-search-btn');
-
-            if (!searchInput || !onboardingData || onboardingData.length === 0) return;
-
-            const searchTerm = searchInput.value.toLowerCase().trim();
-
-            if (searchTerm) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-
-            // Apply both status filter and search filter
-            let filteredData = onboardingData;
-
-            // First apply status filter
-            if (activeStatusFilter !== 'all') {
-                filteredData = filteredData.filter(record => record.status === activeStatusFilter);
-            }
-
-            const statusFilteredCount = filteredData.length;
-
-            // Then apply search filter
-            if (searchTerm) {
-                filteredData = filteredData.filter(record => {
-                    return (
-                        (record.workerName && record.workerName.toLowerCase().includes(searchTerm)) ||
-                        (record.employeeId && record.employeeId.toLowerCase().includes(searchTerm)) ||
-                        (record.email && record.email.toLowerCase().includes(searchTerm)) ||
-                        (record.department && record.department.toLowerCase().includes(searchTerm)) ||
-                        (record.position && record.position.toLowerCase().includes(searchTerm)) ||
-                        (record.manager && record.manager.toLowerCase().includes(searchTerm)) ||
-                        (record.updatedBy && record.updatedBy.toLowerCase().includes(searchTerm)) ||
-                        (record.source && record.source.toLowerCase().includes(searchTerm))
-                    );
-                });
-            }
-
-            renderOnboardingTable(filteredData);
-            updateSearchInfo(filteredData.length, statusFilteredCount);
-        }
-
-        function clearSearch() {
-            const searchInput = document.getElementById('onboarding-search');
-            const clearBtn = document.getElementById('clear-search-btn');
-
-            if (searchInput) {
-                searchInput.value = '';
-                clearBtn.classList.add('hidden');
-                filterOnboardingTable();
-            }
-        }
-
-        function updateSearchInfo(shown, total) {
-            const infoElement = document.getElementById('search-results-info');
-            if (infoElement) {
-                if (shown === total) {
-                    infoElement.textContent = `Showing ${total} worker${total !== 1 ? 's' : ''}`;
-                } else {
-                    infoElement.textContent = `Showing ${shown} of ${total} workers`;
-                }
-            }
-        }
-
-        // Toggle the generate panel visibility
-        function toggleGeneratePanel() {
-            const panel = document.getElementById('generate-panel');
-            const btn = document.getElementById('generate-toggle-btn');
-
-            if (panel) {
-                if (panel.classList.contains('hidden')) {
-                    panel.classList.remove('hidden');
-                    if (btn) btn.textContent = '✕ Close Panel';
-                } else {
-                    panel.classList.add('hidden');
-                    if (btn) btn.textContent = '➕ Add Sample Records';
-                }
-            }
-        }
-
-        // Reset onboarding data to defaults
-        async function resetOnboardingData() {
-            if (!confirm('This will reset all onboarding records to the default 10 records. Continue?')) {
-                return;
-            }
-
-            try {
-                showNotification('🔄 Resetting data...');
-
-                const response = await axios.post(`${API_BASE}/hr/onboarding/reset`);
-
-                if (response.data.success) {
-                    showNotification(`✅ Reset complete! ${response.data.count} records restored.`);
-                    // Reset filter to 'all' and reload data
-                    activeStatusFilter = 'all';
-                    await loadLiveOnboardingData();
-                } else {
-                    showNotification('❌ Reset failed: ' + response.data.error, 'error');
-                }
-            } catch (error) {
-                console.error('Reset error:', error);
-                showNotification('❌ Reset failed: ' + (error.response?.data?.error || error.message), 'error');
-            }
-        }
-
-        // Generate new sample onboarding records
-        async function generateOnboardingRecords() {
-            const statusSelect = document.getElementById('generate-status');
-            const countInput = document.getElementById('generate-count');
-
-            const status = statusSelect ? statusSelect.value : 'pending';
-            const count = countInput ? parseInt(countInput.value) || 5 : 5;
-
-            try {
-                showNotification(`🔄 Generating ${count} ${status} records...`);
-
-                const response = await axios.post(`${API_BASE}/hr/onboarding/generate`, {
-                    status: status,
-                    count: count
-                });
-
-                if (response.data.success) {
-                    showNotification(`✅ Generated ${response.data.generated} new record(s)!`);
-                    // Hide the panel and reload data
-                    toggleGeneratePanel();
-                    await loadLiveOnboardingData();
-                } else {
-                    showNotification('❌ Generation failed: ' + response.data.error, 'error');
-                }
-            } catch (error) {
-                console.error('Generate error:', error);
-                showNotification('❌ Generation failed: ' + (error.response?.data?.error || error.message), 'error');
-            }
-        }
-
-        async function testEndpoint(cardId, method, path, needsParam, hasBody) {
-            const button = document.getElementById(`btn-${cardId}`);
-            const responseArea = document.getElementById(`response-${cardId}`);
-            const responseContent = document.getElementById(`response-content-${cardId}`);
-
-            if (!button || !responseArea || !responseContent) {
-                console.error('UI elements not found for:', cardId);
-                return;
-            }
-
-            button.disabled = true;
-            button.innerHTML = '<span class="loading"></span> Testing...';
-            responseArea.classList.remove('hidden');
-
-            let finalPath = path;
-            let requestBody = null;
-            const startTime = performance.now();
-
-            try {
-                if (needsParam) {
-                    const paramInput = document.getElementById(`param-${cardId}`);
-                    let paramValue = paramInput ? paramInput.value.trim() : '';
-
-                    if (!paramValue) {
-                        paramValue = await getSampleId(needsParam);
-                        if (paramValue && paramInput) {
-                            paramInput.value = paramValue;
-                        }
-                    }
-
-                    if (paramValue) {
-                        finalPath = path.replace(':id', paramValue);
-                    } else {
-                        throw new Error(`${needsParam.toUpperCase()} ID is required`);
-                    }
-                }
-
-                if (hasBody) {
-                    const bodyInput = document.getElementById(`body-${cardId}`);
-                    if (bodyInput && bodyInput.value.trim()) {
-                        requestBody = JSON.parse(bodyInput.value);
-
-                        if (requestBody.workerId === '' && sampleIds.worker) {
-                            requestBody.workerId = sampleIds.worker;
-                            bodyInput.value = JSON.stringify(requestBody, null, 2);
-                        }
-
-                        if (requestBody.assignedTo === '' && sampleIds.worker) {
-                            requestBody.assignedTo = sampleIds.worker;
-                            bodyInput.value = JSON.stringify(requestBody, null, 2);
-                        }
-                    }
-                }
-
-                const config = {
-                    method: method,
-                    url: `${API_BASE}${finalPath}`,
-                    headers: { 'Content-Type': 'application/json' }
-                };
-
-                if (requestBody) config.data = requestBody;
-
-                const response = await axios(config);
-                const responseTime = Math.round(performance.now() - startTime);
-                const dataLength = Array.isArray(response.data) ? response.data.length : 'Object';
-
-                responseContent.innerHTML = `✅ ${response.status} ${escapeHtml(response.statusText)}
-📊 Records: ${dataLength} | ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
-
-📋 Response Data:
-${escapeHtml(JSON.stringify(response.data, null, 2))}`;
-
-                if (window.Prism) {
-                    window.Prism.highlightAllUnder(responseContent);
-                }
-
-                if ((method === 'POST' || method === 'PATCH') && path.includes('/hr/onboarding')) {
-                    if (response.data) {
-                        const recordId = response.data.id;
-                        const updatedBy = response.data.updatedBy || 'API Update';
-
-                        if (recordId) {
-                            updatedByMap[recordId] = updatedBy;
-                            localStorage.setItem('onboarding_updatedBy', JSON.stringify(updatedByMap));
-                        }
-
-                        setTimeout(() => {
-                            if (document.getElementById('onboarding-table-body')) {
-                                loadLiveOnboardingData(recordId);
-                            }
-                        }, 500);
-                    } else {
-                        setTimeout(() => {
-                            if (document.getElementById('onboarding-table-body')) {
-                                loadLiveOnboardingData();
-                            }
-                        }, 500);
-                    }
-                }
-
-            } catch (error) {
-                const responseTime = Math.round(performance.now() - startTime);
-                const status = error.response?.status || 'Network Error';
-
-                responseContent.innerHTML = `❌ Error: ${escapeHtml(String(status))}
-⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
-
-🔍 Error Details:
-${escapeHtml(error.response ? JSON.stringify(error.response.data, null, 2) : error.message)}`;
-            }
-
-            button.disabled = false;
-            button.innerHTML = 'TEST ENDPOINT 🚀';
-        }
-
-        async function getSampleId(type) {
-            if (sampleIds[type]) return sampleIds[type];
-
-            const endpoints = {
-                worker: '/hr/workers',
-                invoice: '/finance/invoices',
-                customer: '/crm/customers',
-                device: '/iot/devices',
-                opportunity: '/crm/opportunities',
-                onboarding: '/hr/onboarding',
-                legacy_submission: '/hr/legacy-portal/submissions',
-                itsm_incident: '/itsm/incidents',
-                itsm_change: '/itsm/changes',
-                itsm_request: '/itsm/requests',
-                itsm_problem: '/itsm/problems',
-                itsm_asset: '/itsm/assets',
-                itsm_knowledge: '/itsm/knowledge',
-                itsm_runbook: '/itsm/runbooks',
-                itsm_catalog: '/itsm/catalog',
-                itsm_notification: '/itsm/notifications'
-            };
-
-            const endpoint = endpoints[type];
-            if (!endpoint) {
-                console.warn(`No endpoint defined for type: ${type}`);
-                return null;
-            }
-
-            try {
-                const response = await axios.get(`${API_BASE}${endpoint}`);
-                if (response.data && response.data.length > 0) {
-                    sampleIds[type] = response.data[0].id;
-                    return sampleIds[type];
-                }
-            } catch (error) {
-                console.warn(`Could not fetch ${type} ID from ${API_BASE}${endpoint}:`, error);
-            }
-            return null;
-        }
-
-        async function loadSampleIds() {
-            await Promise.all(Object.keys(sampleIds).map(type => getSampleId(type)));
-        }
-
-        async function checkApiHealth() {
-            const startTime = performance.now();
-
-            try {
-                const response = await axios.get(`${API_BASE.replace('/api', '')}/health`);
-                const responseTime = Math.round(performance.now() - startTime);
-
-                apiHealth = { isOnline: true, responseTime: responseTime };
-
-                document.getElementById('connection-status').textContent = '●';
-                document.getElementById('connection-status').style.color = '#31d263';
-                document.getElementById('response-time').textContent = `${responseTime}ms`;
-
-            } catch (error) {
-                apiHealth.isOnline = false;
-                document.getElementById('connection-status').textContent = '●';
-                document.getElementById('connection-status').style.color = '#f5222d';
-            }
-        }
-
-        console.log('🚀 UiPath Workshop API Interface - All 161 endpoints ready!');
     </script>
 </body>
 </html>

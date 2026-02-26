@@ -31,12 +31,17 @@ const ITSMApi = (() => {
     // ─── HTTP helpers ───
 
     async function _fetch(url, options = {}) {
-        const opts = {
-            headers: { 'Content-Type': 'application/json', ...options.headers },
-            ...options
-        };
+        const apiKey = sessionStorage.getItem('acme_api_key');
+        const headers = { 'Content-Type': 'application/json', ...options.headers };
+        if (apiKey) headers['x-api-key'] = apiKey;
+        const opts = { headers, ...options };
         try {
             const res = await fetch(BASE_URL + url, opts);
+            if (res.status === 401) {
+                sessionStorage.removeItem('acme_api_key');
+                window.location.href = '/';
+                return;
+            }
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 const msg = body.error || body.message || `HTTP ${res.status}`;

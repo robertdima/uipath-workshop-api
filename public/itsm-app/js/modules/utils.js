@@ -84,11 +84,13 @@ const Utils = {
         // Server-side API creates audit entries automatically
     },
 
-    // Escape HTML
+    // Escape HTML (safe for both element content and quoted attribute values)
     escapeHtml(text) {
+        if (text == null) return '';
+        const str = String(text);
         const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        div.textContent = str;
+        return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     },
 
     // Debounce function for search inputs

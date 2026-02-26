@@ -171,11 +171,11 @@ const SettingsModule = {
         return Object.entries(this.categories).map(([cat, subs]) => `
             <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: 4px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xs);">
-                    <strong>${cat}</strong>
-                    <button class="btn btn-sm btn-secondary" onclick="SettingsModule.editCategory('${cat}')">Edit</button>
+                    <strong>${Utils.escapeHtml(cat)}</strong>
+                    <button class="btn btn-sm btn-secondary" onclick="SettingsModule.editCategory('${Utils.escapeHtml(cat).replace(/'/g, "\\&#39;")}')">Edit</button>
                 </div>
                 <div style="font-size: 11px; color: var(--text-muted);">
-                    ${subs.join(', ')}
+                    ${Utils.escapeHtml(subs.join(', '))}
                 </div>
             </div>
         `).join('');
@@ -211,18 +211,18 @@ const SettingsModule = {
         const subs = this.categories[category] || [];
         Modals.show(`
             <div class="modal-header">
-                <span>Edit Category: ${category}</span>
+                <span>Edit Category: ${Utils.escapeHtml(category)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="width: 400px;">
                 <div class="form-group">
                     <label class="form-label">Subcategories (one per line)</label>
-                    <textarea class="form-control" id="edit-subcategories" rows="6">${subs.join('\n')}</textarea>
+                    <textarea class="form-control" id="edit-subcategories" rows="6">${Utils.escapeHtml(subs.join('\n'))}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="Modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="SettingsModule.saveCategory('${category}')">Save</button>
+                <button class="btn btn-primary" onclick="SettingsModule.saveCategory('${Utils.escapeHtml(category).replace(/'/g, "\\&#39;")}')">Save</button>
             </div>
         `);
     },

@@ -108,7 +108,7 @@ const ChangesModule = {
                         <input type="checkbox" id="asset-${asset.id}" value="${asset.id}"
                             class="asset-checkbox" ${selectedAssets.includes(asset.id) ? 'checked' : ''}>
                         <label for="asset-${asset.id}" style="cursor: pointer;">
-                            ${asset.id} - ${asset.name} <span style="color: var(--text-muted);">(${asset.type})</span>
+                            ${asset.id} - ${Utils.escapeHtml(asset.name)} <span style="color: var(--text-muted);">(${Utils.escapeHtml(asset.type)})</span>
                         </label>
                     </div>
                 `).join('')}
@@ -245,7 +245,7 @@ const ChangesModule = {
             : [];
 
         assigneeSelect.innerHTML = '<option value="">-- Auto Assign --</option>' +
-            technicians.map(t => `<option value="${t.email}">${t.name} (${t.workload} tickets)</option>`).join('');
+            technicians.map(t => `<option value="${Utils.escapeHtml(t.email)}">${Utils.escapeHtml(t.name)} (${t.workload} tickets)</option>`).join('');
     },
 
     /**
@@ -274,7 +274,7 @@ const ChangesModule = {
                             <select class="form-control" id="chg-requested-by" onchange="ChangesModule.populateRequesterDetails()">
                                 <option value="">-- Select Requester --</option>
                                 ${ITSMData.customers.map(c => `
-                                    <option value="${c.email}" data-customer-id="${c.id}">${c.name} (${c.department})</option>
+                                    <option value="${Utils.escapeHtml(c.email)}" data-customer-id="${c.id}">${Utils.escapeHtml(c.name)} (${Utils.escapeHtml(c.department)})</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -302,7 +302,7 @@ const ChangesModule = {
                             <select class="form-control" id="chg-requested-for">
                                 <option value="">-- Same as Requester --</option>
                                 ${ITSMData.customers.map(c => `
-                                    <option value="${c.email}">${c.name} (${c.department})</option>
+                                    <option value="${Utils.escapeHtml(c.email)}">${Utils.escapeHtml(c.name)} (${Utils.escapeHtml(c.department)})</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -369,10 +369,10 @@ const ChangesModule = {
                             <select class="form-control" id="chg-related-incident">
                                 <option value="">-- None --</option>
                                 ${ITSMData.incidents.map(inc => `
-                                    <option value="${inc.id}">${inc.id}: ${inc.title.substring(0, 50)}...</option>
+                                    <option value="${inc.id}">${inc.id}: ${Utils.escapeHtml(inc.title.substring(0, 50))}...</option>
                                 `).join('')}
                                 ${ITSMData.problems.map(prb => `
-                                    <option value="${prb.id}">${prb.id}: ${prb.title.substring(0, 50)}...</option>
+                                    <option value="${prb.id}">${prb.id}: ${Utils.escapeHtml(prb.title.substring(0, 50))}...</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -381,7 +381,7 @@ const ChangesModule = {
                             <select class="form-control" id="chg-policy">
                                 <option value="">-- Select Policy --</option>
                                 ${ITSMData.policies.map(policy => `
-                                    <option value="${policy.id}">${policy.id}: ${policy.title}</option>
+                                    <option value="${policy.id}">${policy.id}: ${Utils.escapeHtml(policy.title)}</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -506,7 +506,7 @@ const ChangesModule = {
                             <label class="form-label">Assignment Group</label>
                             <select class="form-control" id="chg-assignment-group" onchange="ChangesModule.updateAssigneeOptions()">
                                 <option value="">-- Select Team --</option>
-                                ${ITSMData.teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('')}
+                                ${ITSMData.teams.map(t => `<option value="${Utils.escapeHtml(t.name)}">${Utils.escapeHtml(t.name)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -519,7 +519,7 @@ const ChangesModule = {
                             <label class="form-label">Implementer</label>
                             <select class="form-control" id="chg-implementer">
                                 <option value="">-- Same as Assigned To --</option>
-                                ${ITSMData.technicians.map(t => `<option value="${t.email}">${t.name} (${t.team})</option>`).join('')}
+                                ${ITSMData.technicians.map(t => `<option value="${Utils.escapeHtml(t.email)}">${Utils.escapeHtml(t.name)} (${Utils.escapeHtml(t.team)})</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -719,12 +719,12 @@ const ChangesModule = {
         const affectedAssetsList = change.affectedAssets && change.affectedAssets.length > 0
             ? change.affectedAssets.map(assetId => {
                 const asset = ITSMData.assets.find(a => a.id === assetId);
-                return asset ? `<span class="badge badge-new" style="margin-right: 4px;">${asset.id}</span>` : assetId;
+                return asset ? `<span class="badge badge-new" style="margin-right: 4px;">${asset.id}</span>` : Utils.escapeHtml(assetId);
             }).join('')
             : '<span style="color: var(--text-muted);">None specified</span>';
 
         const affectedServicesList = change.affectedServices && change.affectedServices.length > 0
-            ? change.affectedServices.map(s => `<span class="badge badge-open" style="margin-right: 4px;">${s}</span>`).join('')
+            ? change.affectedServices.map(s => `<span class="badge badge-open" style="margin-right: 4px;">${Utils.escapeHtml(s)}</span>`).join('')
             : '<span style="color: var(--text-muted);">None specified</span>';
 
         // Find requester customer info if available
@@ -735,7 +735,7 @@ const ChangesModule = {
 
         showModal(`
             <div class="modal-header">
-                <span>${change.id}: ${change.title}</span>
+                <span>${change.id}: ${Utils.escapeHtml(change.title)}</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
             <div class="modal-body" style="width: 750px; max-height: 75vh; overflow-y: auto;">
@@ -753,7 +753,7 @@ const ChangesModule = {
                         <strong>Risk:</strong>
                         <span class="badge ${this.getRiskBadgeClass(change.risk)}">${change.risk}</span>
                     </div>
-                    ${change.category ? `<div><strong>Category:</strong> ${change.category}${change.subcategory ? ' / ' + change.subcategory : ''}</div>` : ''}
+                    ${change.category ? `<div><strong>Category:</strong> ${Utils.escapeHtml(change.category)}${change.subcategory ? ' / ' + Utils.escapeHtml(change.subcategory) : ''}</div>` : ''}
                     <div>
                         <strong>CAB:</strong>
                         ${change.cabRequired
@@ -772,15 +772,15 @@ const ChangesModule = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
                         <div class="form-group">
                             <label class="form-label">Requested By</label>
-                            <input type="text" class="form-control" value="${change.requesterName || change.requestedBy}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.requesterName || change.requestedBy)}" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Email</label>
-                            <input type="text" class="form-control" value="${change.requesterEmail || change.requestedBy}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.requesterEmail || change.requestedBy)}" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Department</label>
-                            <input type="text" class="form-control" value="${change.requesterDept || 'N/A'}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.requesterDept || 'N/A')}" readonly>
                         </div>
                     </div>
                 </div>
@@ -792,25 +792,25 @@ const ChangesModule = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" rows="3" readonly>${change.description}</textarea>
+                        <textarea class="form-control" rows="3" readonly>${Utils.escapeHtml(change.description)}</textarea>
                     </div>
                     ${change.justification ? `
                     <div class="form-group">
                         <label class="form-label">Business Justification</label>
-                        <textarea class="form-control" rows="2" readonly>${change.justification}</textarea>
+                        <textarea class="form-control" rows="2" readonly>${Utils.escapeHtml(change.justification)}</textarea>
                     </div>
                     ` : ''}
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                         ${change.relatedIncident ? `
                         <div class="form-group">
                             <label class="form-label">Related Incident/Problem</label>
-                            <input type="text" class="form-control" value="${change.relatedIncident}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.relatedIncident)}" readonly>
                         </div>
                         ` : ''}
                         ${change.policyReference ? `
                         <div class="form-group">
                             <label class="form-label">Policy Reference</label>
-                            <input type="text" class="form-control" value="${change.policyReference}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.policyReference)}" readonly>
                         </div>
                         ` : ''}
                     </div>
@@ -853,18 +853,18 @@ const ChangesModule = {
                     ${change.implementationPlan ? `
                     <div class="form-group">
                         <label class="form-label">Implementation Plan</label>
-                        <textarea class="form-control" rows="3" readonly>${change.implementationPlan}</textarea>
+                        <textarea class="form-control" rows="3" readonly>${Utils.escapeHtml(change.implementationPlan)}</textarea>
                     </div>
                     ` : ''}
                     ${change.testPlan ? `
                     <div class="form-group">
                         <label class="form-label">Test Plan</label>
-                        <textarea class="form-control" rows="2" readonly>${change.testPlan}</textarea>
+                        <textarea class="form-control" rows="2" readonly>${Utils.escapeHtml(change.testPlan)}</textarea>
                     </div>
                     ` : ''}
                     <div class="form-group">
                         <label class="form-label">Rollback Plan</label>
-                        <textarea class="form-control" rows="2" readonly>${change.rollbackPlan || 'No rollback plan specified'}</textarea>
+                        <textarea class="form-control" rows="2" readonly>${Utils.escapeHtml(change.rollbackPlan || 'No rollback plan specified')}</textarea>
                     </div>
                 </div>
 
@@ -884,7 +884,7 @@ const ChangesModule = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Change Window</label>
-                            <input type="text" class="form-control" value="${change.changeWindow || 'Standard'}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.changeWindow || 'Standard')}" readonly>
                         </div>
                         ${change.actualStart ? `
                         <div class="form-group">
@@ -913,15 +913,15 @@ const ChangesModule = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
                         <div class="form-group">
                             <label class="form-label">Assignment Group</label>
-                            <input type="text" class="form-control" value="${change.assignedTo}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.assignedTo)}" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Assigned To</label>
-                            <input type="text" class="form-control" value="${change.assignee || 'Unassigned'}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.assignee || 'Unassigned')}" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Implementer</label>
-                            <input type="text" class="form-control" value="${change.implementer || change.assignee || 'TBD'}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(change.implementer || change.assignee || 'TBD')}" readonly>
                         </div>
                     </div>
                 </div>
@@ -936,9 +936,9 @@ const ChangesModule = {
                             ? change.notes.map(note => `
                                 <div class="activity-item" style="padding: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--border-light);">
                                     <div style="font-size: 11px; color: var(--text-muted);">
-                                        ${this.formatDateTime(note.timestamp)} - ${note.author}
+                                        ${this.formatDateTime(note.timestamp)} - ${Utils.escapeHtml(note.author)}
                                     </div>
-                                    <div>${note.content}</div>
+                                    <div>${Utils.escapeHtml(note.content)}</div>
                                 </div>
                             `).join('')
                             : '<div style="color: var(--text-muted);">No notes recorded</div>'}
@@ -998,7 +998,7 @@ const ChangesModule = {
             </div>
             <div class="modal-body" style="width: 450px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${change.title}</strong>
+                    <strong>${Utils.escapeHtml(change.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
                         Type: ${change.type} | Risk: ${change.risk}
                     </div>
@@ -1060,7 +1060,7 @@ const ChangesModule = {
             </div>
             <div class="modal-body" style="width: 450px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${change.title}</strong>
+                    <strong>${Utils.escapeHtml(change.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
                         Type: ${change.type} | Risk: ${change.risk}
                     </div>
@@ -1128,7 +1128,7 @@ const ChangesModule = {
             </div>
             <div class="modal-body" style="width: 500px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${change.title}</strong>
+                    <strong>${Utils.escapeHtml(change.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
                         Scheduled: ${this.formatDateTime(change.scheduledStart)} - ${this.formatDateTime(change.scheduledEnd)}
                     </div>
@@ -1293,7 +1293,7 @@ const ChangesModule = {
             </div>
             <div class="modal-body" style="width: 450px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${change.title}</strong>
+                    <strong>${Utils.escapeHtml(change.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
                         Current Status: ${change.status}
                     </div>
@@ -1398,7 +1398,7 @@ const ChangesModule = {
                         <tr class="${this.selectedIds.has(chg.id) ? 'row-selected' : ''}">
                             <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-changes" value="${chg.id}" onchange="ChangesModule.toggleSelection('${chg.id}')" ${this.selectedIds.has(chg.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${chg.id}</td>
-                            <td>${chg.title}</td>
+                            <td>${Utils.escapeHtml(chg.title)}</td>
                             <td><span class="badge ${this.getTypeBadgeClass(chg.type)}">${chg.type}</span></td>
                             <td><span class="badge ${this.getRiskBadgeClass(chg.risk)}">${chg.risk}</span></td>
                             <td><span class="badge ${this.getStatusBadgeClass(chg.status)}">${chg.status}</span></td>

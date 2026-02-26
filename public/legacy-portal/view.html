@@ -372,6 +372,12 @@
     </div>
 
     <script>
+        // XSS protection
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return str || '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         // Session timeout management
         let inactivityTimer;
         const TIMEOUT_WARNING = 5 * 60 * 1000; // 5 minutes
@@ -516,8 +522,8 @@
 
             // Record header
             html += '<div class="record-header">';
-            html += '<span class="record-id" id="recordId" data-id="' + record.id + '">' + regId + '</span>';
-            html += '<span class="record-status ' + getStatusClass(status) + '">' + statusText + '</span>';
+            html += '<span class="record-id" id="recordId" data-id="' + escapeHtml(String(record.id)) + '">' + escapeHtml(regId) + '</span>';
+            html += '<span class="record-status ' + getStatusClass(status) + '">' + escapeHtml(statusText) + '</span>';
             html += '</div>';
 
             // Employee Information Section
@@ -591,12 +597,12 @@
         // Create detail item HTML
         function createDetailItem(label, value, fullWidth) {
             const isEmpty = !value || value === '';
-            const displayValue = isEmpty ? 'Not specified' : value;
+            const displayValue = isEmpty ? 'Not specified' : escapeHtml(String(value));
             const valueClass = isEmpty ? 'detail-value empty' : 'detail-value';
             const widthClass = fullWidth ? ' full-width' : '';
 
             return '<div class="detail-item' + widthClass + '">' +
-                   '<div class="detail-label">' + label + '</div>' +
+                   '<div class="detail-label">' + escapeHtml(label) + '</div>' +
                    '<div class="' + valueClass + '">' + displayValue + '</div>' +
                    '</div>';
         }
@@ -606,7 +612,7 @@
             const content = document.getElementById('recordContent');
             content.innerHTML = '<div class="error-message">' +
                                '<strong>Error</strong><br><br>' +
-                               message + '<br><br>' +
+                               escapeHtml(message) + '<br><br>' +
                                '<a href="/legacy-portal/search.html" class="btn btn-primary">Return to Search</a>' +
                                '</div>';
         }

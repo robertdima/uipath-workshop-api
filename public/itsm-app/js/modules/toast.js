@@ -17,11 +17,21 @@ const Toast = {
             'error': '❌'
         };
 
-        toast.innerHTML = `
-            <span style="margin-right: 8px;">${icons[type] || icons.info}</span>
-            <span>${message}</span>
-            <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; cursor: pointer; opacity: 0.7;">×</button>
-        `;
+        const iconSpan = document.createElement('span');
+        iconSpan.style.marginRight = '8px';
+        iconSpan.textContent = icons[type] || icons.info;
+
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '\u00d7';
+        closeBtn.style.cssText = 'margin-left: auto; background: none; border: none; cursor: pointer; opacity: 0.7;';
+        closeBtn.onclick = function() { this.parentElement.remove(); };
+
+        toast.appendChild(iconSpan);
+        toast.appendChild(messageSpan);
+        toast.appendChild(closeBtn);
 
         container.appendChild(toast);
 

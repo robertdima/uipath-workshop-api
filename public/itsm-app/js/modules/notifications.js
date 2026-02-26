@@ -240,10 +240,10 @@ const NotificationsModule = {
                 </div>
                 <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 12px; color: #000000; margin-bottom: 2px; font-weight: ${fontWeight};">
-                        ${notification.title}
+                        ${Utils.escapeHtml(notification.title)}
                     </div>
                     <div style="font-size: 11px; color: #333333; line-height: 1.4; word-wrap: break-word;">
-                        ${notification.message}
+                        ${Utils.escapeHtml(notification.message)}
                     </div>
                     <div style="font-size: 10px; color: #666666; margin-top: 4px;">
                         ${timeAgo}
@@ -667,10 +667,10 @@ const NotificationsModule = {
                                         <span style="font-size: 20px; color: ${config.color};">${config.icon}</span>
                                         <div style="flex: 1;">
                                             <div style="font-weight: ${n.read ? 'normal' : 'bold'}; margin-bottom: 4px;">
-                                                ${n.title}
+                                                ${Utils.escapeHtml(n.title)}
                                             </div>
                                             <div style="font-size: 11px; color: var(--text-secondary);">
-                                                ${n.message}
+                                                ${Utils.escapeHtml(n.message)}
                                             </div>
                                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
                                                 ${this.formatTimeAgo(n.timestamp)}
@@ -766,7 +766,7 @@ const NotificationsModule = {
                                 <div class="notification-recent-item ${n.read ? '' : 'unread'}"
                                      onclick="NotificationsModule.handleClick('${n.id}', '${n.link || ''}')">
                                     <span class="notification-recent-icon">${config.icon}</span>
-                                    <span class="notification-recent-text">${n.message.substring(0, 40)}${n.message.length > 40 ? '...' : ''}</span>
+                                    <span class="notification-recent-text">${Utils.escapeHtml(n.message.substring(0, 40))}${n.message.length > 40 ? '...' : ''}</span>
                                     <span class="notification-recent-time">${this.formatTimeAgo(n.timestamp)}</span>
                                 </div>
                             `;

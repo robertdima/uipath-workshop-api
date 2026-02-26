@@ -505,7 +505,7 @@ const LinkingModule = {
                                 <strong style="color: var(--accent-blue); cursor: pointer;" onclick="ChangesModule.viewChange('${change.id}')">${change.id}</strong>
                                 <span class="badge ${statusClass}" style="margin-left: var(--spacing-xs);">${change.status}</span>
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${change.title}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(change.title)}</div>
                         </div>
                         <button class="btn btn-sm btn-danger" onclick="LinkingModule.unlinkChangeFromIncident('${incident.id}', '${change.id}')" title="Remove link">×</button>
                     </div>
@@ -538,7 +538,7 @@ const LinkingModule = {
                             <strong style="color: var(--accent-blue); cursor: pointer;" onclick="LinkingModule.viewProblem('${problem.id}')">${problem.id}</strong>
                             <span class="badge ${statusClass}" style="margin-left: var(--spacing-xs);">${problem.status}</span>
                         </div>
-                        <div style="font-size: 11px; color: var(--text-muted);">${problem.title}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(problem.title)}</div>
                         ${problem.workaround ? `<div style="font-size: 10px; color: var(--accent-orange); margin-top: 2px;">Workaround available</div>` : ''}
                     </div>
                     <button class="btn btn-sm btn-danger" onclick="LinkingModule.unlinkProblemFromIncident('${incident.id}')" title="Remove link">×</button>
@@ -570,7 +570,7 @@ const LinkingModule = {
                                     <strong style="color: var(--accent-blue); cursor: pointer; margin-left: var(--spacing-xs);" onclick="selectIncident('${parent.id}')">${parent.id}</strong>
                                     <span class="badge badge-${parent.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${parent.status}</span>
                                 </div>
-                                <div style="font-size: 11px; color: var(--text-muted);">${parent.title}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(parent.title)}</div>
                             </div>
                             <button class="btn btn-sm btn-danger" onclick="LinkingModule.removeParentIncident('${incident.id}')" title="Remove parent">×</button>
                         </div>
@@ -594,7 +594,7 @@ const LinkingModule = {
                                         <strong style="color: var(--accent-blue); cursor: pointer; margin-left: var(--spacing-xs);" onclick="selectIncident('${child.id}')">${child.id}</strong>
                                         <span class="badge badge-${child.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${child.status}</span>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${child.title}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(child.title)}</div>
                                 </div>
                             </div>
                         </div>
@@ -634,7 +634,7 @@ const LinkingModule = {
                                     <strong style="color: var(--accent-blue); cursor: pointer; margin-left: var(--spacing-xs);" onclick="AssetsModule.viewAsset('${asset.id}')">${asset.id}</strong>
                                     <span style="color: ${statusColor}; margin-left: var(--spacing-xs);">● ${asset.status}</span>
                                 </div>
-                                <div style="font-size: 11px; color: var(--text-muted);">${asset.name} (${asset.type})</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(asset.name)} (${Utils.escapeHtml(asset.type)})</div>
                             </div>
                         </div>
                     </div>
@@ -657,7 +657,7 @@ const LinkingModule = {
                                         <strong style="color: var(--accent-blue); cursor: pointer;" onclick="AssetsModule.viewAsset('${asset.id}')">${asset.id}</strong>
                                         <span style="color: ${statusColor}; margin-left: var(--spacing-xs);">● ${asset.status}</span>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${asset.name} (${asset.type})</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(asset.name)} (${Utils.escapeHtml(asset.type)})</div>
                                 </div>
                                 <button class="btn btn-sm btn-danger" onclick="LinkingModule.unlinkAssetFromIncident('${incident.id}', '${asset.id}')" title="Remove link">×</button>
                             </div>
@@ -696,7 +696,7 @@ const LinkingModule = {
                                 <strong style="color: var(--accent-blue); cursor: pointer;" onclick="KnowledgeModule.viewKBArticle('${kb.id}')">${kb.id}</strong>
                                 <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}" style="margin-left: var(--spacing-xs);">${kb.status}</span>
                             </div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${kb.title}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(kb.title)}</div>
                         </div>
                         <button class="btn btn-sm btn-danger" onclick="LinkingModule.unlinkKBFromIncident('${incident.id}', '${kb.id}')" title="Remove link">×</button>
                     </div>
@@ -915,9 +915,9 @@ const LinkingModule = {
                     <div>
                         <strong>${change.id}</strong>
                         <span class="badge ${statusClass}" style="margin-left: var(--spacing-xs);">${change.status}</span>
-                        <span class="badge ${change.type === 'Emergency' ? 'badge-critical' : 'badge-new'}" style="margin-left: var(--spacing-xs);">${change.type}</span>
+                        <span class="badge ${change.type === 'Emergency' ? 'badge-critical' : 'badge-new'}" style="margin-left: var(--spacing-xs);">${Utils.escapeHtml(change.type)}</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${change.title}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(change.title)}</div>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'change', '${change.id}')">Link</button>
             </div>
@@ -938,7 +938,7 @@ const LinkingModule = {
                         <strong>${problem.id}</strong>
                         <span class="badge ${statusClass}" style="margin-left: var(--spacing-xs);">${problem.status}</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${problem.title}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(problem.title)}</div>
                     ${problem.workaround ? '<div style="font-size: 10px; color: var(--accent-orange);">Workaround available</div>' : ''}
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'problem', '${problem.id}')">Link</button>
@@ -960,7 +960,7 @@ const LinkingModule = {
                         <span class="badge badge-${incident.status.toLowerCase().replace(' ', '-')}" style="margin-left: var(--spacing-xs);">${incident.status}</span>
                         <span class="badge priority-${incident.priority.toLowerCase()}" style="margin-left: var(--spacing-xs);">${incident.priority}</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${incident.title}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(incident.title)}</div>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'incident', '${incident.id}')">Set as Parent</button>
             </div>
@@ -981,7 +981,7 @@ const LinkingModule = {
                         <strong>${asset.id}</strong>
                         <span style="color: ${statusColor}; margin-left: var(--spacing-xs);">● ${asset.status}</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${asset.name} (${asset.type}) - ${asset.location}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(asset.name)} (${Utils.escapeHtml(asset.type)}) - ${Utils.escapeHtml(asset.location)}</div>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'asset', '${asset.id}')">Link</button>
             </div>
@@ -1002,9 +1002,9 @@ const LinkingModule = {
                         <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}" style="margin-left: var(--spacing-xs);">${kb.status}</span>
                         <span style="color: var(--text-muted); font-size: 10px; margin-left: var(--spacing-xs);">👁 ${kb.views} | 👍 ${kb.helpful}%</span>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${kb.title}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(kb.title)}</div>
                     <div style="margin-top: 2px;">
-                        ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="font-size: 9px; margin-right: 2px;">${tag}</span>`).join('')}
+                        ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="font-size: 9px; margin-right: 2px;">${Utils.escapeHtml(tag)}</span>`).join('')}
                     </div>
                 </div>
                 <button class="btn btn-sm btn-primary" onclick="LinkingModule.addLink('${incidentId}', 'kb', '${kb.id}')">Link</button>
@@ -1085,42 +1085,42 @@ const LinkingModule = {
                         <span class="badge priority-${problem.priority.toLowerCase()}">${problem.priority}</span>
                     </div>
                     <div>
-                        <strong>Category:</strong> ${problem.category}
+                        <strong>Category:</strong> ${Utils.escapeHtml(problem.category)}
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Title</label>
-                    <div style="font-weight: 600;">${problem.title}</div>
+                    <div style="font-weight: 600;">${Utils.escapeHtml(problem.title)}</div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Description</label>
-                    <div style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: 4px;">${problem.description}</div>
+                    <div style="padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: 4px;">${Utils.escapeHtml(problem.description)}</div>
                 </div>
 
                 ${problem.rootCause ? `
                 <div class="form-group">
                     <label class="form-label" style="color: var(--accent-green);">Root Cause (Identified)</label>
-                    <div style="padding: var(--spacing-sm); background: rgba(var(--green-rgb), 0.1); border: 1px solid var(--accent-green); border-radius: 4px;">${problem.rootCause}</div>
+                    <div style="padding: var(--spacing-sm); background: rgba(var(--green-rgb), 0.1); border: 1px solid var(--accent-green); border-radius: 4px;">${Utils.escapeHtml(problem.rootCause)}</div>
                 </div>
                 ` : ''}
 
                 ${problem.workaround ? `
                 <div class="form-group">
                     <label class="form-label" style="color: var(--accent-orange);">Workaround</label>
-                    <div style="padding: var(--spacing-sm); background: rgba(var(--orange-rgb), 0.1); border: 1px solid var(--accent-orange); border-radius: 4px;">${problem.workaround}</div>
+                    <div style="padding: var(--spacing-sm); background: rgba(var(--orange-rgb), 0.1); border: 1px solid var(--accent-orange); border-radius: 4px;">${Utils.escapeHtml(problem.workaround)}</div>
                 </div>
                 ` : ''}
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                     <div class="form-group">
                         <label class="form-label">Assigned To</label>
-                        <div>${problem.assignedTo}</div>
+                        <div>${Utils.escapeHtml(problem.assignedTo)}</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Assignee</label>
-                        <div>${problem.assignee || 'Not assigned'}</div>
+                        <div>${Utils.escapeHtml(problem.assignee || 'Not assigned')}</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Created</label>

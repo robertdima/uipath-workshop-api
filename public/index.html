@@ -253,6 +253,12 @@
     </div>
 
     <script>
+        // XSS protection
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return str || '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         const API_BASE = window.location.origin + '/api';
         let sampleIds = { worker: null, invoice: null, customer: null, device: null, opportunity: null, onboarding: null, legacy_submission: null, itsm_incident: null, itsm_change: null, itsm_request: null, itsm_problem: null, itsm_asset: null, itsm_knowledge: null, itsm_runbook: null, itsm_catalog: null, itsm_notification: null };
         let apiHealth = { isOnline: false, responseTime: 0 };
@@ -981,7 +987,7 @@
                 document.getElementById('onboarding-table-body').innerHTML = `
                     <tr>
                         <td colspan="10" class="px-4 py-8 text-center text-red-600">
-                            ❌ Error loading data: ${error.message}
+                            ❌ Error loading data: ${escapeHtml(error.message)}
                         </td>
                     </tr>
                 `;
@@ -1013,19 +1019,19 @@
 
                     return `
                         <tr id="row-${record.id}" class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-orange bg-orange-50' : ''}">
-                            <td class="px-4 py-4 text-sm font-mono text-teal break-words">${record.employeeId}</td>
-                            <td class="px-4 py-4 text-sm text-deepblue break-words">${record.workerName}</td>
-                            <td class="px-4 py-4 text-sm break-words">${record.email}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.department}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.position}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.manager}</td>
+                            <td class="px-4 py-4 text-sm font-mono text-teal break-words">${escapeHtml(record.employeeId)}</td>
+                            <td class="px-4 py-4 text-sm text-deepblue break-words">${escapeHtml(record.workerName)}</td>
+                            <td class="px-4 py-4 text-sm break-words">${escapeHtml(record.email)}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.department)}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.position)}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.manager)}</td>
                             <td class="px-4 py-4 text-sm">
-                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${record.status}</span>
+                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${escapeHtml(record.status)}</span>
                             </td>
                             <td class="px-4 py-4 text-sm text-zinc-600 break-words">${formatDate(record.startDate)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${record.updatedBy}</td>
+                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.updatedBy)}</td>
                             <td class="px-4 py-4 text-sm text-zinc-600">
-                                <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${record.source}</span>
+                                <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${escapeHtml(record.source)}</span>
                             </td>
                         </tr>
                     `;
@@ -1286,11 +1292,11 @@
                 const responseTime = Math.round(performance.now() - startTime);
                 const dataLength = Array.isArray(response.data) ? response.data.length : 'Object';
 
-                responseContent.innerHTML = `✅ ${response.status} ${response.statusText}
+                responseContent.innerHTML = `✅ ${response.status} ${escapeHtml(response.statusText)}
 📊 Records: ${dataLength} | ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
 
 📋 Response Data:
-${JSON.stringify(response.data, null, 2)}`;
+${escapeHtml(JSON.stringify(response.data, null, 2))}`;
 
                 if (window.Prism) {
                     window.Prism.highlightAllUnder(responseContent);
@@ -1324,11 +1330,11 @@ ${JSON.stringify(response.data, null, 2)}`;
                 const responseTime = Math.round(performance.now() - startTime);
                 const status = error.response?.status || 'Network Error';
 
-                responseContent.innerHTML = `❌ Error: ${status}
+                responseContent.innerHTML = `❌ Error: ${escapeHtml(String(status))}
 ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
 
 🔍 Error Details:
-${error.response ? JSON.stringify(error.response.data, null, 2) : error.message}`;
+${escapeHtml(error.response ? JSON.stringify(error.response.data, null, 2) : error.message)}`;
             }
 
             button.disabled = false;

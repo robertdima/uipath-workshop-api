@@ -3,6 +3,7 @@ const jsonServer = require('json-server');
 const { faker } = require('@faker-js/faker');
 const fs = require('fs');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 // Use dynamic port for deployment platforms
 const PORT = process.env.PORT || 4000;
@@ -10,6 +11,95 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 console.log(`🌍 Starting UiPath Workshop API in ${NODE_ENV} mode`);
 console.log(`🚀 Port: ${PORT}`);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SECURITY UTILITIES (Phase 2: Sanitize All the Things)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Escape HTML entities to prevent stored XSS */
+function sanitizeHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Recursively sanitize all string values in an object, strip dangerous keys */
+function sanitizeObject(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'string') return sanitizeHtml(obj);
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeObject);
+  const clean = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    clean[key] = sanitizeObject(value);
+  }
+  return clean;
+}
+
+/** Sanitize specific string fields from req.body (recurses into nested objects) */
+function sanitizeBodyStrings(body) {
+  if (!body || typeof body !== 'object') return body;
+  if (Array.isArray(body)) {
+    return body.map(item => {
+      if (typeof item === 'string') return sanitizeHtml(item);
+      if (item && typeof item === 'object') return sanitizeBodyStrings(item);
+      return item;
+    });
+  }
+  const cleaned = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (typeof value === 'string') {
+      cleaned[key] = sanitizeHtml(value);
+    } else if (Array.isArray(value)) {
+      cleaned[key] = sanitizeBodyStrings(value);
+    } else if (value && typeof value === 'object') {
+      cleaned[key] = sanitizeBodyStrings(value);
+    } else {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned;
+}
+
+/** Max collection size to prevent OOM (MEDIUM-9 fix) */
+const MAX_COLLECTION_SIZE = 10000;
+
+/** Max field lengths for input validation */
+const MAX_LENGTHS = {
+  title: 500,
+  description: 50000,
+  content: 50000,
+  name: 200,
+  callerName: 200,
+  callerEmail: 255,
+  callerPhone: 50,
+  author: 200,
+  assignee: 200,
+  assigneeName: 200,
+  email: 255,
+  notes: 10000,
+  reason: 2000,
+  closureNotes: 5000,
+  workerName: 200,
+  firstName: 100,
+  lastName: 100
+};
+
+/** Validate string field lengths. Returns { valid, field, limit } */
+function validateFieldLengths(body) {
+  for (const [field, maxLen] of Object.entries(MAX_LENGTHS)) {
+    if (body[field] && typeof body[field] === 'string' && body[field].length > maxLen) {
+      return { valid: false, field, limit: maxLen };
+    }
+  }
+  return { valid: true };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BUILT-IN DATA GENERATOR (No external db.js file needed)
@@ -1110,33 +1200,97 @@ const server = jsonServer.create();
 const router = jsonServer.router(db);
 const middlewares = jsonServer.defaults({
   static: path.join(__dirname, 'public'),
-  noCors: false
+  noCors: true   // Disable json-server built-in CORS — we handle it ourselves (LOW-19 fix)
 });
 
-// Enable CORS for UiPath
+// Trust proxy headers in production (needed for correct IP logging behind load balancers)
+if (NODE_ENV === 'production') {
+  server.set('trust proxy', 1);
+}
+
+// ── Security Headers (HIGH-5 fix) ──
 server.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // CSP: scripts from self only; styles allow inline (Tailwind) + CDNs; no framing
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; " +
+    "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
+    "img-src 'self' data:; " +
+    "connect-src 'self'; " +
+    "frame-ancestors 'none';"
+  );
+  next();
+});
+
+// ── CORS — single source of truth (HIGH-4, LOW-19 fix) ──
+const ALLOWED_ORIGINS = new Set([
+  'http://localhost:4000', 'http://localhost:3000',
+  'http://127.0.0.1:4000', 'http://127.0.0.1:3000'
+]);
+if (process.env.ALLOWED_ORIGIN) {
+  process.env.ALLOWED_ORIGIN.split(',').forEach(o => ALLOWED_ORIGINS.add(o.trim()));
+}
+server.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
   }
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cache-Control');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
 });
 
 server.use(middlewares);
+
+// ── Rate Limiting (MEDIUM-8, MEDIUM-11 fix) ──
+server.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+}));
+// Stricter limit on ITSM reset (CPU-intensive)
+server.use('/api/itsm/reset', rateLimit({ windowMs: 5 * 60 * 1000, max: 3, message: { error: 'Reset rate limit exceeded. Try again in 5 minutes.' } }));
+
 server.use(jsonServer.bodyParser);
+
+// Prototype pollution guard (HIGH-7: strip __proto__, constructor, prototype from all request bodies)
+server.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    const strip = (obj) => {
+      if (typeof obj !== 'object' || obj === null) return;
+      delete obj.__proto__;
+      delete obj.constructor;
+      delete obj.prototype;
+      for (const val of Object.values(obj)) {
+        if (typeof val === 'object') strip(val);
+      }
+    };
+    strip(req.body);
+  }
+  next();
+});
 
 /* ---------- Custom Endpoints ---------- */
 
 // Health check
 server.get('/health', (req, res) => {
+  // Minimal response in production (LOW-17 fix)
+  if (NODE_ENV === 'production') {
+    return res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  }
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    environment: NODE_ENV,
     version: '1.0.0',
     api: {
       endpoints: Object.keys(rewrites).length,
@@ -1151,7 +1305,7 @@ server.get('/health', (req, res) => {
 server.get('/api/iot/devices/:id/telemetry', (req, res) => {
   res.json({
     id: faker.string.uuid(),
-    deviceId: req.params.id,
+    deviceId: sanitizeHtml(req.params.id),
     timestamp: new Date().toISOString(),
     data: {
       temperature: faker.number.float({ min: 15, max: 35, precision: 0.1 }),
@@ -1163,14 +1317,15 @@ server.get('/api/iot/devices/:id/telemetry', (req, res) => {
 // HR Onboarding - Update Status
 server.patch('/api/hr/onboarding/:workerId/status', (req, res) => {
   const { workerId } = req.params;
-  const { status, updatedBy } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { status, updatedBy } = body;
 
   const worker = db.hr_onboardings.find(w => w.workerId === workerId);
 
   if (!worker) {
     return res.status(404).json({
       success: false,
-      error: `Worker with ID ${workerId} not found`
+      error: 'Worker not found'
     });
   }
 
@@ -1195,14 +1350,15 @@ server.patch('/api/hr/onboarding/:workerId/status', (req, res) => {
 // HR Onboarding - Assign Equipment
 server.post('/api/hr/onboarding/:workerId/equipment', (req, res) => {
   const { workerId } = req.params;
-  const { equipmentType, assignedBy } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { equipmentType, assignedBy } = body;
 
   const worker = db.hr_onboardings.find(w => w.workerId === workerId);
 
   if (!worker) {
     return res.status(404).json({
       success: false,
-      error: `Worker with ID ${workerId} not found`
+      error: 'Worker not found'
     });
   }
 
@@ -1229,14 +1385,15 @@ server.post('/api/hr/onboarding/:workerId/equipment', (req, res) => {
 // HR Onboarding - Grant System Access
 server.post('/api/hr/onboarding/:workerId/access', (req, res) => {
   const { workerId } = req.params;
-  const { systems, grantedBy } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { systems, grantedBy } = body;
 
   const worker = db.hr_onboardings.find(w => w.workerId === workerId);
 
   if (!worker) {
     return res.status(404).json({
       success: false,
-      error: `Worker with ID ${workerId} not found`
+      error: 'Worker not found'
     });
   }
 
@@ -1259,7 +1416,9 @@ server.post('/api/hr/onboarding/:workerId/access', (req, res) => {
 
 // HR Onboarding - Create New Onboarding Record
 server.post('/api/hr/onboarding', (req, res) => {
-  const { workerId, workerName, department, status, createdBy } = req.body;
+  if (db.hr_onboardings.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Onboarding records limit reached' });
+  const body = sanitizeBodyStrings(req.body);
+  const { workerId, workerName, department, status, createdBy } = body;
 
   if (!workerId || !workerName) {
     return res.status(400).json({
@@ -1268,12 +1427,18 @@ server.post('/api/hr/onboarding', (req, res) => {
     });
   }
 
+  // Validate status if provided
+  const validStatuses = ['pending', 'in-progress', 'completed'];
+  if (status && !validStatuses.includes(status)) {
+    return res.status(400).json({ success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+  }
+
   // Check if worker already has onboarding record
   const existingWorker = db.hr_onboardings.find(w => w.workerId === workerId);
   if (existingWorker) {
     return res.status(409).json({
       success: false,
-      error: `Worker with ID ${workerId} already has an onboarding record`
+      error: 'Worker already has an onboarding record'
     });
   }
 
@@ -1383,7 +1548,8 @@ server.post('/api/hr/onboarding/reset', (req, res) => {
 
 // HR Onboarding - Generate Sample Records
 server.post('/api/hr/onboarding/generate', (req, res) => {
-  const { count = 5, status = 'pending' } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { count = 5, status = 'pending' } = body;
 
   // Validate inputs
   const validStatuses = ['pending', 'in-progress', 'completed'];
@@ -1428,7 +1594,7 @@ server.post('/api/hr/onboarding/generate', (req, res) => {
     .filter(id => id && id.startsWith('WRK-'))
     .map(id => parseInt(id.replace('WRK-', ''), 10))
     .filter(n => !isNaN(n));
-  let nextIdNumber = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+  let nextIdNumber = existingIds.reduce((m, n) => n > m ? n : m, 0) + 1;
 
   workersToAdd.forEach((worker, index) => {
     const nameParts = worker.descriptor.split(' ');
@@ -1518,6 +1684,9 @@ server.get('/legacy-portal', (req, res) => {
 
 // Legacy Portal - Submit Registration (upsert - creates new or updates existing)
 server.post('/api/hr/legacy-portal/submit', (req, res) => {
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
   const {
     employeeId,
     firstName,
@@ -1530,7 +1699,7 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
     employmentType,
     location,
     notes
-  } = req.body;
+  } = body;
 
   // Validation
   if (!employeeId || !firstName || !lastName || !email || !department) {
@@ -1572,9 +1741,11 @@ server.post('/api/hr/legacy-portal/submit', (req, res) => {
   }
 
   // CREATE new record
-  const newId = db.hr_onboardings.length > 0
-    ? Math.max(...db.hr_onboardings.map(r => typeof r.id === 'number' ? r.id : parseInt(r.id) || 0)) + 1
-    : 1;
+  if (db.hr_onboardings.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Onboarding records limit reached' });
+  const newId = db.hr_onboardings.reduce((m, r) => {
+    const n = typeof r.id === 'number' ? r.id : parseInt(r.id) || 0;
+    return n > m ? n : m;
+  }, 0) + 1;
 
   const newRecord = {
     id: newId,
@@ -1642,7 +1813,7 @@ server.get('/api/hr/legacy-portal/verify/:id', (req, res) => {
     return res.status(404).json({
       success: false,
       verified: false,
-      error: `Registration with ID ${id} not found`
+      error: 'Registration not found'
     });
   }
 
@@ -1854,7 +2025,7 @@ server.get('/api/hr/onboarding/:id', (req, res) => {
 
   if (!record) {
     return res.status(404).json({
-      error: `Record with ID ${id} not found`
+      error: 'Record not found'
     });
   }
 
@@ -1872,7 +2043,7 @@ server.delete('/api/hr/onboarding/:id', (req, res) => {
 
   if (index === -1) {
     return res.status(404).json({
-      error: `Record with ID ${id} not found`
+      error: 'Record not found'
     });
   }
 
@@ -1891,13 +2062,18 @@ server.delete('/api/hr/onboarding/:id', (req, res) => {
 
 // Helper: generate next ITSM ID for a collection
 function nextItsmId(collection, prefix) {
-  const ids = collection.map(r => parseInt(r.id.replace(`${prefix}-`, '')));
-  const max = ids.length > 0 ? Math.max(...ids) : 0;
+  const max = collection.reduce((m, r) => {
+    const n = parseInt(r.id.replace(`${prefix}-`, ''));
+    return n > m ? n : m;
+  }, 0);
   return `${prefix}-${String(max + 1).padStart(3, '0')}`;
 }
 
 // Helper: add audit log entry
-function addItsmAudit(actor, action, target, targetType, details) {
+function addItsmAudit(actor, action, target, targetType, details, req) {
+  const ipAddress = req
+    ? (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || '127.0.0.1'
+    : '127.0.0.1';
   db.itsm_audit_log.unshift({
     id: faker.string.uuid(),
     timestamp: new Date().toISOString(),
@@ -1906,8 +2082,12 @@ function addItsmAudit(actor, action, target, targetType, details) {
     target,
     targetType,
     details,
-    ipAddress: '127.0.0.1'
+    ipAddress
   });
+  // Trim audit log to prevent unbounded growth (MEDIUM-9 fix)
+  if (db.itsm_audit_log.length > 10000) {
+    db.itsm_audit_log.length = 10000;
+  }
 }
 
 // Helper: priority from impact+urgency
@@ -1930,7 +2110,10 @@ function calcPriority(impact, urgency) {
 // ── Incidents ──
 
 server.post('/api/itsm/incidents', (req, res) => {
-  const { title, description, callerEmail, callerName, category, impact, urgency, assignmentGroup } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { title, description, callerEmail, callerName, category, impact, urgency, assignmentGroup } = body;
   if (!title || !description) {
     return res.status(400).json({ success: false, error: 'title and description are required' });
   }
@@ -1941,25 +2124,26 @@ server.post('/api/itsm/incidents', (req, res) => {
   const incident = {
     id, title, description,
     callerName: callerName || 'Unknown', callerEmail: callerEmail || null,
-    callerPhone: req.body.callerPhone || null, callerDepartment: req.body.callerDepartment || null,
-    callerLocation: req.body.callerLocation || null, callerVip: req.body.callerVip || false,
-    openedBy: req.body.openedBy || 'api', openedByName: req.body.openedByName || 'API',
-    contactType: req.body.contactType || 'self-service',
-    category: category || 'General', subcategory: req.body.subcategory || null,
+    callerPhone: body.callerPhone || null, callerDepartment: body.callerDepartment || null,
+    callerLocation: body.callerLocation || null, callerVip: body.callerVip || false,
+    openedBy: body.openedBy || 'api', openedByName: body.openedByName || 'API',
+    contactType: body.contactType || 'self-service',
+    category: category || 'General', subcategory: body.subcategory || null,
     impact: impact || 2, urgency: urgency || 2, priority,
-    businessService: req.body.businessService || null,
+    businessService: body.businessService || null,
     status: 'New',
     assignmentGroup: assignmentGroup || 'Service Desk', assignedTo: assignmentGroup || 'Service Desk',
-    assignee: req.body.assignee || null, assigneeName: req.body.assigneeName || null,
-    configurationItem: req.body.configurationItem || null,
+    assignee: body.assignee || null, assigneeName: body.assigneeName || null,
+    configurationItem: body.configurationItem || null,
     slaTarget: new Date(Date.now() + slaHours[priority] * 3600000).toISOString(),
     createdAt: now, updatedAt: now, resolvedAt: null,
     notes: [{ type: 'system', visibility: 'technicians-only', author: 'System', content: `Incident created via API`, timestamp: now }],
     attachments: [], linkedKB: [], linkedProblems: [], linkedChanges: [],
     watchList: [], additionalCommentsNotify: [], workNotesNotify: []
   };
+  if (db.itsm_incidents.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Incident collection full. Use POST /api/itsm/reset to clear.' });
   db.itsm_incidents.push(incident);
-  addItsmAudit('api', 'Incident Created', id, 'incident', `Created ${priority} incident: ${title}`);
+  addItsmAudit('api', 'Incident Created', id, 'incident', `Created ${priority} incident: ${title}`, req);
   res.status(201).json({ success: true, message: `Incident ${id} created successfully`, data: incident });
 });
 
@@ -1969,22 +2153,23 @@ server.patch('/api/itsm/incidents/:id/status', (req, res) => {
   const { status } = req.body;
   if (!status) return res.status(400).json({ success: false, error: 'status is required' });
   const valid = { 'New': ['Open', 'In Progress', 'Cancelled'], 'Open': ['In Progress', 'Pending', 'Resolved'], 'In Progress': ['Pending', 'Resolved'], 'Pending': ['Open', 'In Progress', 'Resolved'], 'Resolved': ['Closed', 'Open'], 'Closed': [] };
-  if (valid[inc.status] && !valid[inc.status].includes(status)) {
-    return res.status(400).json({ success: false, error: `Cannot transition from ${inc.status} to ${status}` });
+  if (!valid[inc.status] || !valid[inc.status].includes(status)) {
+    return res.status(400).json({ success: false, error: `Cannot transition from ${inc.status} to ${sanitizeHtml(String(status))}` });
   }
   const oldStatus = inc.status;
-  inc.status = status;
+  inc.status = sanitizeHtml(String(status));
   inc.updatedAt = new Date().toISOString();
   if (status === 'Resolved') inc.resolvedAt = inc.updatedAt;
   inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Status changed from ${oldStatus} to ${status}`, timestamp: inc.updatedAt });
-  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', `Status: ${oldStatus} → ${status}`);
+  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', `Status: ${oldStatus} → ${status}`, req);
   res.json({ success: true, message: `Incident ${inc.id} status updated to ${status}`, data: inc });
 });
 
 server.post('/api/itsm/incidents/:id/notes', (req, res) => {
   const inc = db.itsm_incidents.find(i => i.id === req.params.id);
   if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
-  const { content, type, author } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { content, type, author } = body;
   if (!content) return res.status(400).json({ success: false, error: 'content is required' });
   const note = { type: type || 'internal', visibility: type === 'customer' ? 'customer-visible' : 'technicians-only', author: author || 'api', content, timestamp: new Date().toISOString() };
   inc.notes.push(note);
@@ -1995,12 +2180,13 @@ server.post('/api/itsm/incidents/:id/notes', (req, res) => {
 server.post('/api/itsm/incidents/:id/assign', (req, res) => {
   const inc = db.itsm_incidents.find(i => i.id === req.params.id);
   if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
-  const { assignmentGroup, assignee, assigneeName } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { assignmentGroup, assignee, assigneeName } = body;
   if (assignmentGroup) { inc.assignmentGroup = assignmentGroup; inc.assignedTo = assignmentGroup; }
   if (assignee) { inc.assignee = assignee; inc.assigneeName = assigneeName || assignee; }
   inc.updatedAt = new Date().toISOString();
   inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Assigned to ${assigneeName || assignee || assignmentGroup}`, timestamp: inc.updatedAt });
-  addItsmAudit('api', 'Assignment Changed', inc.id, 'incident', `Assigned to ${assigneeName || assignee || assignmentGroup}`);
+  addItsmAudit('api', 'Assignment Changed', inc.id, 'incident', `Assigned to ${assigneeName || assignee || assignmentGroup}`, req);
   res.json({ success: true, message: 'Assignment updated', data: inc });
 });
 
@@ -2014,21 +2200,32 @@ server.post('/api/itsm/incidents/:id/escalate', (req, res) => {
   inc.priority = order[idx + 1];
   inc.updatedAt = new Date().toISOString();
   inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Escalated from ${oldPriority} to ${inc.priority}`, timestamp: inc.updatedAt });
-  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', `Priority escalated: ${oldPriority} → ${inc.priority}`);
+  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', `Priority escalated: ${oldPriority} → ${inc.priority}`, req);
   res.json({ success: true, message: `Escalated to ${inc.priority}`, data: inc });
 });
 
 server.patch('/api/itsm/incidents/:id', (req, res) => {
   const inc = db.itsm_incidents.find(i => i.id === req.params.id);
   if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
-  const body = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
   if (!body || Object.keys(body).length === 0) {
     return res.status(400).json({ success: false, error: 'Request body cannot be empty' });
   }
-  const readOnly = ['id', 'createdAt', 'notes', 'attachments', 'linkedKB', 'linkedProblems', 'linkedChanges', 'watchList', 'additionalCommentsNotify', 'workNotesNotify'];
+  // Allowlist: only these fields can be modified via PATCH (MEDIUM-12 fix)
+  const allowedFields = [
+    'title', 'description', 'category', 'subcategory',
+    'impact', 'urgency', 'priority',
+    'assignmentGroup', 'assignee', 'assigneeName', 'assignedTo',
+    'configurationItem', 'businessService',
+    'callerName', 'callerEmail', 'callerPhone', 'callerDepartment', 'callerLocation',
+    'contactType', 'closureCode', 'closureNotes',
+    'pendingState', 'openedByName'
+  ];
   const changes = [];
   for (const [key, value] of Object.entries(body)) {
-    if (readOnly.includes(key)) continue;
+    if (!allowedFields.includes(key)) continue;
     if (inc[key] !== value) {
       changes.push(`${key}: ${inc[key]} → ${value}`);
       inc[key] = value;
@@ -2044,14 +2241,15 @@ server.patch('/api/itsm/incidents/:id', (req, res) => {
   }
   inc.updatedAt = new Date().toISOString();
   inc.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Fields updated: ${changes.join(', ')}`, timestamp: inc.updatedAt });
-  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', changes.join('; '));
+  addItsmAudit('api', 'Incident Updated', inc.id, 'incident', changes.join('; '), req);
   res.json({ success: true, message: `Incident ${inc.id} updated`, changes, data: inc });
 });
 
 server.post('/api/itsm/incidents/:id/resolve', (req, res) => {
   const inc = db.itsm_incidents.find(i => i.id === req.params.id);
   if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
-  const { resolutionCode, resolutionNotes } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { resolutionCode, resolutionNotes } = body;
   if (!resolutionCode || !resolutionNotes) return res.status(400).json({ success: false, error: 'resolutionCode and resolutionNotes are required' });
   inc.status = 'Resolved';
   inc.resolvedAt = new Date().toISOString();
@@ -2060,15 +2258,18 @@ server.post('/api/itsm/incidents/:id/resolve', (req, res) => {
   inc.resolutionNotes = resolutionNotes;
   inc.slaMet = new Date(inc.resolvedAt) <= new Date(inc.slaTarget);
   inc.notes.push({ type: 'system', visibility: 'customer-visible', author: 'System', content: `Resolved: ${resolutionCode} - ${resolutionNotes}`, timestamp: inc.updatedAt });
-  addItsmAudit('api', 'Incident Resolved', inc.id, 'incident', `Resolution: ${resolutionCode}`);
+  addItsmAudit('api', 'Incident Resolved', inc.id, 'incident', `Resolution: ${resolutionCode}`, req);
   res.json({ success: true, message: `Incident ${inc.id} resolved`, data: inc });
 });
 
 server.post('/api/itsm/incidents/:id/link', (req, res) => {
   const inc = db.itsm_incidents.find(i => i.id === req.params.id);
   if (!inc) return res.status(404).json({ success: false, error: 'Incident not found' });
-  const { targetId, linkType } = req.body;
+  const targetId = sanitizeHtml(req.body.targetId);
+  const linkType = sanitizeHtml(req.body.linkType);
   if (!targetId || !linkType) return res.status(400).json({ success: false, error: 'targetId and linkType are required' });
+  const validLinkTypes = ['change', 'problem', 'kb'];
+  if (!validLinkTypes.includes(linkType)) return res.status(400).json({ success: false, error: `Invalid linkType. Must be one of: ${validLinkTypes.join(', ')}` });
   if (linkType === 'change') { if (!inc.linkedChanges.includes(targetId)) inc.linkedChanges.push(targetId); }
   else if (linkType === 'problem') {
     if (!inc.linkedProblems.includes(targetId)) inc.linkedProblems.push(targetId);
@@ -2078,6 +2279,7 @@ server.post('/api/itsm/incidents/:id/link', (req, res) => {
   }
   else if (linkType === 'kb') { if (!inc.linkedKB.includes(targetId)) inc.linkedKB.push(targetId); }
   inc.updatedAt = new Date().toISOString();
+  addItsmAudit('api', 'Incident Linked', inc.id, 'incident', `Linked ${linkType} ${targetId}`, req);
   res.json({ success: true, message: `Linked ${linkType} ${targetId} to ${inc.id}`, data: inc });
 });
 
@@ -2127,37 +2329,41 @@ server.get('/api/itsm/incidents/stats', (req, res) => {
 // ── Changes ──
 
 server.post('/api/itsm/changes', (req, res) => {
-  const { title, type } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { title, type } = body;
   if (!title) return res.status(400).json({ success: false, error: 'title is required' });
   const id = nextItsmId(db.itsm_changes, 'CHG');
   const now = new Date().toISOString();
   const change = {
-    id, title, description: req.body.description || '',
+    id, title, description: body.description || '',
     type: type || 'Normal', status: 'Draft',
-    risk: req.body.risk || 'Medium', priority: req.body.priority || 'Normal',
-    category: req.body.category || 'Application', subcategory: req.body.subcategory || null,
-    requestedBy: req.body.requestedBy || 'api', requesterName: req.body.requesterName || 'API User',
-    requesterEmail: req.body.requesterEmail || null, requesterPhone: req.body.requesterPhone || null,
-    requesterDept: req.body.requesterDept || null, requestedFor: req.body.requestedFor || null,
-    assignedTo: req.body.assignedTo || 'Release Team', assignee: req.body.assignee || null,
-    implementer: req.body.implementer || null,
-    impact: req.body.impact || 2, affectedUsers: req.body.affectedUsers || 'single',
-    affectedServices: req.body.affectedServices || [], affectedAssets: req.body.affectedAssets || [],
-    outageRequired: req.body.outageRequired || false, outageDuration: req.body.outageDuration || 0,
-    justification: req.body.justification || '', implementationPlan: req.body.implementationPlan || '',
-    testPlan: req.body.testPlan || '', rollbackPlan: req.body.rollbackPlan || '',
-    relatedIncident: req.body.relatedIncident || null,
-    scheduledStart: req.body.scheduledStart || null, scheduledEnd: req.body.scheduledEnd || null,
-    changeWindow: req.body.changeWindow || 'normal',
+    risk: body.risk || 'Medium', priority: body.priority || 'Normal',
+    category: body.category || 'Application', subcategory: body.subcategory || null,
+    requestedBy: body.requestedBy || 'api', requesterName: body.requesterName || 'API User',
+    requesterEmail: body.requesterEmail || null, requesterPhone: body.requesterPhone || null,
+    requesterDept: body.requesterDept || null, requestedFor: body.requestedFor || null,
+    assignedTo: body.assignedTo || 'Release Team', assignee: body.assignee || null,
+    implementer: body.implementer || null,
+    impact: body.impact || 2, affectedUsers: body.affectedUsers || 'single',
+    affectedServices: body.affectedServices || [], affectedAssets: body.affectedAssets || [],
+    outageRequired: body.outageRequired || false, outageDuration: body.outageDuration || 0,
+    justification: body.justification || '', implementationPlan: body.implementationPlan || '',
+    testPlan: body.testPlan || '', rollbackPlan: body.rollbackPlan || '',
+    relatedIncident: body.relatedIncident || null,
+    scheduledStart: body.scheduledStart || null, scheduledEnd: body.scheduledEnd || null,
+    changeWindow: body.changeWindow || 'normal',
     actualStart: null, actualEnd: null,
     cabRequired: type === 'Normal' || type === 'Emergency',
     cabApproval: null,
-    notifyRecipients: req.body.notifyRecipients || [], communicationNotes: req.body.communicationNotes || '',
+    notifyRecipients: body.notifyRecipients || [], communicationNotes: body.communicationNotes || '',
     createdAt: now,
     notes: [{ timestamp: now, author: 'System', content: 'Change request created via API' }]
   };
+  if (db.itsm_changes.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Changes collection full. Use POST /api/itsm/reset to clear.' });
   db.itsm_changes.push(change);
-  addItsmAudit('api', 'Change Created', id, 'change', `Created change: ${title}`);
+  addItsmAudit('api', 'Change Created', id, 'change', `Created change: ${title}`, req);
   res.status(201).json({ success: true, message: `Change ${id} created`, data: change });
 });
 
@@ -2167,13 +2373,13 @@ server.patch('/api/itsm/changes/:id/status', (req, res) => {
   const { status } = req.body;
   if (!status) return res.status(400).json({ success: false, error: 'status is required' });
   const valid = { 'Draft': ['Pending Approval', 'Cancelled'], 'Pending Approval': ['Approved', 'Rejected'], 'Approved': ['Scheduled', 'Cancelled'], 'Rejected': ['Draft'], 'Scheduled': ['Implementing', 'Cancelled'], 'Implementing': ['Implemented', 'Failed'], 'Implemented': [], 'Failed': ['Draft'], 'Cancelled': ['Draft'] };
-  if (valid[chg.status] && !valid[chg.status].includes(status)) {
-    return res.status(400).json({ success: false, error: `Cannot transition from ${chg.status} to ${status}` });
+  if (!valid[chg.status] || !valid[chg.status].includes(status)) {
+    return res.status(400).json({ success: false, error: `Cannot transition from ${chg.status} to ${sanitizeHtml(String(status))}` });
   }
   const oldStatus = chg.status;
-  chg.status = status;
-  chg.notes.push({ timestamp: new Date().toISOString(), author: 'System', content: `Status changed from ${oldStatus} to ${status}` });
-  addItsmAudit('api', 'Change Updated', chg.id, 'change', `Status: ${oldStatus} → ${status}`);
+  chg.status = sanitizeHtml(String(status));
+  chg.notes.push({ timestamp: new Date().toISOString(), author: 'System', content: `Status changed from ${oldStatus} to ${chg.status}` });
+  addItsmAudit('api', 'Change Updated', chg.id, 'change', `Status: ${oldStatus} → ${status}`, req);
   res.json({ success: true, message: `Change ${chg.id} status updated to ${status}`, data: chg });
 });
 
@@ -2183,8 +2389,8 @@ server.post('/api/itsm/changes/:id/approve', (req, res) => {
   if (chg.status !== 'Pending Approval') return res.status(400).json({ success: false, error: 'Change must be in Pending Approval status' });
   chg.status = 'Approved';
   chg.cabApproval = new Date().toISOString();
-  chg.notes.push({ timestamp: chg.cabApproval, author: req.body.approver || 'CAB', content: `Change approved${req.body.comments ? ': ' + req.body.comments : ''}` });
-  addItsmAudit(req.body.approver || 'CAB', 'Change Approved', chg.id, 'change', 'CAB approval granted');
+  chg.notes.push({ timestamp: chg.cabApproval, author: sanitizeHtml(req.body.approver || 'CAB'), content: `Change approved${req.body.comments ? ': ' + sanitizeHtml(req.body.comments) : ''}` });
+  addItsmAudit(sanitizeHtml(req.body.approver || 'CAB'), 'Change Approved', chg.id, 'change', 'CAB approval granted', req);
   res.json({ success: true, message: `Change ${chg.id} approved`, data: chg });
 });
 
@@ -2194,9 +2400,9 @@ server.post('/api/itsm/changes/:id/reject', (req, res) => {
   if (chg.status !== 'Pending Approval') return res.status(400).json({ success: false, error: 'Change must be in Pending Approval status' });
   if (!req.body.reason) return res.status(400).json({ success: false, error: 'reason is required' });
   chg.status = 'Rejected';
-  chg.rejectionReason = req.body.reason;
-  chg.notes.push({ timestamp: new Date().toISOString(), author: req.body.approver || 'CAB', content: `Change rejected: ${req.body.reason}` });
-  addItsmAudit(req.body.approver || 'CAB', 'Change Rejected', chg.id, 'change', `Rejected: ${req.body.reason}`);
+  chg.rejectionReason = sanitizeHtml(req.body.reason);
+  chg.notes.push({ timestamp: new Date().toISOString(), author: sanitizeHtml(req.body.approver || 'CAB'), content: `Change rejected: ${sanitizeHtml(req.body.reason)}` });
+  addItsmAudit(sanitizeHtml(req.body.approver || 'CAB'), 'Change Rejected', chg.id, 'change', `Rejected: ${sanitizeHtml(req.body.reason)}`, req);
   res.json({ success: true, message: `Change ${chg.id} rejected`, data: chg });
 });
 
@@ -2207,7 +2413,7 @@ server.post('/api/itsm/changes/:id/implement', (req, res) => {
   chg.status = 'Implementing';
   chg.actualStart = new Date().toISOString();
   chg.notes.push({ timestamp: chg.actualStart, author: 'System', content: 'Implementation started' });
-  addItsmAudit('api', 'Change Implementation Started', chg.id, 'change', 'Implementation started');
+  addItsmAudit('api', 'Change Implementation Started', chg.id, 'change', 'Implementation started', req);
   res.json({ success: true, message: `Change ${chg.id} implementation started`, data: chg });
 });
 
@@ -2218,8 +2424,9 @@ server.post('/api/itsm/changes/:id/complete', (req, res) => {
   const success = req.body.success !== false;
   chg.status = success ? 'Implemented' : 'Failed';
   chg.actualEnd = new Date().toISOString();
-  chg.notes.push({ timestamp: chg.actualEnd, author: 'System', content: success ? 'Implementation completed successfully' : `Implementation failed: ${req.body.failureReason || 'Unknown'}` });
-  addItsmAudit('api', success ? 'Change Implemented' : 'Change Failed', chg.id, 'change', success ? 'Completed' : req.body.failureReason || 'Failed');
+  const failureReason = sanitizeHtml(req.body.failureReason || 'Unknown');
+  chg.notes.push({ timestamp: chg.actualEnd, author: 'System', content: success ? 'Implementation completed successfully' : `Implementation failed: ${failureReason}` });
+  addItsmAudit('api', success ? 'Change Implemented' : 'Change Failed', chg.id, 'change', success ? 'Completed' : failureReason, req);
   res.json({ success: true, message: `Change ${chg.id} ${chg.status.toLowerCase()}`, data: chg });
 });
 
@@ -2248,30 +2455,33 @@ server.get('/api/itsm/changes/stats', (req, res) => {
 // ── Service Requests ──
 
 server.post('/api/itsm/requests', (req, res) => {
-  const { catalogItem, requestedBy, requestedByName } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { catalogItem, requestedBy, requestedByName } = body;
   if (!catalogItem) return res.status(400).json({ success: false, error: 'catalogItem is required' });
   const catItem = _fullItsmCatalog.find(c => c.id === catalogItem);
-  if (!catItem) return res.status(400).json({ success: false, error: `Catalog item ${catalogItem} not found` });
+  if (!catItem) return res.status(404).json({ success: false, error: 'Catalog item not found' });
   const id = nextItsmId(db.itsm_requests, 'REQ');
   const now = new Date().toISOString();
   const request = {
     id, catalogItem, catalogItemName: catItem.name,
     title: `${catItem.name} - ${requestedByName || 'User'}`,
-    description: req.body.description || catItem.description,
+    description: body.description || catItem.description,
     requestedBy: requestedBy || 'api', requestedByName: requestedByName || 'API User',
-    requestedFor: req.body.requestedFor || requestedBy || 'api',
-    requestedForName: req.body.requestedForName || requestedByName || 'API User',
-    requestedForDepartment: req.body.requestedForDepartment || null,
-    requestedForLocation: req.body.requestedForLocation || null,
-    requestedForVip: req.body.requestedForVip || false,
-    category: catItem.category, priority: req.body.priority || 'Normal',
-    impact: req.body.impact || 2, urgency: req.body.urgency || 2,
+    requestedFor: body.requestedFor || requestedBy || 'api',
+    requestedForName: body.requestedForName || requestedByName || 'API User',
+    requestedForDepartment: body.requestedForDepartment || null,
+    requestedForLocation: body.requestedForLocation || null,
+    requestedForVip: body.requestedForVip || false,
+    category: catItem.category, priority: body.priority || 'Normal',
+    impact: body.impact || 2, urgency: body.urgency || 2,
     status: catItem.approvalRequired ? 'Pending Approval' : 'Submitted',
-    formData: req.body.formData || {},
+    formData: body.formData ? sanitizeObject(body.formData) : {},
     approvalRequired: catItem.approvalRequired,
-    approver: req.body.approver || null, approverName: req.body.approverName || null,
+    approver: body.approver || null, approverName: body.approverName || null,
     approvalDate: null, approvalComments: null, rejectionReason: null,
-    assignmentGroup: req.body.assignmentGroup || 'Service Desk',
+    assignmentGroup: body.assignmentGroup || 'Service Desk',
     assignedTo: null, assigneeName: null,
     slaTarget: new Date(Date.now() + 5 * 24 * 3600000).toISOString(),
     slaMet: null, expectedFulfillment: catItem.fulfillmentTime,
@@ -2281,8 +2491,9 @@ server.post('/api/itsm/requests', (req, res) => {
     attachments: [], linkedIncidents: [], linkedChanges: [], linkedKB: [],
     watchList: [], additionalCommentsNotify: []
   };
+  if (db.itsm_requests.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Requests collection full. Use POST /api/itsm/reset to clear.' });
   db.itsm_requests.push(request);
-  addItsmAudit(requestedBy || 'api', 'Request Submitted', id, 'request', `Created: ${catItem.name}`);
+  addItsmAudit(requestedBy || 'api', 'Request Submitted', id, 'request', `Created: ${catItem.name}`, req);
   res.status(201).json({ success: true, message: `Request ${id} created`, data: request });
 });
 
@@ -2292,16 +2503,16 @@ server.patch('/api/itsm/requests/:id/status', (req, res) => {
   const { status } = req.body;
   if (!status) return res.status(400).json({ success: false, error: 'status is required' });
   const valid = { 'Draft': ['Submitted'], 'Submitted': ['Pending Approval', 'In Progress', 'Cancelled'], 'Pending Approval': ['Approved', 'Rejected'], 'Approved': ['In Progress', 'Cancelled'], 'Rejected': ['Draft', 'Cancelled'], 'In Progress': ['Fulfilled', 'Cancelled'], 'Fulfilled': ['Closed'], 'Closed': [], 'Cancelled': [] };
-  if (valid[r.status] && !valid[r.status].includes(status)) {
-    return res.status(400).json({ success: false, error: `Cannot transition from ${r.status} to ${status}` });
+  if (!valid[r.status] || !valid[r.status].includes(status)) {
+    return res.status(400).json({ success: false, error: `Cannot transition from ${r.status} to ${sanitizeHtml(String(status))}` });
   }
   const oldStatus = r.status;
-  r.status = status;
+  r.status = sanitizeHtml(String(status));
   r.updatedAt = new Date().toISOString();
   if (status === 'Fulfilled') r.fulfillmentDate = r.updatedAt;
   if (status === 'Closed') r.closedAt = r.updatedAt;
   r.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Status changed from ${oldStatus} to ${status}`, timestamp: r.updatedAt });
-  addItsmAudit('api', 'Request Updated', r.id, 'request', `Status: ${oldStatus} → ${status}`);
+  addItsmAudit('api', 'Request Updated', r.id, 'request', `Status: ${oldStatus} → ${status}`, req);
   res.json({ success: true, message: `Request ${r.id} status updated to ${status}`, data: r });
 });
 
@@ -2311,10 +2522,10 @@ server.post('/api/itsm/requests/:id/approve', (req, res) => {
   if (r.status !== 'Pending Approval') return res.status(400).json({ success: false, error: 'Request must be in Pending Approval status' });
   r.status = 'Approved';
   r.approvalDate = new Date().toISOString();
-  r.approvalComments = req.body.comments || 'Approved';
+  r.approvalComments = sanitizeHtml(req.body.comments || 'Approved');
   r.updatedAt = r.approvalDate;
-  r.notes.push({ type: 'system', visibility: 'customer-visible', author: req.body.approver || 'Approver', content: `Request approved${req.body.comments ? ': ' + req.body.comments : ''}`, timestamp: r.updatedAt });
-  addItsmAudit(req.body.approver || 'Approver', 'Request Approved', r.id, 'request', 'Approved');
+  r.notes.push({ type: 'system', visibility: 'customer-visible', author: sanitizeHtml(req.body.approver || 'Approver'), content: `Request approved${req.body.comments ? ': ' + sanitizeHtml(req.body.comments) : ''}`, timestamp: r.updatedAt });
+  addItsmAudit(sanitizeHtml(req.body.approver || 'Approver'), 'Request Approved', r.id, 'request', 'Approved', req);
   res.json({ success: true, message: `Request ${r.id} approved`, data: r });
 });
 
@@ -2324,10 +2535,10 @@ server.post('/api/itsm/requests/:id/reject', (req, res) => {
   if (r.status !== 'Pending Approval') return res.status(400).json({ success: false, error: 'Request must be in Pending Approval status' });
   if (!req.body.reason) return res.status(400).json({ success: false, error: 'reason is required' });
   r.status = 'Rejected';
-  r.rejectionReason = req.body.reason;
+  r.rejectionReason = sanitizeHtml(req.body.reason);
   r.updatedAt = new Date().toISOString();
-  r.notes.push({ type: 'system', visibility: 'customer-visible', author: req.body.approver || 'Approver', content: `Request rejected: ${req.body.reason}`, timestamp: r.updatedAt });
-  addItsmAudit(req.body.approver || 'Approver', 'Request Rejected', r.id, 'request', `Rejected: ${req.body.reason}`);
+  r.notes.push({ type: 'system', visibility: 'customer-visible', author: sanitizeHtml(req.body.approver || 'Approver'), content: `Request rejected: ${sanitizeHtml(req.body.reason)}`, timestamp: r.updatedAt });
+  addItsmAudit(sanitizeHtml(req.body.approver || 'Approver'), 'Request Rejected', r.id, 'request', `Rejected: ${sanitizeHtml(req.body.reason)}`, req);
   res.json({ success: true, message: `Request ${r.id} rejected`, data: r });
 });
 
@@ -2338,27 +2549,30 @@ server.post('/api/itsm/requests/:id/fulfill', (req, res) => {
   r.status = 'Fulfilled';
   r.fulfillmentDate = new Date().toISOString();
   r.updatedAt = r.fulfillmentDate;
-  r.actualCost = req.body.actualCost || null;
+  r.actualCost = sanitizeHtml(req.body.actualCost) || null;
   r.slaMet = new Date(r.fulfillmentDate) <= new Date(r.slaTarget);
-  r.notes.push({ type: 'system', visibility: 'customer-visible', author: 'System', content: `Request fulfilled${req.body.notes ? ': ' + req.body.notes : ''}`, timestamp: r.updatedAt });
-  addItsmAudit('api', 'Request Fulfilled', r.id, 'request', 'Fulfilled');
+  const fulfillNotes = req.body.notes ? sanitizeHtml(req.body.notes) : '';
+  r.notes.push({ type: 'system', visibility: 'customer-visible', author: 'System', content: `Request fulfilled${fulfillNotes ? ': ' + fulfillNotes : ''}`, timestamp: r.updatedAt });
+  addItsmAudit('api', 'Request Fulfilled', r.id, 'request', 'Fulfilled', req);
   res.json({ success: true, message: `Request ${r.id} fulfilled`, data: r });
 });
 
 server.post('/api/itsm/requests/:id/assign', (req, res) => {
   const r = db.itsm_requests.find(r => r.id === req.params.id);
   if (!r) return res.status(404).json({ success: false, error: 'Request not found' });
-  if (req.body.assignmentGroup) r.assignmentGroup = req.body.assignmentGroup;
-  if (req.body.assignee) { r.assignedTo = req.body.assignee; r.assigneeName = req.body.assigneeName || req.body.assignee; }
+  const raBody = sanitizeBodyStrings(req.body);
+  if (raBody.assignmentGroup) r.assignmentGroup = raBody.assignmentGroup;
+  if (raBody.assignee) { r.assignedTo = raBody.assignee; r.assigneeName = raBody.assigneeName || raBody.assignee; }
   r.updatedAt = new Date().toISOString();
-  r.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Assigned to ${req.body.assigneeName || req.body.assignee || req.body.assignmentGroup}`, timestamp: r.updatedAt });
+  r.notes.push({ type: 'system', visibility: 'technicians-only', author: 'System', content: `Assigned to ${raBody.assigneeName || raBody.assignee || raBody.assignmentGroup}`, timestamp: r.updatedAt });
   res.json({ success: true, message: 'Assignment updated', data: r });
 });
 
 server.post('/api/itsm/requests/:id/notes', (req, res) => {
   const r = db.itsm_requests.find(r => r.id === req.params.id);
   if (!r) return res.status(404).json({ success: false, error: 'Request not found' });
-  const { content, type, author } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const { content, type, author } = body;
   if (!content) return res.status(400).json({ success: false, error: 'content is required' });
   const note = { type: type || 'internal', visibility: type === 'customer' ? 'customer-visible' : 'technicians-only', author: author || 'api', content, timestamp: new Date().toISOString() };
   r.notes.push(note);
@@ -2389,29 +2603,33 @@ server.get('/api/itsm/requests/pending-approval', (req, res) => {
 // ── Problems ──
 
 server.post('/api/itsm/problems', (req, res) => {
-  const { title, description } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { title, description } = body;
   if (!title) return res.status(400).json({ success: false, error: 'title is required' });
   const id = nextItsmId(db.itsm_problems, 'PRB');
   const now = new Date().toISOString();
   const problem = {
     id, title, description: description || '',
-    status: 'Open', priority: req.body.priority || 'P3',
-    category: req.body.category || 'General',
+    status: 'Open', priority: body.priority || 'P3',
+    category: body.category || 'General',
     rootCause: null, workaround: null,
     resolutionCode: null, resolutionNotes: null,
-    linkedIncidents: req.body.linkedIncidents || [],
-    affectedAssets: req.body.affectedAssets || [],
-    assignedTo: req.body.assignedTo || 'Service Desk',
-    assignee: req.body.assignee || null, assigneeName: req.body.assigneeName || null,
+    linkedIncidents: body.linkedIncidents || [],
+    affectedAssets: body.affectedAssets || [],
+    assignedTo: body.assignedTo || 'Service Desk',
+    assignee: body.assignee || null, assigneeName: body.assigneeName || null,
     createdAt: now, updatedAt: now, resolvedAt: null
   };
+  if (db.itsm_problems.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Problems collection full. Use POST /api/itsm/reset to clear.' });
   db.itsm_problems.push(problem);
   // Back-link: add this problem to each linked incident's linkedProblems
   for (const incId of problem.linkedIncidents) {
     const inc = db.itsm_incidents.find(i => i.id === incId);
     if (inc && !inc.linkedProblems.includes(id)) inc.linkedProblems.push(id);
   }
-  addItsmAudit('api', 'Problem Created', id, 'problem', `Created: ${title}`);
+  addItsmAudit('api', 'Problem Created', id, 'problem', `Created: ${title}`, req);
   res.status(201).json({ success: true, message: `Problem ${id} created`, data: problem });
 });
 
@@ -2420,25 +2638,26 @@ server.patch('/api/itsm/problems/:id/status', (req, res) => {
   if (!p) return res.status(404).json({ success: false, error: 'Problem not found' });
   const { status } = req.body;
   const valid = { 'Open': ['Under Investigation'], 'Under Investigation': ['Known Error', 'Resolved'], 'Known Error': ['Resolved'], 'Resolved': [] };
-  if (valid[p.status] && !valid[p.status].includes(status)) {
-    return res.status(400).json({ success: false, error: `Cannot transition from ${p.status} to ${status}` });
+  if (!valid[p.status] || !valid[p.status].includes(status)) {
+    return res.status(400).json({ success: false, error: `Cannot transition from ${p.status} to ${sanitizeHtml(String(status))}` });
   }
-  p.status = status;
+  p.status = sanitizeHtml(String(status));
   p.updatedAt = new Date().toISOString();
   if (status === 'Resolved') p.resolvedAt = p.updatedAt;
-  addItsmAudit('api', 'Problem Updated', p.id, 'problem', `Status → ${status}`);
+  addItsmAudit('api', 'Problem Updated', p.id, 'problem', `Status → ${status}`, req);
   res.json({ success: true, message: `Problem ${p.id} status updated`, data: p });
 });
 
 server.patch('/api/itsm/problems/:id/root-cause', (req, res) => {
   const p = db.itsm_problems.find(p => p.id === req.params.id);
   if (!p) return res.status(404).json({ success: false, error: 'Problem not found' });
-  if (!req.body.rootCause) return res.status(400).json({ success: false, error: 'rootCause is required' });
-  p.rootCause = req.body.rootCause;
-  if (req.body.workaround) p.workaround = req.body.workaround;
+  const rcBody = sanitizeBodyStrings(req.body);
+  if (!rcBody.rootCause) return res.status(400).json({ success: false, error: 'rootCause is required' });
+  p.rootCause = rcBody.rootCause;
+  if (rcBody.workaround) p.workaround = rcBody.workaround;
   p.updatedAt = new Date().toISOString();
-  if (req.body.convertToKnownError && p.status === 'Under Investigation') p.status = 'Known Error';
-  addItsmAudit('api', 'Root Cause Identified', p.id, 'problem', p.rootCause);
+  if (rcBody.convertToKnownError && p.status === 'Under Investigation') p.status = 'Known Error';
+  addItsmAudit('api', 'Root Cause Identified', p.id, 'problem', p.rootCause, req);
   res.json({ success: true, message: 'Root cause updated', data: p });
 });
 
@@ -2448,15 +2667,15 @@ server.post('/api/itsm/problems/:id/link-incident', (req, res) => {
   let ids = [];
   if (req.body.incidentIds) {
     if (Array.isArray(req.body.incidentIds)) {
-      ids = req.body.incidentIds;
+      ids = req.body.incidentIds.map(id => sanitizeHtml(String(id)));
     } else if (typeof req.body.incidentIds === 'string') {
-      ids = req.body.incidentIds.split(/[;,]\s*/).map(s => s.trim()).filter(Boolean);
+      ids = req.body.incidentIds.split(/[;,]\s*/).map(s => sanitizeHtml(s.trim())).filter(Boolean);
     }
   } else if (req.body.incidentId) {
     if (typeof req.body.incidentId === 'string' && /[;,]/.test(req.body.incidentId)) {
-      ids = req.body.incidentId.split(/[;,]\s*/).map(s => s.trim()).filter(Boolean);
+      ids = req.body.incidentId.split(/[;,]\s*/).map(s => sanitizeHtml(s.trim())).filter(Boolean);
     } else {
-      ids = [req.body.incidentId];
+      ids = [sanitizeHtml(String(req.body.incidentId))];
     }
   }
   if (ids.length === 0) return res.status(400).json({ success: false, error: 'incidentId or incidentIds is required' });
@@ -2474,7 +2693,7 @@ server.post('/api/itsm/problems/:id/link-incident', (req, res) => {
     }
   }
   p.updatedAt = new Date().toISOString();
-  addItsmAudit('api', 'Incidents Linked', p.id, 'problem', `Linked incidents: ${linked.join(', ')}`);
+  addItsmAudit('api', 'Incidents Linked', p.id, 'problem', `Linked incidents: ${linked.join(', ')}`, req);
   const msg = notFound.length > 0
     ? `${linked.length} incident(s) linked to problem ${p.id}. Warning: ${notFound.join(', ')} not found in incidents database`
     : `${linked.length} incident(s) linked to problem ${p.id}`;
@@ -2500,24 +2719,28 @@ server.get('/api/itsm/problems/:id', (req, res) => {
 // ── Assets / CMDB ──
 
 server.post('/api/itsm/assets', (req, res) => {
-  const { name, type } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { name, type } = body;
   if (!name || !type) return res.status(400).json({ success: false, error: 'name and type are required' });
   const prefixes = { 'Server': 'SRV', 'Workstation': 'LAPTOP', 'Network': 'SW', 'Printer': 'PRNT', 'Mobile': 'MOB' };
   const prefix = prefixes[type] || 'ASSET';
   const id = nextItsmId(db.itsm_assets, prefix);
   const asset = {
     id, name, type, status: 'Active',
-    owner: req.body.owner || null, ownerName: req.body.ownerName || null,
-    location: req.body.location || null, os: req.body.os || null,
-    manufacturer: req.body.manufacturer || null, model: req.body.model || null,
-    serialNumber: req.body.serialNumber || null,
-    purchaseDate: req.body.purchaseDate || new Date().toISOString().slice(0, 10),
-    warrantyExpiry: req.body.warrantyExpiry || null,
-    lastSeen: new Date().toISOString(), ipAddress: req.body.ipAddress || null,
+    owner: body.owner || null, ownerName: body.ownerName || null,
+    location: body.location || null, os: body.os || null,
+    manufacturer: body.manufacturer || null, model: body.model || null,
+    serialNumber: body.serialNumber || null,
+    purchaseDate: body.purchaseDate || new Date().toISOString().slice(0, 10),
+    warrantyExpiry: body.warrantyExpiry || null,
+    lastSeen: new Date().toISOString(), ipAddress: body.ipAddress || null,
     linkedIncidents: [], linkedChanges: []
   };
+  if (db.itsm_assets.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Assets collection full. Use POST /api/itsm/reset to clear.' });
   db.itsm_assets.push(asset);
-  addItsmAudit('api', 'Asset Created', id, 'asset', `Created: ${name} (${type})`);
+  addItsmAudit('api', 'Asset Created', id, 'asset', `Created: ${name} (${type})`, req);
   res.status(201).json({ success: true, message: `Asset ${id} created`, data: asset });
 });
 
@@ -2529,7 +2752,7 @@ server.patch('/api/itsm/assets/:id/status', (req, res) => {
   if (!validStatuses.includes(status)) return res.status(400).json({ success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
   a.status = status;
   a.lastSeen = new Date().toISOString();
-  addItsmAudit('api', 'Asset Updated', a.id, 'asset', `Status → ${status}`);
+  addItsmAudit('api', 'Asset Updated', a.id, 'asset', `Status → ${status}`, req);
   res.json({ success: true, message: `Asset ${a.id} status updated`, data: a });
 });
 
@@ -2552,18 +2775,22 @@ server.get('/api/itsm/assets/stats', (req, res) => {
 // ── Knowledge Base ──
 
 server.post('/api/itsm/knowledge', (req, res) => {
-  const { title, content, category } = req.body;
+  const body = sanitizeBodyStrings(req.body);
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
+  const { title, content, category } = body;
   if (!title || !content) return res.status(400).json({ success: false, error: 'title and content are required' });
   const id = nextItsmId(db.itsm_knowledge, 'KB');
   const now = new Date().toISOString().slice(0, 10);
   const article = {
     id, title, content, category: category || 'General',
-    status: 'Draft', author: req.body.author || 'api', authorName: req.body.authorName || 'API User',
-    tags: req.body.tags || [], applicability: req.body.applicability || [],
+    status: 'Draft', author: body.author || 'api', authorName: body.authorName || 'API User',
+    tags: body.tags || [], applicability: body.applicability || [],
     views: 0, helpful: 0, createdAt: now, updatedAt: now
   };
+  if (db.itsm_knowledge.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Knowledge base full. Use POST /api/itsm/reset to clear.' });
   db.itsm_knowledge.push(article);
-  addItsmAudit('api', 'KB Article Created', id, 'kb', `Created: ${title}`);
+  addItsmAudit('api', 'KB Article Created', id, 'kb', `Created: ${title}`, req);
   res.status(201).json({ success: true, message: `Article ${id} created`, data: article });
 });
 
@@ -2572,7 +2799,7 @@ server.patch('/api/itsm/knowledge/:id/publish', (req, res) => {
   if (!kb) return res.status(404).json({ success: false, error: 'Article not found' });
   kb.status = 'Published';
   kb.updatedAt = new Date().toISOString().slice(0, 10);
-  addItsmAudit('api', 'KB Article Published', kb.id, 'kb', `Published: ${kb.title}`);
+  addItsmAudit('api', 'KB Article Published', kb.id, 'kb', `Published: ${kb.title}`, req);
   res.json({ success: true, message: `Article ${kb.id} published`, data: kb });
 });
 
@@ -2608,35 +2835,40 @@ server.get('/api/itsm/knowledge/search', (req, res) => {
 // ── Runbooks ──
 
 server.post('/api/itsm/runbooks', (req, res) => {
-  const { title, steps } = req.body;
+  if (db.itsm_runbooks.length >= MAX_COLLECTION_SIZE) return res.status(507).json({ success: false, error: 'Runbook limit reached' });
+  const body = sanitizeBodyStrings(req.body);
+  const { title, steps } = body;
   if (!title || !steps || !Array.isArray(steps)) return res.status(400).json({ success: false, error: 'title and steps array are required' });
+  const lengthCheck = validateFieldLengths(body);
+  if (!lengthCheck.valid) return res.status(400).json({ success: false, error: `${lengthCheck.field} exceeds maximum length of ${lengthCheck.limit}` });
   const id = nextItsmId(db.itsm_runbooks, 'RB');
   const runbook = {
-    id, title, description: req.body.description || '',
-    category: req.body.category || 'General',
-    author: req.body.author || 'api', authorName: req.body.authorName || 'API User',
+    id, title, description: body.description || '',
+    category: body.category || 'General',
+    author: body.author || 'api', authorName: body.authorName || 'API User',
     lastUpdated: new Date().toISOString().slice(0, 10),
-    estimatedTime: req.body.estimatedTime || '15-30 min',
-    steps: steps.map((s, i) => ({ id: i + 1, title: s.title || `Step ${i + 1}`, description: s.description || '', automatable: s.automatable || false }))
+    estimatedTime: body.estimatedTime || '15-30 min',
+    steps: steps.map((s, i) => ({ id: i + 1, title: s.title || `Step ${i + 1}`, description: s.description || '', automatable: !!s.automatable }))
   };
   db.itsm_runbooks.push(runbook);
-  addItsmAudit('api', 'Runbook Created', id, 'runbook', `Created: ${title}`);
+  addItsmAudit('api', 'Runbook Created', id, 'runbook', `Created: ${title}`, req);
   res.status(201).json({ success: true, message: `Runbook ${id} created`, data: runbook });
 });
 
 server.post('/api/itsm/runbooks/:id/execute', (req, res) => {
   const rb = db.itsm_runbooks.find(r => r.id === req.params.id);
   if (!rb) return res.status(404).json({ success: false, error: 'Runbook not found' });
+  const startedBy = sanitizeHtml(req.body.startedBy) || 'api';
   const execution = {
     id: faker.string.uuid(),
     runbookId: rb.id,
     startedAt: new Date().toISOString(),
-    startedBy: req.body.startedBy || 'api',
+    startedBy,
     status: 'in_progress',
     completedSteps: [],
     totalSteps: rb.steps.length
   };
-  addItsmAudit(req.body.startedBy || 'api', 'Runbook Executed', rb.id, 'runbook', `Started: ${rb.title}`);
+  addItsmAudit(startedBy, 'Runbook Executed', rb.id, 'runbook', `Started: ${rb.title}`, req);
   res.status(201).json({ success: true, message: `Runbook ${rb.id} execution started`, data: execution });
 });
 
@@ -2843,7 +3075,7 @@ itsmDeleteConfigs.forEach(cfg => {
     const idx = db[cfg.key].findIndex(item => item.id === req.params.id);
     if (idx === -1) return res.status(404).json({ success: false, error: `${cfg.label} not found` });
     const removed = db[cfg.key].splice(idx, 1)[0];
-    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Deleted: ${removed.title || removed.name || removed.id}`);
+    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Deleted: ${removed.title || removed.name || removed.id}`, req);
     res.json({ success: true, message: `${cfg.label} ${removed.id} deleted`, data: removed });
   });
 });
@@ -2853,8 +3085,9 @@ server.post('/api/itsm/bulk-delete', (req, res) => {
   const cfgMap = {};
   itsmDeleteConfigs.forEach(c => { cfgMap[c.path] = c; });
   const cfg = cfgMap[collection];
-  if (!cfg) return res.status(400).json({ success: false, error: `Invalid collection: ${collection}` });
+  if (!cfg) return res.status(400).json({ success: false, error: `Invalid collection: ${sanitizeHtml(String(collection || ''))}` });
   if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ success: false, error: 'ids must be a non-empty array' });
+  if (ids.length > 100) return res.status(400).json({ success: false, error: 'Maximum 100 items per bulk delete request' });
 
   const deleted = [];
   const notFound = [];
@@ -2863,7 +3096,7 @@ server.post('/api/itsm/bulk-delete', (req, res) => {
     if (idx === -1) { notFound.push(id); return; }
     const removed = db[cfg.key].splice(idx, 1)[0];
     deleted.push(removed.id);
-    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Bulk deleted: ${removed.title || removed.name || removed.id}`);
+    addItsmAudit('api', `${cfg.label} Deleted`, removed.id, cfg.type, `Bulk deleted: ${removed.title || removed.name || removed.id}`, req);
   });
 
   res.json({ success: true, message: `Deleted ${deleted.length} ${collection}`, deleted, notFound });
@@ -2881,9 +3114,85 @@ server.post('/api/itsm/reset', (req, res) => {
   res.json({ success: true, message: `ITSM data reset. Regenerated ${itsmKeys.length} collections.`, collections: itsmKeys });
 });
 
+/* ---------- Security: Phase 1 — Lock the Front Door ---------- */
+
+// Block /db endpoint (CRITICAL-1: prevents full database dump)
+server.get('/db', (req, res) => {
+  res.status(403).json({ error: 'Access denied' });
+});
+
+// Block HTTP method override (INFO-22: _method query and X-HTTP-Method-Override header)
+server.use((req, res, next) => {
+  delete req.query._method;
+  delete req.headers['x-http-method-override'];
+  next();
+});
+
+// Restrict json-server default routes to GET-only for all collections (CRITICAL-2, MEDIUM-13)
+// Custom /api/* routes are registered above and are NOT affected by this middleware.
+server.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+
+  // List of all json-server collection paths that should be read-only via direct access
+  const protectedCollections = [
+    // HR
+    'hr_workers', 'hr_orgs', 'hr_worker_performance', 'hr_onboardings',
+    // Finance
+    'finance_invoices', 'finance_expenses', 'budget_variance',
+    'financial_summaries', 'vendor_performance',
+    // CRM
+    'crm_customers', 'crm_opportunities', 'crm_orders',
+    'crm_support_tickets', 'crm_renewals', 'sales_pipeline_reports',
+    // IoT
+    'iot_devices', 'iot_telemetry', 'iot_alerts', 'iot_maintenance',
+    // Projects
+    'projects', 'project_resources',
+    // Analytics
+    'integration_employee_reports', 'notifications', 'workflow_triggers',
+    'employee_profiles', 'customer_relationships',
+    // ITSM
+    'itsm_teams', 'itsm_technicians', 'itsm_customers',
+    'itsm_sla_configs', 'itsm_email_templates',
+    'itsm_incidents', 'itsm_changes', 'itsm_requests',
+    'itsm_problems', 'itsm_assets', 'itsm_knowledge',
+    'itsm_catalog', 'itsm_notifications', 'itsm_sla_definitions',
+    'itsm_audit_log', 'itsm_runbooks', 'itsm_policies'
+  ];
+
+  // Extract the first path segment after /
+  const pathSegment = req.path.split('/').filter(Boolean)[0];
+  if (protectedCollections.includes(pathSegment)) {
+    return res.status(405).json({ error: 'Method not allowed on this collection' });
+  }
+
+  next();
+});
+
+// Sanitize _like query parameters to prevent ReDoS (HIGH-3)
+server.use((req, res, next) => {
+  for (const key of Object.keys(req.query)) {
+    if (key.endsWith('_like') && typeof req.query[key] === 'string') {
+      req.query[key] = req.query[key].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  next();
+});
+
 server.use(jsonServer.rewriter(rewrites));
 
+// Disable JSONP — use res.json() instead of res.jsonp() (MEDIUM-15)
+router.render = (req, res) => {
+  res.json(res.locals.data);
+};
+
 server.use(router);
+
+/* ---------- Global Error Handler ---------- */
+// Catches unhandled errors in route handlers — prevents stack trace leakage
+server.use((err, req, res, _next) => {
+  console.error(`[${new Date().toISOString()}] Unhandled error on ${req.method} ${req.path}:`, err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 /* ---------- Start Server ---------- */
 server.listen(PORT, '0.0.0.0', () => {

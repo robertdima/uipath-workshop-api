@@ -526,6 +526,12 @@
     </div>
 
     <script>
+        // XSS protection
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return str || '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         // Session timeout management
         let inactivityTimer;
         const TIMEOUT_WARNING = 5 * 60 * 1000; // 5 minutes
@@ -606,8 +612,8 @@
 
         // Get status badge HTML
         function getStatusBadge(status) {
-            const statusClass = 'status-' + status;
-            const statusText = status.replace('_', ' ').toUpperCase();
+            const statusClass = 'status-' + escapeHtml(status);
+            const statusText = escapeHtml(status.replace('_', ' ').toUpperCase());
             return '<span class="status-badge ' + statusClass + '">' + statusText + '</span>';
         }
 
@@ -647,7 +653,7 @@
             } catch (error) {
                 console.error('Error loading records:', error);
                 document.getElementById('tableBody').innerHTML =
-                    '<tr><td colspan="6" class="no-data">Error: ' + error.message + '</td></tr>';
+                    '<tr><td colspan="6" class="no-data">Error: ' + escapeHtml(error.message) + '</td></tr>';
                 document.getElementById('resultsCount').textContent = 'Error loading records';
             } finally {
                 hideLoading();
@@ -753,12 +759,12 @@
                 const startDate = formatDate(record.startDate);
                 const status = record.status || 'pending';
 
-                html += '<tr onclick="viewRecord(\'' + record.id + '\')" data-id="' + record.id + '">';
-                html += '<td>' + regId + '</td>';
-                html += '<td>' + empId + '</td>';
-                html += '<td>' + fullName + '</td>';
-                html += '<td>' + dept + '</td>';
-                html += '<td>' + startDate + '</td>';
+                html += '<tr onclick="viewRecord(\'' + escapeHtml(String(record.id)) + '\')" data-id="' + escapeHtml(String(record.id)) + '">';
+                html += '<td>' + escapeHtml(regId) + '</td>';
+                html += '<td>' + escapeHtml(empId) + '</td>';
+                html += '<td>' + escapeHtml(fullName) + '</td>';
+                html += '<td>' + escapeHtml(dept) + '</td>';
+                html += '<td>' + escapeHtml(startDate) + '</td>';
                 html += '<td>' + getStatusBadge(status) + '</td>';
                 html += '</tr>';
             });

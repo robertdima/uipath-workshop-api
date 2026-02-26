@@ -26,15 +26,15 @@ const Modals = {
     confirm(title, message, onConfirm, confirmText = 'Confirm', confirmClass = 'btn-primary') {
         this.show(`
             <div class="modal-header">
-                <span>${title}</span>
+                <span>${Utils.escapeHtml(title)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="min-width: 400px;">
-                <p>${message}</p>
+                <p>${Utils.escapeHtml(message)}</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="Modals.close()">Cancel</button>
-                <button class="btn ${confirmClass}" onclick="(${onConfirm.toString()})(); Modals.close();">${confirmText}</button>
+                <button class="btn ${confirmClass}" onclick="(${onConfirm.toString()})(); Modals.close();">${Utils.escapeHtml(confirmText)}</button>
             </div>
         `);
     },
@@ -49,11 +49,11 @@ const Modals = {
         };
         this.show(`
             <div class="modal-header">
-                <span>${icons[type]} ${title}</span>
+                <span>${icons[type]} ${Utils.escapeHtml(title)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="min-width: 350px;">
-                <p>${message}</p>
+                <p>${Utils.escapeHtml(message)}</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="Modals.close()">OK</button>
@@ -72,14 +72,14 @@ const Modals = {
         `;
         this.show(`
             <div class="modal-header">
-                <span>${title}</span>
+                <span>${Utils.escapeHtml(title)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="min-width: 400px;">
                 <div class="form-group">
-                    <label class="form-label">${label}</label>
+                    <label class="form-label">${Utils.escapeHtml(label)}</label>
                     <input type="text" class="form-control" id="modal-prompt-input"
-                           placeholder="${placeholder}" value="${defaultValue}">
+                           placeholder="${Utils.escapeHtml(placeholder)}" value="${Utils.escapeHtml(defaultValue)}">
                 </div>
             </div>
             <div class="modal-footer">
@@ -101,14 +101,14 @@ const Modals = {
         `;
         this.show(`
             <div class="modal-header">
-                <span>${title}</span>
+                <span>${Utils.escapeHtml(title)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body" style="min-width: 450px;">
                 <div class="form-group">
-                    <label class="form-label">${label}</label>
+                    <label class="form-label">${Utils.escapeHtml(label)}</label>
                     <textarea class="form-control" id="modal-textarea-input"
-                              placeholder="${placeholder}" rows="${rows}">${defaultValue}</textarea>
+                              placeholder="${Utils.escapeHtml(placeholder)}" rows="${rows}">${Utils.escapeHtml(defaultValue)}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -123,7 +123,7 @@ const Modals = {
     form(title, formHtml, onSubmit, submitText = 'Save') {
         this.show(`
             <div class="modal-header">
-                <span>${title}</span>
+                <span>${Utils.escapeHtml(title)}</span>
                 <button class="panel-close" onclick="Modals.close()">×</button>
             </div>
             <div class="modal-body">
@@ -131,7 +131,7 @@ const Modals = {
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="Modals.close()">Cancel</button>
-                <button class="btn btn-primary" onclick="${onSubmit}">${submitText}</button>
+                <button class="btn btn-primary" onclick="${onSubmit}">${Utils.escapeHtml(submitText)}</button>
             </div>
         `);
     },
@@ -140,7 +140,7 @@ const Modals = {
     loading(message = 'Loading...') {
         this.show(`
             <div class="modal-body" style="text-align: center; padding: 40px;">
-                <div class="loading">${message}</div>
+                <div class="loading">${Utils.escapeHtml(message)}</div>
             </div>
         `);
     }

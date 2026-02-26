@@ -239,7 +239,7 @@ const CatalogModule = {
                     <strong>Required Information:</strong>
                     <ul style="margin: var(--spacing-sm) 0 0 0; padding-left: 20px;">
                         ${item.fields.map(field => `
-                            <li>${field.label}${field.required ? ' *' : ''}</li>
+                            <li>${Utils.escapeHtml(field.label)}${field.required ? ' *' : ''}</li>
                         `).join('')}
                     </ul>
                 </div>
@@ -372,7 +372,7 @@ const CatalogModule = {
                 fieldHtml = `
                     <div class="consent-check">
                         <input type="checkbox" id="field-${field.name}" ${requiredAttr}>
-                        <label for="field-${field.name}">${field.label}</label>
+                        <label for="field-${field.name}">${Utils.escapeHtml(field.label)}</label>
                     </div>
                 `;
                 return `
@@ -401,7 +401,7 @@ const CatalogModule = {
 
         return `
             <div class="form-group" id="group-${field.name}"${showWhenAttrs}>
-                <label class="form-label ${requiredClass}">${field.label}</label>
+                <label class="form-label ${requiredClass}">${Utils.escapeHtml(field.label)}</label>
                 ${fieldHtml}
             </div>
         `;
@@ -827,7 +827,7 @@ const CatalogModule = {
             const stepFields = item.fields.filter(f => f.step === stepNum);
             const label = ws.stepLabels[i] || 'Step ' + (i + 1);
             html += `<div class="review-step-card">
-                <div class="review-step-card-header">${label}</div>
+                <div class="review-step-card-header">${Utils.escapeHtml(label)}</div>
                 <div class="review-step-card-body">`;
             stepFields.forEach(field => {
                 // Skip hidden conditional fields
@@ -835,8 +835,8 @@ const CatalogModule = {
                 const val = ws.formData[field.name];
                 const displayVal = val === true ? 'Yes' : val === false ? 'No' : (val || '-');
                 html += `<div class="review-row">
-                    <div class="review-row-label">${field.label}</div>
-                    <div class="review-row-value">${displayVal}</div>
+                    <div class="review-row-label">${Utils.escapeHtml(field.label)}</div>
+                    <div class="review-row-value">${Utils.escapeHtml(displayVal)}</div>
                 </div>`;
             });
             html += '</div></div>';
@@ -1222,8 +1222,8 @@ const CatalogModule = {
                                                 <tr>
                                                     <td class="cell-id">${req.id}</td>
                                                     <td>${item ? item.name : req.catalogItem}</td>
-                                                    <td>${req.requestedBy}</td>
-                                                    <td>${req.requestedFor}</td>
+                                                    <td>${Utils.escapeHtml(req.requestedBy)}</td>
+                                                    <td>${Utils.escapeHtml(req.requestedFor)}</td>
                                                     <td class="cell-date">${formatDateTime(req.createdAt)}</td>
                                                     <td class="cell-actions">
                                                         <button class="btn btn-sm btn-success" onclick="CatalogModule.approveRequest('${req.id}')">Approve</button>
@@ -1290,7 +1290,7 @@ const CatalogModule = {
                                     </td>
                                     <td><span class="badge ${statusClass}">${req.status}</span></td>
                                     <td>${req.priority}</td>
-                                    <td>${req.requestedFor}</td>
+                                    <td>${Utils.escapeHtml(req.requestedFor)}</td>
                                     <td class="cell-date">${formatDateTime(req.createdAt)}</td>
                                     <td class="cell-date">${formatDateTime(req.updatedAt)}</td>
                                     <td class="cell-actions" onclick="event.stopPropagation();">
@@ -1384,11 +1384,11 @@ const CatalogModule = {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Requested By</label>
-                                <div>${request.requestedBy}</div>
+                                <div>${Utils.escapeHtml(request.requestedBy)}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Requested For</label>
-                                <div>${request.requestedFor}</div>
+                                <div>${Utils.escapeHtml(request.requestedFor)}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Created</label>
@@ -1401,13 +1401,13 @@ const CatalogModule = {
                             ${request.approver ? `
                                 <div>
                                     <label class="form-label" style="color: var(--text-muted);">Approver</label>
-                                    <div>${request.approver}</div>
+                                    <div>${Utils.escapeHtml(request.approver)}</div>
                                 </div>
                             ` : ''}
                             ${request.assignedTo ? `
                                 <div>
                                     <label class="form-label" style="color: var(--text-muted);">Assigned To</label>
-                                    <div>${request.assignedTo}</div>
+                                    <div>${Utils.escapeHtml(request.assignedTo)}</div>
                                 </div>
                             ` : ''}
                         </div>
@@ -1449,8 +1449,8 @@ const CatalogModule = {
                                     const label = fieldDef ? fieldDef.label : key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                                     return `
                                         <tr>
-                                            <td style="padding: 4px 0; color: var(--text-muted); width: 40%;">${label}:</td>
-                                            <td style="padding: 4px 0;">${value || '-'}</td>
+                                            <td style="padding: 4px 0; color: var(--text-muted); width: 40%;">${Utils.escapeHtml(label)}:</td>
+                                            <td style="padding: 4px 0;">${Utils.escapeHtml(value || '-')}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -1503,11 +1503,11 @@ const CatalogModule = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
                         <div class="form-group">
                             <label class="form-label">Requested By</label>
-                            <input type="text" class="form-control" value="${request.requestedBy}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(request.requestedBy)}" readonly>
                         </div>
                         <div class="form-group">
                             <label class="form-label required">Requested For</label>
-                            <input type="email" class="form-control" id="edit-req-requested-for" value="${request.requestedFor}">
+                            <input type="email" class="form-control" id="edit-req-requested-for" value="${Utils.escapeHtml(request.requestedFor)}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Priority</label>
@@ -1552,26 +1552,26 @@ const CatalogModule = {
                 fieldHtml = `
                     <select class="form-control" id="field-${field.name}" ${requiredAttr}>
                         <option value="">-- Select --</option>
-                        ${(field.options || []).map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt}</option>`).join('')}
+                        ${(field.options || []).map(opt => `<option value="${Utils.escapeHtml(opt)}" ${opt === value ? 'selected' : ''}>${Utils.escapeHtml(opt)}</option>`).join('')}
                     </select>
                 `;
                 break;
 
             case 'textarea':
                 fieldHtml = `
-                    <textarea class="form-control" id="field-${field.name}" rows="3" ${requiredAttr}>${value}</textarea>
+                    <textarea class="form-control" id="field-${field.name}" rows="3" ${requiredAttr}>${Utils.escapeHtml(value)}</textarea>
                 `;
                 break;
 
             case 'date':
                 fieldHtml = `
-                    <input type="date" class="form-control" id="field-${field.name}" value="${value}" ${requiredAttr}>
+                    <input type="date" class="form-control" id="field-${field.name}" value="${Utils.escapeHtml(value)}" ${requiredAttr}>
                 `;
                 break;
 
             case 'email':
                 fieldHtml = `
-                    <input type="email" class="form-control" id="field-${field.name}" value="${value}" ${requiredAttr}>
+                    <input type="email" class="form-control" id="field-${field.name}" value="${Utils.escapeHtml(value)}" ${requiredAttr}>
                 `;
                 break;
 
@@ -1579,7 +1579,7 @@ const CatalogModule = {
                 fieldHtml = `
                     <div class="consent-check">
                         <input type="checkbox" id="field-${field.name}" ${value ? 'checked' : ''}>
-                        <label for="field-${field.name}">${field.label}</label>
+                        <label for="field-${field.name}">${Utils.escapeHtml(field.label)}</label>
                     </div>
                 `;
                 return `
@@ -1591,21 +1591,21 @@ const CatalogModule = {
             case 'file':
                 fieldHtml = `
                     <input type="file" class="form-control" id="field-${field.name}" multiple>
-                    ${value ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Previously: ${value}</div>` : ''}
+                    ${value ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Previously: ${Utils.escapeHtml(value)}</div>` : ''}
                 `;
                 break;
 
             case 'text':
             default:
                 fieldHtml = `
-                    <input type="text" class="form-control" id="field-${field.name}" value="${value}" ${requiredAttr}>
+                    <input type="text" class="form-control" id="field-${field.name}" value="${Utils.escapeHtml(value)}" ${requiredAttr}>
                 `;
                 break;
         }
 
         return `
             <div class="form-group" id="group-${field.name}">
-                <label class="form-label ${requiredClass}">${field.label}</label>
+                <label class="form-label ${requiredClass}">${Utils.escapeHtml(field.label)}</label>
                 ${fieldHtml}
             </div>
         `;

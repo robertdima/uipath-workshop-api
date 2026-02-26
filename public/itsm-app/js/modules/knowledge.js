@@ -98,18 +98,18 @@ const KnowledgeModule = {
                     <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}">${kb.status}</span>
                 </div>
                 <div class="card-body">
-                    <h4 class="kb-title" style="margin-bottom: var(--spacing-sm);">${kb.title}</h4>
+                    <h4 class="kb-title" style="margin-bottom: var(--spacing-sm);">${Utils.escapeHtml(kb.title)}</h4>
                     <div class="kb-meta" style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--spacing-sm);">
-                        <span>📁 ${kb.category}</span> ·
+                        <span>📁 ${Utils.escapeHtml(kb.category)}</span> ·
                         <span>👁 ${kb.views} views</span> ·
                         <span>👍 ${kb.helpful}% helpful</span>
                     </div>
                     <div class="kb-tags" style="margin-bottom: var(--spacing-sm);">
-                        ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="margin-right: 4px;">${tag}</span>`).join('')}
+                        ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="margin-right: 4px;">${Utils.escapeHtml(tag)}</span>`).join('')}
                         ${kb.tags.length > 3 ? `<span style="font-size: 10px; color: var(--text-muted);">+${kb.tags.length - 3} more</span>` : ''}
                     </div>
                     <div class="kb-applicability" style="font-size: 10px; color: var(--text-muted); margin-bottom: var(--spacing-sm);">
-                        ${kb.applicability ? kb.applicability.slice(0, 2).join(', ') : 'General'}
+                        ${kb.applicability ? Utils.escapeHtml(kb.applicability.slice(0, 2).join(', ')) : 'General'}
                         ${kb.applicability && kb.applicability.length > 2 ? ` +${kb.applicability.length - 2}` : ''}
                     </div>
                     <div class="kb-actions" style="display: flex; gap: var(--spacing-xs);">
@@ -141,10 +141,9 @@ const KnowledgeModule = {
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             // Inline code
             .replace(/`([^`]+)`/g, '<code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 12px;">$1</code>')
-            // Code blocks - restore angle brackets inside code blocks
+            // Code blocks
             .replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-                const restored = code.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-                return `<pre style="background: var(--bg-tertiary); padding: var(--spacing-md); border-radius: 4px; overflow-x: auto; font-family: Consolas, monospace; font-size: 12px; margin: var(--spacing-sm) 0;"><code>${restored}</code></pre>`;
+                return `<pre style="background: var(--bg-tertiary); padding: var(--spacing-md); border-radius: 4px; overflow-x: auto; font-family: Consolas, monospace; font-size: 12px; margin: var(--spacing-sm) 0;"><code>${code}</code></pre>`;
             })
             // Lists
             .replace(/^(\d+)\. (.+)$/gm, '<div style="margin-left: var(--spacing-md); margin-bottom: var(--spacing-xs);"><span style="color: var(--accent-blue); margin-right: var(--spacing-xs);">$1.</span> $2</div>')
@@ -180,7 +179,7 @@ const KnowledgeModule = {
             <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <span class="kb-modal-id" style="font-weight: bold; color: var(--accent-blue);">${kb.id}</span>
-                    <span style="margin-left: var(--spacing-sm);">${kb.title}</span>
+                    <span style="margin-left: var(--spacing-sm);">${Utils.escapeHtml(kb.title)}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
                     <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}">${kb.status}</span>
@@ -192,11 +191,11 @@ const KnowledgeModule = {
                 <div class="kb-metadata" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px; margin-bottom: var(--spacing-md);">
                     <div>
                         <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Category</div>
-                        <div style="font-weight: 600;">📁 ${kb.category}</div>
+                        <div style="font-weight: 600;">📁 ${Utils.escapeHtml(kb.category)}</div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Author</div>
-                        <div style="font-weight: 600;">👤 ${kb.author}</div>
+                        <div style="font-weight: 600;">👤 ${Utils.escapeHtml(kb.author)}</div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Created</div>
@@ -221,7 +220,7 @@ const KnowledgeModule = {
                 <div class="kb-applicability-section" style="margin-bottom: var(--spacing-md);">
                     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--spacing-xs);">Applies to:</div>
                     <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs);">
-                        ${kb.applicability.map(item => `<span class="badge badge-new">${item}</span>`).join('')}
+                        ${kb.applicability.map(item => `<span class="badge badge-new">${Utils.escapeHtml(item)}</span>`).join('')}
                     </div>
                 </div>
                 ` : ''}
@@ -231,7 +230,7 @@ const KnowledgeModule = {
                 <div class="kb-prerequisites" style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-warning); border-left: 3px solid var(--accent-orange); border-radius: 4px;">
                     <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Prerequisites:</div>
                     <ul style="margin: 0; padding-left: var(--spacing-lg);">
-                        ${kb.prerequisites.map(prereq => `<li>${prereq}</li>`).join('')}
+                        ${kb.prerequisites.map(prereq => `<li>${Utils.escapeHtml(prereq)}</li>`).join('')}
                     </ul>
                 </div>
                 ` : ''}
@@ -245,7 +244,7 @@ const KnowledgeModule = {
                 <div class="kb-tags-section" style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--border-light);">
                     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--spacing-xs);">Tags:</div>
                     <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs);">
-                        ${kb.tags.map(tag => `<span class="badge badge-new">${tag}</span>`).join('')}
+                        ${kb.tags.map(tag => `<span class="badge badge-new">${Utils.escapeHtml(tag)}</span>`).join('')}
                     </div>
                 </div>
             </div>
@@ -427,7 +426,7 @@ const KnowledgeModule = {
 
                     <div class="form-group">
                         <label class="form-label required">Title</label>
-                        <input type="text" class="form-control" id="kb-edit-title" value="${kb.title.replace(/"/g, '&quot;')}" required>
+                        <input type="text" class="form-control" id="kb-edit-title" value="${Utils.escapeHtml(kb.title)}" required>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
@@ -448,7 +447,7 @@ const KnowledgeModule = {
 
                     <div class="form-group">
                         <label class="form-label">Content</label>
-                        <textarea class="form-control" id="kb-edit-content" rows="12">${kb.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        <textarea class="form-control" id="kb-edit-content" rows="12">${Utils.escapeHtml(kb.content)}</textarea>
                         <div style="font-size: 10px; color: var(--text-muted); margin-top: var(--spacing-xs);">
                             Supports: # Headers, **bold**, \`code\`, \`\`\`code blocks\`\`\`, numbered lists (1. item), bullet lists (- item)
                         </div>
@@ -456,7 +455,7 @@ const KnowledgeModule = {
 
                     <div class="form-group">
                         <label class="form-label">Tags (comma separated)</label>
-                        <input type="text" class="form-control" id="kb-edit-tags" value="${kb.tags.join(', ')}">
+                        <input type="text" class="form-control" id="kb-edit-tags" value="${Utils.escapeHtml(kb.tags.join(', '))}">
                     </div>
 
                     <div class="form-group">
@@ -468,7 +467,7 @@ const KnowledgeModule = {
 
                     <div class="form-group">
                         <label class="form-label">Prerequisites</label>
-                        <textarea class="form-control" id="kb-edit-prerequisites" rows="3">${kb.prerequisites ? kb.prerequisites.join('\n') : ''}</textarea>
+                        <textarea class="form-control" id="kb-edit-prerequisites" rows="3">${Utils.escapeHtml(kb.prerequisites ? kb.prerequisites.join('\n') : '')}</textarea>
                     </div>
                 </form>
             </div>

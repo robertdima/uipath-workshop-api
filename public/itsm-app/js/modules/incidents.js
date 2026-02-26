@@ -397,7 +397,7 @@ const IncidentsModule = {
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Reason</label>
-                    <textarea class="form-control" id="pending-reason" rows="3" placeholder="Why is this incident pending?">${pendingState.reason || ''}</textarea>
+                    <textarea class="form-control" id="pending-reason" rows="3" placeholder="Why is this incident pending?">${Utils.escapeHtml(pendingState.reason || '')}</textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Expected Response Date</label>
@@ -533,7 +533,7 @@ const IncidentsModule = {
         const isOverdue = incident.pendingState.expectedDate &&
             new Date(incident.pendingState.expectedDate) < new Date();
 
-        return `<span class="pending-badge ${isOverdue ? 'pending-overdue' : ''}" title="${incident.pendingState.reason}">
+        return `<span class="pending-badge ${isOverdue ? 'pending-overdue' : ''}" title="${Utils.escapeHtml(incident.pendingState.reason)}">
             ${pendingType?.label || 'Pending'}
             ${isOverdue ? ' (Overdue)' : ''}
         </span>`;
@@ -552,10 +552,10 @@ const IncidentsModule = {
             notesContainer.innerHTML = incident.notes.map(note => `
                 <div class="activity-item ${note.type}">
                     <div class="activity-header">
-                        <span><strong>${note.author}</strong></span>
+                        <span><strong>${Utils.escapeHtml(note.author)}</strong></span>
                         <span>${formatDateTime(note.timestamp)}</span>
                     </div>
-                    <div class="activity-content">${note.content}</div>
+                    <div class="activity-content">${Utils.escapeHtml(note.content)}</div>
                 </div>
             `).join('');
         }
@@ -642,7 +642,7 @@ const IncidentsModule = {
             reader.onload = function(e) {
                 previewDiv.innerHTML = `
                     <img src="${e.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">${file.name}</div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(file.name)}</div>
                 `;
                 previewDiv.style.display = 'block';
             };
@@ -658,7 +658,7 @@ const IncidentsModule = {
                     <div style="text-align: left; background: #1e1e1e; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #d4d4d4; max-height: 150px; overflow: auto; white-space: pre-wrap; word-break: break-all;">
 ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (truncated)' : ''}
                     </div>
-                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">${file.name}</div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(file.name)}</div>
                 `;
                 previewDiv.style.display = 'block';
             };
@@ -669,7 +669,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
             const icon = this.getFileIcon(this.getFileTypeFromExtension(extension));
             previewDiv.innerHTML = `
                 <div style="font-size: 48px;">${icon}</div>
-                <div style="margin-top: 8px;">${file.name}</div>
+                <div style="margin-top: 8px;">${Utils.escapeHtml(file.name)}</div>
                 <div style="font-size: 11px; color: var(--text-muted);">${(file.size / 1024).toFixed(1)} KB</div>
             `;
             previewDiv.style.display = 'block';
@@ -788,8 +788,8 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                                  onmouseout="this.style.background='var(--bg-secondary)'">
                                 <span class="attachment-icon" style="font-size: 24px; margin-right: 12px;">${icon}</span>
                                 <div style="flex: 1;">
-                                    <div style="font-weight: 500;">${att.name}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${att.type} - ${att.size}</div>
+                                    <div style="font-weight: 500;">${Utils.escapeHtml(att.name)}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(att.type)} - ${att.size}</div>
                                 </div>
                                 <span style="color: var(--accent-blue); font-size: 12px;">View</span>
                             </div>
@@ -851,7 +851,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                 // Display actual image
                 previewContent = `
                     <div style="padding: var(--spacing-md); text-align: center; border-radius: 4px; margin-top: var(--spacing-md); background: #f8f9fa; border: 1px solid #dee2e6;">
-                        <img src="${attachment.data}" alt="${attachment.name}" style="max-width: 100%; max-height: 300px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                        <img src="${attachment.data}" alt="${Utils.escapeHtml(attachment.name)}" style="max-width: 100%; max-height: 300px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                     </div>
                 `;
             } else if (mimeType.startsWith('text/') || attachment.type === 'log' || attachment.type === 'text' ||
@@ -934,13 +934,13 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
 
         showModal(`
             <div class="modal-header">
-                <span>📎 Attachment: ${attachment.name}</span>
+                <span>📎 Attachment: ${Utils.escapeHtml(attachment.name)}</span>
                 <button class="panel-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="width: 500px;">
                 <div style="text-align: center; padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: 8px;">
                     <div style="font-size: 64px; margin-bottom: var(--spacing-sm);">${icon}</div>
-                    <div style="font-size: 18px; font-weight: 600;">${attachment.name}</div>
+                    <div style="font-size: 18px; font-weight: 600;">${Utils.escapeHtml(attachment.name)}</div>
                     <div style="color: var(--text-muted); margin-top: 4px;">${attachment.size}</div>
                 </div>
 
@@ -950,7 +950,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 8px 0; color: var(--text-muted); width: 120px;">File Type</td>
-                            <td style="padding: 8px 0;">${attachment.type}${attachment.mimeType ? ` (${attachment.mimeType})` : ''}</td>
+                            <td style="padding: 8px 0;">${Utils.escapeHtml(attachment.type)}${attachment.mimeType ? ` (${Utils.escapeHtml(attachment.mimeType)})` : ''}</td>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 8px 0; color: var(--text-muted);">File Size</td>
@@ -963,7 +963,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                         ${attachment.uploadedBy ? `
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 8px 0; color: var(--text-muted);">Uploaded By</td>
-                            <td style="padding: 8px 0;">${attachment.uploadedBy}</td>
+                            <td style="padding: 8px 0;">${Utils.escapeHtml(attachment.uploadedBy)}</td>
                         </tr>
                         ` : ''}
                         ${attachment.uploadedAt ? `
@@ -975,7 +975,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                         ${attachment.description ? `
                         <tr>
                             <td style="padding: 8px 0; color: var(--text-muted);">Description</td>
-                            <td style="padding: 8px 0;">${attachment.description}</td>
+                            <td style="padding: 8px 0;">${Utils.escapeHtml(attachment.description)}</td>
                         </tr>
                         ` : ''}
                     </table>
@@ -1086,7 +1086,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                         <div class="card" style="margin-bottom: var(--spacing-sm);">
                             <div class="card-body" style="padding: var(--spacing-sm); display: flex; justify-content: space-between; align-items: center;">
                                 <div>
-                                    <strong>${kb.id}</strong>: ${kb.title}
+                                    <strong>${kb.id}</strong>: ${Utils.escapeHtml(kb.title)}
                                 </div>
                                 <div>
                                     <button class="btn btn-sm btn-secondary" onclick="viewKBArticle('${kb.id}')">View</button>
@@ -1145,7 +1145,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     </div>
                 </div>
                 <div style="margin-bottom: var(--spacing-md);">
-                    <strong>Suggested articles</strong> (based on incident category: ${incident.category})
+                    <strong>Suggested articles</strong> (based on incident category: ${Utils.escapeHtml(incident.category)})
                 </div>
                 <div id="kb-search-results">
                     ${this.renderKBSearchResults(incidentId, incident.category)}
@@ -1206,12 +1206,12 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <div class="card-body" style="padding: var(--spacing-sm);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div style="flex: 1;">
-                                <div><strong>${kb.id}</strong>: ${kb.title}</div>
+                                <div><strong>${kb.id}</strong>: ${Utils.escapeHtml(kb.title)}</div>
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                                    ${kb.category} | ${kb.views} views | ${kb.helpful}% helpful
+                                    ${Utils.escapeHtml(kb.category)} | ${kb.views} views | ${kb.helpful}% helpful
                                 </div>
                                 <div style="margin-top: 4px;">
-                                    ${kb.tags.slice(0, 4).map(tag => `<span class="badge badge-new" style="margin-right: 4px; font-size: 10px;">${tag}</span>`).join('')}
+                                    ${kb.tags.slice(0, 4).map(tag => `<span class="badge badge-new" style="margin-right: 4px; font-size: 10px;">${Utils.escapeHtml(tag)}</span>`).join('')}
                                 </div>
                             </div>
                             <div>
@@ -1300,27 +1300,27 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Caller</label>
-                                <input type="text" class="form-control" value="${incident.callerName || incident.reporter || 'Unknown'}" readonly style="font-weight: 500;">
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.callerName || incident.reporter || 'Unknown')}" readonly style="font-weight: 500;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Email</label>
-                                <input type="text" class="form-control" value="${incident.callerEmail || ''}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.callerEmail || '')}" readonly>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Phone</label>
-                                <input type="text" class="form-control" value="${incident.callerPhone || ''}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.callerPhone || '')}" readonly>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Department</label>
-                                <input type="text" class="form-control" value="${incident.callerDepartment || ''}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.callerDepartment || '')}" readonly>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Location</label>
-                                <input type="text" class="form-control" value="${incident.callerLocation || ''}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.callerLocation || '')}" readonly>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Contact Type</label>
-                                <input type="text" class="form-control" value="${this.getContactTypeLabel(incident.contactType)}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(this.getContactTypeLabel(incident.contactType))}" readonly>
                             </div>
                         </div>
                     </div>
@@ -1329,7 +1329,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Opened By</label>
-                            <input type="text" class="form-control" value="${incident.openedByName || incident.openedBy || 'System'}" readonly>
+                            <input type="text" class="form-control" value="${Utils.escapeHtml(incident.openedByName || incident.openedBy || 'System')}" readonly>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Opened</label>
@@ -1348,7 +1348,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <!-- Short Description -->
                     <div class="form-group">
                         <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Short Description</label>
-                        <input type="text" class="form-control" id="inc-summary" value="${incident.title}" style="font-weight: 500;">
+                        <input type="text" class="form-control" id="inc-summary" value="${Utils.escapeHtml(incident.title)}" style="font-weight: 500;">
                     </div>
 
                     <!-- Status & Classification Section -->
@@ -1419,7 +1419,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                             <select class="form-control" id="inc-asset">
                                 <option value="">-- Select CI --</option>
                                 ${ITSMData.assets.map(asset => `
-                                    <option value="${asset.id}" ${(incident.configurationItem === asset.id || incident.affectedAsset === asset.id) ? 'selected' : ''}>${asset.id} - ${asset.name}</option>
+                                    <option value="${asset.id}" ${(incident.configurationItem === asset.id || incident.affectedAsset === asset.id) ? 'selected' : ''}>${asset.id} - ${Utils.escapeHtml(asset.name)}</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -1440,7 +1440,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                             <select class="form-control" id="inc-assignee">
                                 <option value="">-- Unassigned --</option>
                                 ${ITSMData.technicians.map(tech => `
-                                    <option value="${tech.id}" ${incident.assignee === tech.id || incident.assignee === tech.email ? 'selected' : ''}>${tech.name}</option>
+                                    <option value="${tech.id}" ${incident.assignee === tech.id || incident.assignee === tech.email ? 'selected' : ''}>${Utils.escapeHtml(tech.name)}</option>
                                 `).join('')}
                             </select>
                         </div>
@@ -1459,18 +1459,18 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <!-- Description -->
                     <div class="form-group">
                         <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Description</label>
-                        <textarea class="form-control" rows="4" id="inc-description">${incident.description}</textarea>
+                        <textarea class="form-control" rows="4" id="inc-description">${Utils.escapeHtml(incident.description)}</textarea>
                     </div>
 
                     <!-- Watch List & Notifications -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Watch List</label>
-                            <input type="text" class="form-control" id="inc-watch-list" value="${(incident.watchList || []).join(', ')}" placeholder="Enter emails separated by commas">
+                            <input type="text" class="form-control" id="inc-watch-list" value="${Utils.escapeHtml((incident.watchList || []).join(', '))}" placeholder="Enter emails separated by commas">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Work Notes Notify</label>
-                            <input type="text" class="form-control" id="inc-work-notes-notify" value="${(incident.workNotesNotify || []).join(', ')}" placeholder="Enter emails separated by commas">
+                            <input type="text" class="form-control" id="inc-work-notes-notify" value="${Utils.escapeHtml((incident.workNotesNotify || []).join(', '))}" placeholder="Enter emails separated by commas">
                         </div>
                     </div>
 
@@ -1485,13 +1485,13 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Resolution Code</label>
-                                    <input type="text" class="form-control" value="${incident.resolutionCode || 'N/A'}" readonly>
+                                    <input type="text" class="form-control" value="${Utils.escapeHtml(incident.resolutionCode || 'N/A')}" readonly>
                                 </div>
                             </div>
                             ${incident.resolutionNotes ? `
                                 <div class="form-group" style="margin-bottom: 0; margin-top: var(--spacing-sm);">
                                     <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Resolution Notes</label>
-                                    <textarea class="form-control" rows="2" readonly>${incident.resolutionNotes}</textarea>
+                                    <textarea class="form-control" rows="2" readonly>${Utils.escapeHtml(incident.resolutionNotes)}</textarea>
                                 </div>
                             ` : ''}
                         </div>
@@ -1504,7 +1504,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-md);">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Pending Type</label>
-                                    <input type="text" class="form-control" value="${this.pendingTypes.find(p => p.value === incident.pendingState.type)?.label || incident.pendingState.type}" readonly>
+                                    <input type="text" class="form-control" value="${Utils.escapeHtml(this.pendingTypes.find(p => p.value === incident.pendingState.type)?.label || incident.pendingState.type)}" readonly>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Expected Response</label>
@@ -1517,7 +1517,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                             </div>
                             <div class="form-group" style="margin-bottom: 0; margin-top: var(--spacing-sm);">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-muted);">Reason</label>
-                                <input type="text" class="form-control" value="${incident.pendingState.reason}" readonly>
+                                <input type="text" class="form-control" value="${Utils.escapeHtml(incident.pendingState.reason)}" readonly>
                             </div>
                         </div>
                     ` : ''}
@@ -1549,10 +1549,10 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                         ${incident.notes.map(note => `
                             <div class="activity-item ${note.type}">
                                 <div class="activity-header">
-                                    <span><strong>${note.author}</strong></span>
+                                    <span><strong>${Utils.escapeHtml(note.author)}</strong></span>
                                     <span>${formatDateTime(note.timestamp)}</span>
                                 </div>
-                                <div class="activity-content">${note.content}</div>
+                                <div class="activity-content">${Utils.escapeHtml(note.content)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1574,8 +1574,8 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                                      onmouseout="this.style.background='var(--bg-secondary)'">
                                     <span class="attachment-icon" style="font-size: 24px; margin-right: 12px;">${icon}</span>
                                     <div style="flex: 1;">
-                                        <div style="font-weight: 500;">${att.name}</div>
-                                        <div style="font-size: 11px; color: var(--text-muted);">${att.type} - ${att.size}</div>
+                                        <div style="font-weight: 500;">${Utils.escapeHtml(att.name)}</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(att.type)} - ${att.size}</div>
                                     </div>
                                     <span style="color: var(--accent-blue); font-size: 12px;">View</span>
                                 </div>
@@ -1594,7 +1594,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                             <div class="card" style="margin-bottom: var(--spacing-sm);">
                                 <div class="card-body" style="padding: var(--spacing-sm); display: flex; justify-content: space-between; align-items: center;">
                                     <div>
-                                        <strong>${kb.id}</strong>: ${kb.title}
+                                        <strong>${kb.id}</strong>: ${Utils.escapeHtml(kb.title)}
                                     </div>
                                     <div>
                                         <button class="btn btn-sm btn-secondary" onclick="viewKBArticle('${kb.id}')">View</button>
@@ -1681,7 +1681,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
 
         assigneeSelect.innerHTML = '<option value="">-- Unassigned --</option>' +
             technicians.map(tech =>
-                `<option value="${tech.id}">${tech.name} (${tech.workload} tickets)</option>`
+                `<option value="${tech.id}">${Utils.escapeHtml(tech.name)} (${tech.workload} tickets)</option>`
             ).join('');
     },
 
@@ -1775,10 +1775,10 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}${truncated ? '\n\n... (tr
                     <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
                     <div class="ticket-id">${inc.id}</div>
                     <div style="flex: 1;">
-                        <div class="ticket-summary">${inc.title}</div>
+                        <div class="ticket-summary">${Utils.escapeHtml(inc.title)}</div>
                         <div class="ticket-meta">
                             <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
-                            <span>${inc.category}</span>
+                            <span>${Utils.escapeHtml(inc.category)}</span>
                             <span>${formatDate(inc.createdAt)}</span>
                         </div>
                     </div>

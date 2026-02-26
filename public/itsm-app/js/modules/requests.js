@@ -148,10 +148,10 @@ const RequestsModule = {
                         <tr class="clickable ${this.selectedRequest === r.id ? 'selected' : ''} ${this.selectedIds.has(r.id) ? 'row-selected' : ''}" onclick="RequestsModule.selectRequest('${r.id}')">
                             <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-requests" value="${r.id}" onchange="RequestsModule.toggleSelection('${r.id}')" ${this.selectedIds.has(r.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${r.id}</td>
-                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.catalogItemName || r.title}">${r.catalogItemName || r.title}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${Utils.escapeHtml(r.catalogItemName || r.title)}">${Utils.escapeHtml(r.catalogItemName || r.title)}</td>
                             <td><span class="badge ${this.statusBadgeClass[r.status] || 'badge-new'}">${r.status}</span></td>
                             <td>${r.priority}</td>
-                            <td>${r.requestedByName}</td>
+                            <td>${Utils.escapeHtml(r.requestedByName)}</td>
                             <td>${new Date(r.createdAt).toLocaleDateString()}</td>
                         </tr>
                     `).join('')}
@@ -180,7 +180,7 @@ const RequestsModule = {
 
         const headerEl = document.getElementById('req-detail-header');
         const detailEl = document.getElementById('request-detail');
-        if (headerEl) headerEl.innerHTML = `${request.id} - ${request.catalogItemName || request.title}`;
+        if (headerEl) headerEl.innerHTML = `${request.id} - ${Utils.escapeHtml(request.catalogItemName || request.title)}`;
         if (detailEl) detailEl.innerHTML = this.renderRequestDetail(request);
     },
 
@@ -210,7 +210,7 @@ const RequestsModule = {
                     </div>
                     <div>
                         <label class="form-label" style="color: var(--text-muted);">Category</label>
-                        <div>${r.category}</div>
+                        <div>${Utils.escapeHtml(r.category)}</div>
                     </div>
                 </div>
 
@@ -221,22 +221,22 @@ const RequestsModule = {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Catalog Item</label>
-                                <div>${r.catalogItemName || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.catalogItemName || 'N/A')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Expected Fulfillment</label>
-                                <div>${r.expectedFulfillment || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.expectedFulfillment || 'N/A')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Estimated Cost</label>
-                                <div>${r.estimatedCost || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.estimatedCost || 'N/A')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Actual Cost</label>
-                                <div>${r.actualCost || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.actualCost || 'N/A')}</div>
                             </div>
                         </div>
-                        ${r.description ? `<div style="margin-top: var(--spacing-md);"><label class="form-label" style="color: var(--text-muted);">Description</label><div>${r.description}</div></div>` : ''}
+                        ${r.description ? `<div style="margin-top: var(--spacing-md);"><label class="form-label" style="color: var(--text-muted);">Description</label><div>${Utils.escapeHtml(r.description)}</div></div>` : ''}
                     </div>
                 </div>
 
@@ -247,19 +247,19 @@ const RequestsModule = {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Requested By</label>
-                                <div>${r.requestedByName} ${r.requestedForVip ? '<span class="badge" style="background: gold; color: black;">VIP</span>' : ''}</div>
+                                <div>${Utils.escapeHtml(r.requestedByName)} ${r.requestedForVip ? '<span class="badge" style="background: gold; color: black;">VIP</span>' : ''}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Requested For</label>
-                                <div>${r.requestedForName || r.requestedFor}</div>
+                                <div>${Utils.escapeHtml(r.requestedForName || r.requestedFor)}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Department</label>
-                                <div>${r.requestedForDepartment || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.requestedForDepartment || 'N/A')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Location</label>
-                                <div>${r.requestedForLocation || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(r.requestedForLocation || 'N/A')}</div>
                             </div>
                         </div>
                     </div>
@@ -274,7 +274,7 @@ const RequestsModule = {
                             ${Object.entries(r.formData).map(([key, value]) => {
                                 const field = catItem ? catItem.fields.find(f => f.name === key) : null;
                                 const label = field ? field.label : key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                                return `<div><label class="form-label" style="color: var(--text-muted);">${label}</label><div style="white-space: pre-wrap;">${value || 'N/A'}</div></div>`;
+                                return `<div><label class="form-label" style="color: var(--text-muted);">${Utils.escapeHtml(label)}</label><div style="white-space: pre-wrap;">${Utils.escapeHtml(value || 'N/A')}</div></div>`;
                             }).join('')}
                         </div>
                     </div>
@@ -288,14 +288,14 @@ const RequestsModule = {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Approver</label>
-                                <div>${r.approverName || r.approver || 'Not assigned'}</div>
+                                <div>${Utils.escapeHtml(r.approverName || r.approver || 'Not assigned')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Approval Date</label>
                                 <div>${r.approvalDate ? new Date(r.approvalDate).toLocaleString() : 'Pending'}</div>
                             </div>
-                            ${r.approvalComments ? `<div style="grid-column: 1 / -1;"><label class="form-label" style="color: var(--text-muted);">Comments</label><div>${r.approvalComments}</div></div>` : ''}
-                            ${r.rejectionReason ? `<div style="grid-column: 1 / -1;"><label class="form-label" style="color: var(--text-muted);">Rejection Reason</label><div style="color: var(--accent-red);">${r.rejectionReason}</div></div>` : ''}
+                            ${r.approvalComments ? `<div style="grid-column: 1 / -1;"><label class="form-label" style="color: var(--text-muted);">Comments</label><div>${Utils.escapeHtml(r.approvalComments)}</div></div>` : ''}
+                            ${r.rejectionReason ? `<div style="grid-column: 1 / -1;"><label class="form-label" style="color: var(--text-muted);">Rejection Reason</label><div style="color: var(--accent-red);">${Utils.escapeHtml(r.rejectionReason)}</div></div>` : ''}
                         </div>
                     </div>
                 </div>` : ''}
@@ -307,11 +307,11 @@ const RequestsModule = {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Assignment Group</label>
-                                <div>${r.assignmentGroup || 'Unassigned'}</div>
+                                <div>${Utils.escapeHtml(r.assignmentGroup || 'Unassigned')}</div>
                             </div>
                             <div>
                                 <label class="form-label" style="color: var(--text-muted);">Assigned To</label>
-                                <div>${r.assigneeName || 'Unassigned'}</div>
+                                <div>${Utils.escapeHtml(r.assigneeName || 'Unassigned')}</div>
                             </div>
                         </div>
                     </div>
@@ -348,10 +348,10 @@ const RequestsModule = {
                         [...r.notes].reverse().map(note => `
                             <div style="padding: var(--spacing-sm); margin-bottom: var(--spacing-sm); border-left: 3px solid ${note.type === 'customer' ? 'var(--accent-green)' : note.type === 'system' ? 'var(--accent-blue)' : 'var(--accent-orange)'}; background: var(--bg-secondary);">
                                 <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
-                                    <span>${note.author} (${note.type})</span>
+                                    <span>${Utils.escapeHtml(note.author)} (${note.type})</span>
                                     <span>${new Date(note.timestamp).toLocaleString()}</span>
                                 </div>
-                                <div style="font-size: 13px;">${note.content}</div>
+                                <div style="font-size: 13px;">${Utils.escapeHtml(note.content)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -548,14 +548,14 @@ const RequestsModule = {
                 <div class="form-group">
                     <label class="form-label">Assignment Group</label>
                     <select class="form-control" id="assign-group" onchange="RequestsModule.updateTechnicianOptions()">
-                        ${teams.map(t => `<option value="${t.name}" ${r.assignmentGroup === t.name ? 'selected' : ''}>${t.name}</option>`).join('')}
+                        ${teams.map(t => `<option value="${Utils.escapeHtml(t.name)}" ${r.assignmentGroup === t.name ? 'selected' : ''}>${Utils.escapeHtml(t.name)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Assigned To</label>
                     <select class="form-control" id="assign-tech">
                         <option value="">-- Unassigned --</option>
-                        ${ITSMData.technicians.map(t => `<option value="${t.id}" data-team="${t.team}" ${r.assignedTo === t.id ? 'selected' : ''}>${t.name} (${t.team})</option>`).join('')}
+                        ${ITSMData.technicians.map(t => `<option value="${t.id}" data-team="${Utils.escapeHtml(t.team)}" ${r.assignedTo === t.id ? 'selected' : ''}>${Utils.escapeHtml(t.name)} (${Utils.escapeHtml(t.team)})</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -663,7 +663,7 @@ const RequestsModule = {
                         ${myRequests.map(r => `
                             <tr>
                                 <td class="cell-id">${r.id}</td>
-                                <td>${r.catalogItemName || r.title}</td>
+                                <td>${Utils.escapeHtml(r.catalogItemName || r.title)}</td>
                                 <td><span class="badge ${this.statusBadgeClass[r.status]}">${r.status}</span></td>
                                 <td>${r.priority}</td>
                                 <td>${new Date(r.createdAt).toLocaleDateString()}</td>

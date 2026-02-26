@@ -138,15 +138,15 @@ const AssetsModule = {
                 <tr class="clickable ${this.selectedIds.has(asset.id) ? 'row-selected' : ''}" onclick="AssetsModule.viewAsset('${asset.id}')">
                     <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-assets" value="${asset.id}" onchange="AssetsModule.toggleSelection('${asset.id}')" ${this.selectedIds.has(asset.id) ? 'checked' : ''}></td>
                     <td class="cell-id">${asset.id}</td>
-                    <td>${asset.name}</td>
-                    <td>${asset.type}</td>
+                    <td>${Utils.escapeHtml(asset.name)}</td>
+                    <td>${Utils.escapeHtml(asset.type)}</td>
                     <td>
                         <span style="color: ${statusInfo.color};">${statusInfo.icon}</span>
                         ${asset.status}
                     </td>
-                    <td>${asset.owner}</td>
-                    <td>${asset.location}</td>
-                    <td>${asset.os || 'N/A'}</td>
+                    <td>${Utils.escapeHtml(asset.owner)}</td>
+                    <td>${Utils.escapeHtml(asset.location)}</td>
+                    <td>${Utils.escapeHtml(asset.os || 'N/A')}</td>
                     <td class="cell-date">${this.formatDateTime(asset.lastSeen)}</td>
                     <td class="cell-actions" onclick="event.stopPropagation();">
                         <button class="btn btn-sm btn-secondary" onclick="AssetsModule.viewAsset('${asset.id}')">View</button>
@@ -201,23 +201,23 @@ const AssetsModule = {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Name</label>
-                                <div>${asset.name}</div>
+                                <div>${Utils.escapeHtml(asset.name)}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Type</label>
-                                <div>${asset.type}</div>
+                                <div>${Utils.escapeHtml(asset.type)}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Operating System</label>
-                                <div>${asset.os || 'N/A'}</div>
+                                <div>${Utils.escapeHtml(asset.os || 'N/A')}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Owner</label>
-                                <div>${asset.owner}</div>
+                                <div>${Utils.escapeHtml(asset.owner)}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Location</label>
-                                <div>${asset.location}</div>
+                                <div>${Utils.escapeHtml(asset.location)}</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Last Seen</label>
@@ -254,7 +254,7 @@ const AssetsModule = {
                                     ${relatedIncidents.map(inc => `
                                         <tr class="clickable" onclick="closeModal(); openIncidentDetail('${inc.id}');">
                                             <td class="cell-id">${inc.id}</td>
-                                            <td>${inc.title}</td>
+                                            <td>${Utils.escapeHtml(inc.title)}</td>
                                             <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
                                             <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
                                         </tr>
@@ -285,7 +285,7 @@ const AssetsModule = {
                                     ${relatedChanges.map(chg => `
                                         <tr class="clickable" onclick="closeModal(); viewChange('${chg.id}');">
                                             <td class="cell-id">${chg.id}</td>
-                                            <td>${chg.title}</td>
+                                            <td>${Utils.escapeHtml(chg.title)}</td>
                                             <td><span class="badge badge-${chg.status.toLowerCase().replace(' ', '-')}">${chg.status}</span></td>
                                             <td><span class="badge ${chg.type === 'Emergency' ? 'badge-critical' : 'badge-new'}">${chg.type}</span></td>
                                         </tr>
@@ -422,7 +422,7 @@ const AssetsModule = {
                     </div>
                     <div class="form-group">
                         <label class="form-label required">Name</label>
-                        <input type="text" class="form-control" id="edit-asset-name" value="${asset.name}" required>
+                        <input type="text" class="form-control" id="edit-asset-name" value="${Utils.escapeHtml(asset.name)}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label required">Type</label>
@@ -442,16 +442,16 @@ const AssetsModule = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Owner</label>
-                        <input type="text" class="form-control" id="edit-asset-owner" value="${asset.owner}">
+                        <input type="text" class="form-control" id="edit-asset-owner" value="${Utils.escapeHtml(asset.owner)}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Location</label>
-                        <input type="text" class="form-control" id="edit-asset-location" value="${asset.location}">
+                        <input type="text" class="form-control" id="edit-asset-location" value="${Utils.escapeHtml(asset.location)}">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Operating System</label>
-                    <input type="text" class="form-control" id="edit-asset-os" value="${asset.os || ''}">
+                    <input type="text" class="form-control" id="edit-asset-os" value="${Utils.escapeHtml(asset.os || '')}">
                 </div>
             </div>
             <div class="modal-footer">
@@ -526,7 +526,7 @@ const AssetsModule = {
                 <button class="panel-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body" style="min-width: 400px;">
-                <p>Are you sure you want to delete asset <strong>${assetId}</strong> (${asset.name})?</p>
+                <p>Are you sure you want to delete asset <strong>${assetId}</strong> (${Utils.escapeHtml(asset.name)})?</p>
                 ${warningMessage}
                 <div style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 4px;">
                     <p style="margin-bottom: var(--spacing-sm);"><strong>Choose action:</strong></p>
@@ -595,8 +595,8 @@ const AssetsModule = {
             <div class="modal-body" style="width: 550px;">
                 <div class="card" style="margin-bottom: var(--spacing-md); background: var(--bg-secondary);">
                     <div class="card-body" style="padding: var(--spacing-sm);">
-                        <strong>Asset:</strong> ${asset.name} (${asset.id})<br>
-                        <small style="color: var(--text-muted);">${asset.type} | ${asset.location} | Owner: ${asset.owner}</small>
+                        <strong>Asset:</strong> ${Utils.escapeHtml(asset.name)} (${asset.id})<br>
+                        <small style="color: var(--text-muted);">${Utils.escapeHtml(asset.type)} | ${Utils.escapeHtml(asset.location)} | Owner: ${Utils.escapeHtml(asset.owner)}</small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -751,7 +751,7 @@ const AssetsModule = {
                        class="form-control"
                        id="${inputId}"
                        placeholder="Search assets by ID, name, or owner..."
-                       value="${selectedAsset ? `${selectedAsset.id} - ${selectedAsset.name}` : ''}"
+                       value="${selectedAsset ? `${selectedAsset.id} - ${Utils.escapeHtml(selectedAsset.name)}` : ''}"
                        autocomplete="off">
                 <input type="hidden" id="${inputId}-value" value="${selectedAssetId}">
                 <div id="${inputId}-dropdown" class="asset-picker-dropdown" style="
@@ -819,14 +819,14 @@ const AssetsModule = {
                          onclick="AssetsModule.selectAssetFromPicker('${inputId}', '${asset.id}')">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span>
-                                <strong>${asset.id}</strong> - ${asset.name}
+                                <strong>${asset.id}</strong> - ${Utils.escapeHtml(asset.name)}
                             </span>
                             <span style="color: ${statusInfo.color}; font-size: 10px;">
                                 ${statusInfo.icon} ${asset.status}
                             </span>
                         </div>
                         <div style="font-size: 11px; color: var(--text-muted);">
-                            ${asset.type} | ${asset.location}
+                            ${Utils.escapeHtml(asset.type)} | ${Utils.escapeHtml(asset.location)}
                         </div>
                     </div>
                 `;

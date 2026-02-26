@@ -156,12 +156,12 @@ const ProblemsModule = {
                         <tr class="${this.selectedIds.has(prb.id) ? 'row-selected' : ''}">
                             <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check-problems" value="${prb.id}" onchange="ProblemsModule.toggleSelection('${prb.id}')" ${this.selectedIds.has(prb.id) ? 'checked' : ''}></td>
                             <td class="cell-id">${prb.id}</td>
-                            <td>${prb.title}</td>
+                            <td>${Utils.escapeHtml(prb.title)}</td>
                             <td><span class="badge ${this.getStatusBadgeClass(prb.status)}">${prb.status}</span></td>
                             <td><span class="badge ${this.getPriorityBadgeClass(prb.priority)}">${prb.priority}</span></td>
-                            <td>${prb.category}</td>
+                            <td>${Utils.escapeHtml(prb.category)}</td>
                             <td>${prb.linkedIncidents ? prb.linkedIncidents.length : 0}</td>
-                            <td>${prb.assignedTo}</td>
+                            <td>${Utils.escapeHtml(prb.assignedTo)}</td>
                             <td class="cell-date">${this.formatDateTime(prb.updatedAt)}</td>
                             <td class="cell-actions">
                                 <button class="btn btn-sm btn-secondary" onclick="ProblemsModule.viewProblem('${prb.id}')">View</button>
@@ -274,7 +274,7 @@ const ProblemsModule = {
                         <input type="checkbox" id="asset-${asset.id}" value="${asset.id}"
                             class="asset-checkbox" ${selectedAssets.includes(asset.id) ? 'checked' : ''}>
                         <label for="asset-${asset.id}" style="cursor: pointer;">
-                            ${asset.id} - ${asset.name} <span style="color: var(--text-muted);">(${asset.type})</span>
+                            ${asset.id} - ${Utils.escapeHtml(asset.name)} <span style="color: var(--text-muted);">(${Utils.escapeHtml(asset.type)})</span>
                         </label>
                     </div>
                 `).join('')}
@@ -344,15 +344,15 @@ const ProblemsModule = {
             <div class="modal-body" style="width: 600px; max-height: 70vh; overflow-y: auto;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
                     <strong>Source Incident: ${incident.id}</strong>
-                    <div style="font-size: 12px; margin-top: 4px;">${incident.title}</div>
+                    <div style="font-size: 12px; margin-top: 4px;">${Utils.escapeHtml(incident.title)}</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Problem Title</label>
-                    <input type="text" class="form-control" id="prb-title" value="${incident.title}" placeholder="Brief title describing the problem">
+                    <input type="text" class="form-control" id="prb-title" value="${Utils.escapeHtml(incident.title)}" placeholder="Brief title describing the problem">
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Description</label>
-                    <textarea class="form-control" id="prb-description" rows="4" placeholder="Detailed description of the problem...">${incident.description}</textarea>
+                    <textarea class="form-control" id="prb-description" rows="4" placeholder="Detailed description of the problem...">${Utils.escapeHtml(incident.description)}</textarea>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                     <div class="form-group">
@@ -445,7 +445,7 @@ const ProblemsModule = {
 
         showModal(`
             <div class="modal-header">
-                <span>${problem.id}: ${problem.title}</span>
+                <span>${problem.id}: ${Utils.escapeHtml(problem.title)}</span>
                 <button class="panel-close" onclick="closeModal()">x</button>
             </div>
             <div class="modal-body" style="width: 750px; max-height: 75vh; overflow-y: auto;">
@@ -461,11 +461,11 @@ const ProblemsModule = {
                     </div>
                     <div>
                         <strong>Category:</strong>
-                        <span>${problem.category}</span>
+                        <span>${Utils.escapeHtml(problem.category)}</span>
                     </div>
                     <div>
                         <strong>Assigned To:</strong>
-                        <span>${problem.assignedTo}</span>
+                        <span>${Utils.escapeHtml(problem.assignedTo)}</span>
                     </div>
                 </div>
 
@@ -481,7 +481,7 @@ const ProblemsModule = {
                 <div class="tab-content active" id="tab-details">
                     <div class="form-group">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" rows="4" readonly>${problem.description}</textarea>
+                        <textarea class="form-control" rows="4" readonly>${Utils.escapeHtml(problem.description)}</textarea>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                         <div class="form-group">
@@ -496,7 +496,7 @@ const ProblemsModule = {
                     ${problem.assignee ? `
                     <div class="form-group">
                         <label class="form-label">Assignee</label>
-                        <input type="text" class="form-control" value="${problem.assignee}" readonly>
+                        <input type="text" class="form-control" value="${Utils.escapeHtml(problem.assignee)}" readonly>
                     </div>
                     ` : ''}
                 </div>
@@ -505,11 +505,11 @@ const ProblemsModule = {
                 <div class="tab-content" id="tab-root-cause">
                     <div class="form-group">
                         <label class="form-label">Root Cause ${problem.status === 'Known Error' || problem.status === 'Resolved' ? '' : '(Not yet identified)'}</label>
-                        <textarea class="form-control" rows="4" readonly placeholder="Root cause has not been identified yet">${problem.rootCause || ''}</textarea>
+                        <textarea class="form-control" rows="4" readonly placeholder="Root cause has not been identified yet">${Utils.escapeHtml(problem.rootCause || '')}</textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Workaround</label>
-                        <textarea class="form-control" rows="3" readonly placeholder="No workaround documented">${problem.workaround || ''}</textarea>
+                        <textarea class="form-control" rows="3" readonly placeholder="No workaround documented">${Utils.escapeHtml(problem.workaround || '')}</textarea>
                     </div>
                     ${problem.status === 'Under Investigation' ? `
                     <div style="margin-top: var(--spacing-md);">
@@ -567,10 +567,10 @@ const ProblemsModule = {
                     return `
                         <div style="padding: var(--spacing-sm); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${incId}</strong>: ${title}
+                                <strong>${incId}</strong>: ${Utils.escapeHtml(title)}
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                                     <span class="badge ${status.toLowerCase().replace(' ', '-')}">${status}</span>
-                                    ${category ? `<span style="margin-left: 8px;">${category}</span>` : ''}
+                                    ${category ? `<span style="margin-left: 8px;">${Utils.escapeHtml(category)}</span>` : ''}
                                 </div>
                             </div>
                             <div>
@@ -600,9 +600,9 @@ const ProblemsModule = {
                     return `
                         <div style="padding: var(--spacing-sm); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <strong>${asset.id}</strong>: ${asset.name}
+                                <strong>${asset.id}</strong>: ${Utils.escapeHtml(asset.name)}
                                 <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-                                    Type: ${asset.type} | Status:
+                                    Type: ${Utils.escapeHtml(asset.type)} | Status:
                                     <span style="color: ${asset.status === 'Active' ? 'var(--accent-green)' : asset.status === 'Warning' ? 'var(--accent-orange)' : 'var(--accent-red)'};">
                                         ${asset.status}
                                     </span>
@@ -688,20 +688,20 @@ const ProblemsModule = {
             </div>
             <div class="modal-body" style="width: 550px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${problem.title}</strong>
+                    <strong>${Utils.escapeHtml(problem.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                        Priority: ${problem.priority} | Category: ${problem.category}
+                        Priority: ${problem.priority} | Category: ${Utils.escapeHtml(problem.category)}
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label required">Root Cause</label>
-                    <textarea class="form-control" id="ke-root-cause" rows="4" placeholder="Describe the identified root cause of this problem...">${problem.rootCause || ''}</textarea>
+                    <textarea class="form-control" id="ke-root-cause" rows="4" placeholder="Describe the identified root cause of this problem...">${Utils.escapeHtml(problem.rootCause || '')}</textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label required">Workaround</label>
-                    <textarea class="form-control" id="ke-workaround" rows="3" placeholder="Describe the workaround for affected users...">${problem.workaround || ''}</textarea>
+                    <textarea class="form-control" id="ke-workaround" rows="3" placeholder="Describe the workaround for affected users...">${Utils.escapeHtml(problem.workaround || '')}</textarea>
                 </div>
 
                 <div style="padding: var(--spacing-sm); background: rgba(255, 193, 7, 0.1); border: 1px solid var(--accent-orange); border-radius: 4px;">
@@ -762,7 +762,7 @@ const ProblemsModule = {
             </div>
             <div class="modal-body" style="width: 500px;">
                 <div style="padding: var(--spacing-md); background: var(--bg-secondary); margin-bottom: var(--spacing-md); border-radius: 4px;">
-                    <strong>${problem.title}</strong>
+                    <strong>${Utils.escapeHtml(problem.title)}</strong>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
                         Status: ${problem.status} | Linked Incidents: ${problem.linkedIncidents ? problem.linkedIncidents.length : 0}
                     </div>
@@ -770,7 +770,7 @@ const ProblemsModule = {
 
                 <div class="form-group">
                     <label class="form-label">Root Cause</label>
-                    <textarea class="form-control" rows="3" readonly>${problem.rootCause || 'Not documented'}</textarea>
+                    <textarea class="form-control" rows="3" readonly>${Utils.escapeHtml(problem.rootCause || 'Not documented')}</textarea>
                 </div>
 
                 <div class="form-group">
@@ -891,11 +891,11 @@ const ProblemsModule = {
                 <div class="form-check" style="display: flex; align-items: flex-start;">
                     <input type="checkbox" id="link-inc-${inc.id}" value="${inc.id}" class="link-incident-checkbox" style="margin-top: 3px;">
                     <label for="link-inc-${inc.id}" style="cursor: pointer; margin-left: 8px; flex: 1;">
-                        <strong>${inc.id}</strong>: ${inc.title}
+                        <strong>${inc.id}</strong>: ${Utils.escapeHtml(inc.title)}
                         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                             <span class="badge ${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span>
                             <span style="margin-left: 8px;">Priority: ${inc.priority}</span>
-                            <span style="margin-left: 8px;">Category: ${inc.category}</span>
+                            <span style="margin-left: 8px;">Category: ${Utils.escapeHtml(inc.category)}</span>
                         </div>
                     </label>
                 </div>

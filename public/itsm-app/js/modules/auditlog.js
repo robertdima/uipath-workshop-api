@@ -78,10 +78,10 @@ const AuditLogModule = {
                         ${logs.map(log => `
                             <tr>
                                 <td class="cell-date">${Utils.formatDateTime(log.timestamp)}</td>
-                                <td>${log.actor}</td>
-                                <td><span class="badge badge-new">${log.action}</span></td>
-                                <td class="cell-id">${log.target}</td>
-                                <td>${log.details}</td>
+                                <td>${Utils.escapeHtml(log.actor)}</td>
+                                <td><span class="badge badge-new">${Utils.escapeHtml(log.action)}</span></td>
+                                <td class="cell-id">${Utils.escapeHtml(log.target)}</td>
+                                <td>${Utils.escapeHtml(log.details)}</td>
                             </tr>
                         `).join('')}
                     </tbody>

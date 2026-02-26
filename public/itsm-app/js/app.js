@@ -293,9 +293,9 @@ function renderDashboard() {
                                     <tr class="clickable" onclick="openIncidentDetail('${inc.id}')">
                                         <td class="cell-id">${inc.id}</td>
                                         <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
-                                        <td>${inc.title}</td>
+                                        <td>${Utils.escapeHtml(inc.title)}</td>
                                         <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
-                                        <td>${inc.assignedTo}</td>
+                                        <td>${Utils.escapeHtml(inc.assignedTo)}</td>
                                         <td>${renderSLABadge(inc)}</td>
                                     </tr>
                                 `).join('')}
@@ -328,10 +328,10 @@ function renderDashboard() {
                                 ${ITSMData.serviceRequests.slice(0, 5).map(req => `
                                     <tr class="clickable" onclick="setActiveModule('requests')">
                                         <td class="cell-id">${req.id}</td>
-                                        <td>${req.title || req.catalogItemName || req.catalogItem}</td>
-                                        <td>${req.category || '-'}</td>
+                                        <td>${Utils.escapeHtml(req.title || req.catalogItemName || req.catalogItem)}</td>
+                                        <td>${Utils.escapeHtml(req.category || '-')}</td>
                                         <td><span class="badge badge-${req.status.toLowerCase().replace(/ /g, '-')}">${req.status}</span></td>
-                                        <td>${req.requestedByName || req.requestedBy}</td>
+                                        <td>${Utils.escapeHtml(req.requestedByName || req.requestedBy)}</td>
                                         <td class="cell-date">${formatDate(req.createdAt)}</td>
                                     </tr>
                                 `).join('')}
@@ -424,10 +424,10 @@ function renderIncidentList() {
             <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
             <div class="ticket-id">${inc.id}</div>
             <div style="flex: 1;">
-                <div class="ticket-summary">${inc.title}</div>
+                <div class="ticket-summary">${Utils.escapeHtml(inc.title)}</div>
                 <div class="ticket-meta">
                     <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
-                    <span>${inc.category}</span>
+                    <span>${Utils.escapeHtml(inc.category)}</span>
                     <span>${formatDate(inc.createdAt)}</span>
                 </div>
             </div>
@@ -462,10 +462,10 @@ function filterIncidents() {
                 <div class="ticket-priority ${inc.priority.toLowerCase()}"></div>
                 <div class="ticket-id">${inc.id}</div>
                 <div style="flex: 1;">
-                    <div class="ticket-summary">${inc.title}</div>
+                    <div class="ticket-summary">${Utils.escapeHtml(inc.title)}</div>
                     <div class="ticket-meta">
                         <span><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></span>
-                        <span>${inc.category}</span>
+                        <span>${Utils.escapeHtml(inc.category)}</span>
                         <span>${formatDate(inc.createdAt)}</span>
                     </div>
                 </div>
@@ -534,16 +534,16 @@ function renderIncidentDetail(inc) {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Category</label>
-                        <input type="text" class="form-control" value="${inc.category}" readonly>
+                        <input type="text" class="form-control" value="${Utils.escapeHtml(inc.category)}" readonly>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Subcategory</label>
-                        <input type="text" class="form-control" value="${inc.subcategory}" readonly>
+                        <input type="text" class="form-control" value="${Utils.escapeHtml(inc.subcategory)}" readonly>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Assigned To</label>
                         <select class="form-control">
-                            <option>${inc.assignedTo}</option>
+                            <option>${Utils.escapeHtml(inc.assignedTo)}</option>
                             <option>Service Desk</option>
                             <option>Network Team</option>
                             <option>Application Support</option>
@@ -552,11 +552,11 @@ function renderIncidentDetail(inc) {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Affected Asset</label>
-                        <input type="text" class="form-control" value="${inc.affectedAsset || 'N/A'}" readonly>
+                        <input type="text" class="form-control" value="${Utils.escapeHtml(inc.affectedAsset || 'N/A')}" readonly>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Reporter</label>
-                        <input type="text" class="form-control" value="${inc.reporter}" readonly>
+                        <input type="text" class="form-control" value="${Utils.escapeHtml(inc.reporter)}" readonly>
                     </div>
                     <div class="form-group">
                         <label class="form-label">SLA Target</label>
@@ -565,7 +565,7 @@ function renderIncidentDetail(inc) {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Description</label>
-                    <textarea class="form-control" rows="4" readonly>${inc.description}</textarea>
+                    <textarea class="form-control" rows="4" readonly>${Utils.escapeHtml(inc.description)}</textarea>
                 </div>
                 <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
                     <button class="btn btn-primary" onclick="saveIncident('${inc.id}')">💾 Save Changes</button>
@@ -587,10 +587,10 @@ function renderIncidentDetail(inc) {
                     ${inc.notes.map(note => `
                         <div class="activity-item ${note.type}">
                             <div class="activity-header">
-                                <span><strong>${note.author}</strong></span>
+                                <span><strong>${Utils.escapeHtml(note.author)}</strong></span>
                                 <span>${formatDateTime(note.timestamp)}</span>
                             </div>
-                            <div class="activity-content">${note.content}</div>
+                            <div class="activity-content">${Utils.escapeHtml(note.content)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -606,8 +606,8 @@ function renderIncidentDetail(inc) {
                         ${inc.attachments.map(att => `
                             <div class="attachment-item">
                                 <span class="attachment-icon">${getFileIcon(att.type)}</span>
-                                <span>${att.name}</span>
-                                <span style="color: var(--text-muted);">(${att.size})</span>
+                                <span>${Utils.escapeHtml(att.name)}</span>
+                                <span style="color: var(--text-muted);">(${Utils.escapeHtml(att.size)})</span>
                             </div>
                         `).join('')}
                     </div>
@@ -622,7 +622,7 @@ function renderIncidentDetail(inc) {
                     return kb ? `
                         <div class="card" style="margin-bottom: var(--spacing-sm);">
                             <div class="card-body" style="padding: var(--spacing-sm);">
-                                <strong>${kb.id}</strong>: ${kb.title}
+                                <strong>${kb.id}</strong>: ${Utils.escapeHtml(kb.title)}
                                 <button class="btn btn-sm btn-secondary" style="float: right;" onclick="viewKBArticle('${kb.id}')">View</button>
                             </div>
                         </div>
@@ -649,7 +649,7 @@ function renderMyTickets() {
     return `
         <div class="page-header">
             <div class="page-title"><img class="page-icon" src="icons/document.png" alt=""> My Assigned Tickets</div>
-            <div class="page-subtitle">Incidents assigned to ${ITSMData.currentUser.name}</div>
+            <div class="page-subtitle">Incidents assigned to ${Utils.escapeHtml(ITSMData.currentUser.name)}</div>
         </div>
         <div class="page-content">
             ${myTickets.length > 0 ? `
@@ -670,7 +670,7 @@ function renderMyTickets() {
                                 <tr>
                                     <td class="cell-id">${inc.id}</td>
                                     <td><span class="badge priority-${inc.priority.toLowerCase()}">${inc.priority}</span></td>
-                                    <td>${inc.title}</td>
+                                    <td>${Utils.escapeHtml(inc.title)}</td>
                                     <td><span class="badge badge-${inc.status.toLowerCase().replace(' ', '-')}">${inc.status}</span></td>
                                     <td>${renderSLABadge(inc)}</td>
                                     <td class="cell-actions">
@@ -724,14 +724,14 @@ function renderKnowledgeBase() {
                             <span class="badge badge-${kb.status === 'Published' ? 'resolved' : 'pending'}">${kb.status}</span>
                         </div>
                         <div class="card-body">
-                            <h4 style="margin-bottom: var(--spacing-sm);">${kb.title}</h4>
+                            <h4 style="margin-bottom: var(--spacing-sm);">${Utils.escapeHtml(kb.title)}</h4>
                             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--spacing-sm);">
-                                <span>📁 ${kb.category}</span> ·
+                                <span>📁 ${Utils.escapeHtml(kb.category)}</span> ·
                                 <span>👁 ${kb.views} views</span> ·
                                 <span>👍 ${kb.helpful}% helpful</span>
                             </div>
                             <div style="margin-bottom: var(--spacing-sm);">
-                                ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="margin-right: 4px;">${tag}</span>`).join('')}
+                                ${kb.tags.slice(0, 3).map(tag => `<span class="badge badge-new" style="margin-right: 4px;">${Utils.escapeHtml(tag)}</span>`).join('')}
                             </div>
                             <button class="btn btn-sm btn-primary" onclick="viewKBArticle('${kb.id}')">View Article</button>
                         </div>
@@ -789,9 +789,9 @@ function renderChanges() {
                         ${ITSMData.changes.map(chg => `
                             <tr>
                                 <td class="cell-id">${chg.id}</td>
-                                <td>${chg.title}</td>
-                                <td><span class="badge ${chg.type === 'Emergency' ? 'badge-critical' : 'badge-new'}">${chg.type}</span></td>
-                                <td><span class="badge ${chg.risk === 'High' ? 'badge-critical' : chg.risk === 'Medium' ? 'badge-open' : 'badge-resolved'}">${chg.risk}</span></td>
+                                <td>${Utils.escapeHtml(chg.title)}</td>
+                                <td><span class="badge ${chg.type === 'Emergency' ? 'badge-critical' : 'badge-new'}">${Utils.escapeHtml(chg.type)}</span></td>
+                                <td><span class="badge ${chg.risk === 'High' ? 'badge-critical' : chg.risk === 'Medium' ? 'badge-open' : 'badge-resolved'}">${Utils.escapeHtml(chg.risk)}</span></td>
                                 <td><span class="badge badge-${chg.status.toLowerCase().replace(' ', '-')}">${chg.status}</span></td>
                                 <td class="cell-date">${formatDateTime(chg.scheduledStart)}</td>
                                 <td>${chg.cabRequired ? '✓ Yes' : 'No'}</td>
@@ -855,15 +855,15 @@ function renderAssets() {
                     <tbody>
                         ${ITSMData.assets.map(asset => `
                             <tr class="clickable">
-                                <td class="cell-id">${asset.id}</td>
-                                <td>${asset.name}</td>
-                                <td>${asset.type}</td>
+                                <td class="cell-id">${Utils.escapeHtml(asset.id)}</td>
+                                <td>${Utils.escapeHtml(asset.name)}</td>
+                                <td>${Utils.escapeHtml(asset.type)}</td>
                                 <td>
                                     <span style="color: ${asset.status === 'Active' ? 'var(--accent-green)' : asset.status === 'Warning' ? 'var(--accent-orange)' : 'var(--accent-red)'};">●</span>
-                                    ${asset.status}
+                                    ${Utils.escapeHtml(asset.status)}
                                 </td>
-                                <td>${asset.owner}</td>
-                                <td>${asset.location}</td>
+                                <td>${Utils.escapeHtml(asset.owner)}</td>
+                                <td>${Utils.escapeHtml(asset.location)}</td>
                                 <td class="cell-date">${formatDateTime(asset.lastSeen)}</td>
                             </tr>
                         `).join('')}
@@ -886,17 +886,17 @@ function renderPolicies() {
             ${ITSMData.policies.map(policy => `
                 <div class="card">
                     <div class="card-header">
-                        <span>${policy.id}: ${policy.title}</span>
-                        <span class="badge badge-new">v${policy.version}</span>
+                        <span>${Utils.escapeHtml(policy.id)}: ${Utils.escapeHtml(policy.title)}</span>
+                        <span class="badge badge-new">v${Utils.escapeHtml(String(policy.version))}</span>
                     </div>
                     <div class="card-body">
                         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--spacing-md);">
-                            Category: ${policy.category} · Effective: ${policy.effectiveDate}
+                            Category: ${Utils.escapeHtml(policy.category)} · Effective: ${Utils.escapeHtml(policy.effectiveDate)}
                         </div>
                         ${policy.sections.map(section => `
                             <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary);">
-                                <strong>Section ${section.number}: ${section.title}</strong>
-                                <p style="margin-top: var(--spacing-xs); font-size: 12px;">${section.content}</p>
+                                <strong>Section ${Utils.escapeHtml(String(section.number))}: ${Utils.escapeHtml(section.title)}</strong>
+                                <p style="margin-top: var(--spacing-xs); font-size: 12px;">${Utils.escapeHtml(section.content)}</p>
                             </div>
                         `).join('')}
                     </div>
@@ -1026,8 +1026,8 @@ function renderCABCalendar() {
                                                     ${cell.changes.slice(0, 2).map(chg => `
                                                         <div style="margin-bottom: 2px; padding: 2px 4px; border-radius: 2px; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
                                                             background: ${chg.type === 'Emergency' ? 'rgba(255, 71, 87, 0.2)' : chg.type === 'Standard' ? 'rgba(46, 213, 115, 0.2)' : 'rgba(0, 120, 212, 0.2)'};"
-                                                            onclick="viewChange('${chg.id}')" title="${chg.title}">
-                                                            ${chg.id}: ${chg.title.substring(0, 15)}...
+                                                            onclick="viewChange('${chg.id}')" title="${Utils.escapeHtml(chg.title)}">
+                                                            ${chg.id}: ${Utils.escapeHtml(chg.title.substring(0, 15))}...
                                                         </div>
                                                     `).join('')}
                                                     ${cell.changes.length > 2 ? `<div style="color: var(--text-muted);">+${cell.changes.length - 2} more</div>` : ''}
@@ -1062,8 +1062,8 @@ function renderCABCalendar() {
                                 ${scheduledChanges.slice(0, 5).map(chg => `
                                     <tr>
                                         <td class="cell-id">${chg.id}</td>
-                                        <td>${chg.title}</td>
-                                        <td><span class="badge ${chg.type === 'Emergency' ? 'badge-critical' : 'badge-new'}">${chg.type}</span></td>
+                                        <td>${Utils.escapeHtml(chg.title)}</td>
+                                        <td><span class="badge ${chg.type === 'Emergency' ? 'badge-critical' : 'badge-new'}">${Utils.escapeHtml(chg.type)}</span></td>
                                         <td class="cell-date">${formatDateTime(chg.scheduledStart)}</td>
                                         <td><span class="badge badge-${chg.status.toLowerCase().replace(' ', '-')}">${chg.status}</span></td>
                                         <td class="cell-actions">
@@ -1151,10 +1151,10 @@ function renderAuditLog() {
                         ${ITSMData.auditLog.map(log => `
                             <tr>
                                 <td class="cell-date">${formatDateTime(log.timestamp)}</td>
-                                <td>${log.actor}</td>
-                                <td>${log.action}</td>
-                                <td class="cell-id">${log.target}</td>
-                                <td>${log.details}</td>
+                                <td>${Utils.escapeHtml(log.actor)}</td>
+                                <td>${Utils.escapeHtml(log.action)}</td>
+                                <td class="cell-id">${Utils.escapeHtml(log.target)}</td>
+                                <td>${Utils.escapeHtml(log.details)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1286,8 +1286,8 @@ function loadRecentActivity() {
 
     activityList.innerHTML = ITSMData.auditLog.slice(0, 5).map(log => `
         <div class="activity-item system" style="padding: 6px; margin-bottom: 6px; font-size: 10px;">
-            <div><strong>${log.action}</strong></div>
-            <div style="color: var(--text-muted);">${log.target} - ${formatDate(log.timestamp)}</div>
+            <div><strong>${Utils.escapeHtml(log.action)}</strong></div>
+            <div style="color: var(--text-muted);">${Utils.escapeHtml(log.target)} - ${formatDate(log.timestamp)}</div>
         </div>
     `).join('');
 }
@@ -1308,17 +1308,17 @@ function closeModal() {
 function createNewIncident() {
     // Build customer options from ITSMData
     const customerOptions = (ITSMData.customers || []).map(c =>
-        `<option value="${c.email}" data-name="${c.name}" data-phone="${c.phone || ''}" data-vip="${c.vip || false}" data-dept="${c.department || ''}" data-location="${c.location || ''}">${c.name} (${c.email})</option>`
+        `<option value="${Utils.escapeHtml(c.email)}" data-name="${Utils.escapeHtml(c.name)}" data-phone="${Utils.escapeHtml(c.phone || '')}" data-vip="${c.vip || false}" data-dept="${Utils.escapeHtml(c.department || '')}" data-location="${Utils.escapeHtml(c.location || '')}">${Utils.escapeHtml(c.name)} (${Utils.escapeHtml(c.email)})</option>`
     ).join('');
 
     // Build team options
     const teamOptions = (ITSMData.teams || []).map(t =>
-        `<option value="${t.name}">${t.name}</option>`
+        `<option value="${Utils.escapeHtml(t.name)}">${Utils.escapeHtml(t.name)}</option>`
     ).join('');
 
     // Build asset options
     const assetOptions = (ITSMData.assets || []).map(a =>
-        `<option value="${a.id}">${a.id} - ${a.name}</option>`
+        `<option value="${Utils.escapeHtml(a.id)}">${Utils.escapeHtml(a.id)} - ${Utils.escapeHtml(a.name)}</option>`
     ).join('');
 
     showModal(`
@@ -1586,7 +1586,7 @@ function updateAssigneeOptions() {
     );
 
     assigneeSelect.innerHTML = '<option value="">-- Unassigned --</option>' +
-        technicians.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        technicians.map(t => `<option value="${Utils.escapeHtml(t.id)}">${Utils.escapeHtml(t.name)}</option>`).join('');
 }
 
 async function submitNewIncident() {
@@ -1758,10 +1758,10 @@ function createNewRequest() {
                          onmouseleave="this.style.background=''">
                         <div class="card-body" style="padding: var(--spacing-sm) var(--spacing-md);">
                             <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                                <div><img class="catalog-icon" src="icons/${item.icon}.png" alt="" style="width:24px;height:24px;"></div>
+                                <div><img class="catalog-icon" src="icons/${Utils.escapeHtml(item.icon)}.png" alt="" style="width:24px;height:24px;"></div>
                                 <div style="flex: 1;">
-                                    <strong>${item.name}</strong>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${item.category} · ${item.fulfillmentTime} · ${item.cost}</div>
+                                    <strong>${Utils.escapeHtml(item.name)}</strong>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${Utils.escapeHtml(item.category)} · ${Utils.escapeHtml(item.fulfillmentTime)} · ${Utils.escapeHtml(item.cost)}</div>
                                 </div>
                                 ${item.approvalRequired
                                     ? '<span class="badge badge-open" style="font-size: 10px;">Approval</span>'
@@ -1900,19 +1900,8 @@ function logout() {
 }
 
 // ==================== TOAST NOTIFICATIONS ====================
-
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `<span>${message}</span>`;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+// showToast is provided by Toast.show() from toast.js (uses safe textContent, not innerHTML).
+// Do NOT redefine showToast here — app.js loads after toast.js and would overwrite the safe version.
 
 // Close modal on overlay click
 document.getElementById('modal-overlay')?.addEventListener('click', function(e) {

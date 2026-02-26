@@ -577,6 +577,12 @@
   </div>
 
   <script>
+    // XSS protection
+    function escapeHtml(str) {
+        if (typeof str !== 'string') return str || '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // Session timeout management
     let inactivityTimer;
     const TIMEOUT_WARNING = 5 * 60 * 1000; // 5 minutes
@@ -895,8 +901,8 @@
           // Show success
           const recordId = result.record ? result.record.id : '0';
           setStatus('success',
-            '✓ Registration Complete! Confirmation: ' + result.registrationId +
-            '<br><a href="/legacy-portal/view.html?id=' + recordId + '" style="color: #155724;">View Details</a>'
+            '✓ Registration Complete! Confirmation: ' + escapeHtml(String(result.registrationId)) +
+            '<br><a href="/legacy-portal/view.html?id=' + escapeHtml(String(recordId)) + '" style="color: #155724;">View Details</a>'
           );
           // Clear form after successful submission
           document.getElementById('registrationForm').reset();
@@ -906,7 +912,7 @@
 
       } catch (error) {
         hideLoading();
-        setStatus('error', '✗ Error: ' + error.message);
+        setStatus('error', '✗ Error: ' + escapeHtml(error.message));
       }
 
       setFormEnabled(true);

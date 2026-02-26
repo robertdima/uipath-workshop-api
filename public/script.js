@@ -780,9 +780,9 @@ function displaySuccessResponse(container, response, responseTime) {
       🕐 ${new Date().toLocaleTimeString()}
     </div>
     <div style="color: #fdcb6e; margin-bottom: 10px; font-weight: 600;">📋 Response Data:</div>
-    <pre><code class="language-json">${JSON.stringify(response.data, null, 2)}</code></pre>
+    <pre><code class="language-json">${typeof escapeHtml === 'function' ? escapeHtml(JSON.stringify(response.data, null, 2)) : JSON.stringify(response.data, null, 2)}</code></pre>
   `;
-  
+
   // Apply syntax highlighting if Prism is available
   if (window.Prism) {
     window.Prism.highlightAllUnder(container);
@@ -803,9 +803,12 @@ function displayErrorResponse(container, error, responseTime) {
       🕐 ${new Date().toLocaleTimeString()}
     </div>
     <div style="color: #fdcb6e; margin-bottom: 10px; font-weight: 600;">🔍 Error Details:</div>
-    <pre><code class="language-json">${error.response ? 
-      JSON.stringify(error.response.data, null, 2) : 
-      JSON.stringify({message: error.message, type: 'Network Error'}, null, 2)}</code></pre>
+    <pre><code class="language-json">${(function() {
+      const raw = error.response ?
+        JSON.stringify(error.response.data, null, 2) :
+        JSON.stringify({message: error.message, type: 'Network Error'}, null, 2);
+      return typeof escapeHtml === 'function' ? escapeHtml(raw) : raw;
+    })()}</code></pre>
   `;
   
   if (window.Prism) {

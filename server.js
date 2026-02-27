@@ -4,6 +4,7 @@ const { faker } = require('@faker-js/faker');
 const fs = require('fs');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 // Use dynamic port for deployment platforms
 const PORT = process.env.PORT || 4000;
@@ -1281,17 +1282,34 @@ server.use((req, res, next) => {
 });
 
 // ── API Key Authentication (gate all /api/* routes) ──
-const API_KEY = process.env.API_KEY;
-if (API_KEY) {
-  console.log('🔑 API key authentication enabled');
+// Accepts either API_KEY_HASH (SHA-256 hex, recommended) or API_KEY (plaintext, legacy)
+const API_KEY_HASH = process.env.API_KEY_HASH;
+const API_KEY_PLAIN = process.env.API_KEY;
+if (API_KEY_HASH || API_KEY_PLAIN) {
+  const mode = API_KEY_HASH ? 'hash' : 'plaintext';
+  console.log(`🔑 API key authentication enabled (${mode} mode)`);
   server.use('/api', (req, res, next) => {
     if (req.method === 'OPTIONS') return next(); // CORS preflight
     const provided = req.headers['x-api-key'];
-    if (provided === API_KEY) return next();
+    if (!provided) return res.status(401).json({ error: 'Unauthorized', message: 'Valid API key required' });
+    if (API_KEY_HASH) {
+      const providedHash = crypto.createHash('sha256').update(provided).digest('hex');
+      // Timing-safe comparison to prevent timing attacks
+      if (providedHash.length === API_KEY_HASH.length &&
+          crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(API_KEY_HASH))) {
+        return next();
+      }
+    } else if (API_KEY_PLAIN) {
+      // Plaintext fallback (local dev convenience)
+      if (provided.length === API_KEY_PLAIN.length &&
+          crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(API_KEY_PLAIN))) {
+        return next();
+      }
+    }
     return res.status(401).json({ error: 'Unauthorized', message: 'Valid API key required' });
   });
 } else {
-  console.log('🔓 No API_KEY set — running without authentication (local dev mode)');
+  console.log('🔓 No API_KEY_HASH or API_KEY set — running without authentication (local dev mode)');
 }
 
 /* ---------- Custom Endpoints ---------- */

@@ -467,6 +467,14 @@ const ITSMApi = (() => {
         return result;
     }
 
+    async function unlinkIncidentFromProblem(problemId, incidentId) {
+        const result = await _post(`/api/itsm/problems/${problemId}/unlink-incident`, { incidentId });
+        if (result.success) {
+            await Promise.all([loadCollection('problems'), loadCollection('incidents')]);
+        }
+        return result;
+    }
+
     // ─── Assets ───
 
     async function createAsset(data) {
@@ -668,6 +676,7 @@ const ITSMApi = (() => {
         updateProblemStatus,
         updateProblemRootCause,
         linkIncidentToProblem,
+        unlinkIncidentFromProblem,
 
         // Assets
         createAsset,

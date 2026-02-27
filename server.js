@@ -2725,6 +2725,26 @@ server.post('/api/itsm/problems/:id/link-incident', (req, res) => {
   res.json({ success: true, message: msg, linkedCount: linked.length, linked, notFound, data: p });
 });
 
+server.post('/api/itsm/problems/:id/unlink-incident', (req, res) => {
+  const p = db.itsm_problems.find(p => p.id === req.params.id);
+  if (!p) return res.status(404).json({ success: false, error: 'Problem not found' });
+  const { incidentId } = req.body;
+  if (!incidentId) return res.status(400).json({ success: false, error: 'incidentId is required' });
+  if (!p.linkedIncidents || !p.linkedIncidents.includes(incidentId)) {
+    return res.status(404).json({ success: false, error: `${incidentId} is not linked to ${p.id}` });
+  }
+  p.linkedIncidents = p.linkedIncidents.filter(id => id !== incidentId);
+  p.updatedAt = new Date().toISOString();
+  // Also clear the incident's linkedProblem reference
+  const inc = db.itsm_incidents.find(i => i.id === incidentId);
+  if (inc && inc.linkedProblem === p.id) {
+    inc.linkedProblem = null;
+    inc.updatedAt = new Date().toISOString();
+  }
+  addItsmAudit('Incident Unlinked from Problem', p.id, 'problem', `Unlinked ${incidentId}`, 'system');
+  res.json({ success: true, message: `${incidentId} unlinked from ${p.id}`, data: p });
+});
+
 server.get('/api/itsm/problems/known-errors', (req, res) => {
   res.json({ success: true, data: db.itsm_problems.filter(p => p.status === 'Known Error') });
 });

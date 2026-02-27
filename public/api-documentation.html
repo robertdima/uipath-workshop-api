@@ -71,8 +71,8 @@
                     <p class="text-sm text-zinc-600">Add header: <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs">x-api-key: YOUR_KEY</code></p>
                 </div>
                 <div class="bg-zinc-50 rounded-lg p-4 border border-zinc-200">
-                    <h4 class="text-sm font-semibold text-zinc-700 mb-2">UiPath / Integration Service</h4>
-                    <p class="text-sm text-zinc-600">Set the API key in your Orchestrator Connection vault. The Integration Service connector sends <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs">X-API-Key</code> automatically.</p>
+                    <h4 class="text-sm font-semibold text-zinc-700 mb-2">Automation Tools</h4>
+                    <p class="text-sm text-zinc-600">Add the <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs">x-api-key</code> header to your HTTP requests. Most automation platforms support custom headers in their HTTP activities.</p>
                 </div>
             </div>
             <p class="text-xs text-zinc-400 mt-3">Non-API routes (<code>/health</code>, static files) do not require authentication. If <code>API_KEY</code> is not set on the server, authentication is bypassed (local dev mode).</p>
@@ -1350,6 +1350,30 @@
   "linked": ["INC-001", "INC-002", "INC-003"],
   "linkedCount": 3,
   "notFound": []
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 rounded-lg border border-zinc-200 p-6 mb-4 hover:shadow-md transition-shadow">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700 border border-green-200">POST</span>
+                    <span class="font-mono text-sm font-semibold text-deepblue bg-white px-3 py-1 rounded-md border border-zinc-200">/itsm/problems/:id/unlink-incident</span>
+                </div>
+                <p class="text-zinc-700 mb-4">Unlink an incident from a problem record. Also clears the incident's back-reference to this problem.</p>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Request Body</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{ "incidentId": "INC-001" }</pre>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-zinc-200 mb-3">
+                    <h4 class="text-sm font-semibold text-deepblue mb-3 uppercase tracking-wide">Example Response</h4>
+                    <div class="bg-zinc-900 text-zinc-100 rounded-lg p-4 overflow-x-auto">
+                        <pre class="text-sm font-mono">{
+  "success": true,
+  "message": "INC-001 unlinked from PRB-001",
+  "data": { "..." }
 }</pre>
                     </div>
                 </div>

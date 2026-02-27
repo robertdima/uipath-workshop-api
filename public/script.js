@@ -318,6 +318,8 @@ const modules = {
         body: { rootCause: 'VPN concentrator memory leak', workaround: 'Restart VPN service during off-hours', convertToKnownError: true } },
       { method: 'POST', path: '/itsm/problems/:id/link-incident', description: 'Link incident(s) to problem (single or multiple)', needsId: 'itsm_problem',
         body: { incidentIds: ['INC-001', 'INC-002', 'INC-003'] } },
+      { method: 'POST', path: '/itsm/problems/:id/unlink-incident', description: 'Unlink an incident from a problem', needsId: 'itsm_problem',
+        body: { incidentId: 'INC-001' } },
       { method: 'DELETE', path: '/itsm/problems/:id', description: 'Delete a problem record permanently', needsId: 'itsm_problem' },
       { method: 'GET', path: '/itsm/problems/known-errors', description: 'Get known error database' }
     ]

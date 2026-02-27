@@ -959,12 +959,12 @@ const ProblemsModule = {
         }
 
         try {
-            const updatedLinks = problem.linkedIncidents.filter(id => id !== incidentId);
-            await ITSMApi.saveEntity('problems', problemId, {
-                linkedIncidents: updatedLinks,
-                updatedAt: new Date().toISOString()
-            });
-            showToast(`${incidentId} unlinked from ${problemId}`, 'success');
+            const result = await ITSMApi.unlinkIncidentFromProblem(problemId, incidentId);
+            if (result.success) {
+                showToast(`${incidentId} unlinked from ${problemId}`, 'success');
+            } else {
+                showToast(result.error || 'Failed to unlink incident', 'error');
+            }
             this.viewProblem(problemId);
         } catch (err) {
             showToast('Failed to unlink incident: ' + err.message, 'error');

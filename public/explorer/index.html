@@ -18,113 +18,10 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
-                        // === PRIMARY COLORS ===
-                        // ACME Navy - primary brand color
-                        navy: {
-                            DEFAULT: '#002244',
-                            50: '#e6f0ff',
-                            100: '#b3d1ff',
-                            200: '#6699cc',
-                            300: '#336699',
-                            400: '#004488',
-                            500: '#003366',
-                            600: '#002244',
-                            700: '#001a33',
-                            800: '#001122',
-                            900: '#000a11'
-                        },
-                        // Keep orange alias pointing to navy for backward compat
-                        orange: {
-                            DEFAULT: '#002244',
-                            50: '#e6f0ff',
-                            100: '#b3d1ff',
-                            200: '#6699cc',
-                            300: '#336699',
-                            400: '#004488',
-                            500: '#003366',
-                            600: '#002244',
-                            700: '#001a33',
-                            800: '#001122',
-                            900: '#000a11'
-                        },
-                        // Agentic Teal - for agents/AI
-                        teal: {
-                            DEFAULT: '#0BA2B3',
-                            50: '#E6F7F9',
-                            100: '#CCF2FF',
-                            200: '#A5E2F0',
-                            300: '#5BCBDE',
-                            400: '#3CB5C2',
-                            500: '#0BA2B3',
-                            600: '#15839A',
-                            700: '#1E6482',
-                            800: '#0D5A6A',
-                            900: '#083C47'
-                        },
-                        // Deep Blue - primary dark
-                        deepblue: {
-                            DEFAULT: '#182126',
-                            50: '#A0AAB9',
-                            100: '#646E78',
-                            200: '#3C464B',
-                            300: '#2D373C',
-                            400: '#182126',
-                            500: '#182126',
-                            600: '#131A1E',
-                            700: '#0E1316',
-                            800: '#090C0E',
-                            900: '#040506'
-                        },
-                        // Bright White
-                        white: '#FFFFFF',
-
-                        // === SECONDARY COLORS ===
-                        // Bright Blue
-                        brightblue: '#CCF2FF',
-                        // Dark Blue
-                        darkblue: '#1E6482',
-                        // Offset Orange
-                        offsetorange: '#A32200',
-                        // Offset Grey
-                        offsetgrey: '#D9D9D9',
-                        // Testing Purple
-                        purple: {
-                            DEFAULT: '#8B288A',
-                            50: '#FFCBFF',
-                            100: '#C862C8',
-                            200: '#8B288A',
-                            300: '#721472',
-                            400: '#5A005A',
-                            500: '#8B288A',
-                            600: '#721472',
-                            700: '#5A005A',
-                            800: '#400040',
-                            900: '#260026'
-                        },
-                        // Black
-                        black: '#000000',
-
-                        // === NEUTRAL COLORS ===
-                        neutral: {
-                            DEFAULT: '#9D9D9D',
-                            50: '#F6F6F6',
-                            100: '#D9D9D9',
-                            200: '#B9B9B9',
-                            300: '#9D9D9D',
-                            400: '#616161',
-                            500: '#484848',
-                            600: '#343434',
-                            700: '#262626',
-                            800: '#1A1A1A',
-                            900: '#0D0D0D'
-                        },
-
-                        // === LEGACY ALIASES ===
-                        lightblue: '#CCF2FF'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        navy: { DEFAULT: '#002244', 50: '#e6f0ff', 100: '#b3d1ff', 600: '#003366', 700: '#002244', 800: '#001a33', 900: '#00111f' },
+                        teal: { DEFAULT: '#00b4d8', 50: '#e6f9fc', 100: '#b3eef7', 400: '#00c4eb', 500: '#00b4d8', 600: '#0096b4' }
                     }
                 }
             }
@@ -137,10 +34,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
         .loading {
             display: inline-block;
             width: 20px;
@@ -150,120 +48,322 @@
             border-top-color: #00b4d8;
             animation: spin 1s linear infinite;
         }
-
         .row-updated {
             animation: highlight 0.3s ease;
         }
-
         @keyframes highlight {
-            0% { background-color: rgba(250, 70, 22, 0.2); }
-            100% { background-color: rgba(250, 70, 22, 0.05); }
+            0% { background-color: rgba(0, 180, 216, 0.2); }
+            100% { background-color: rgba(0, 180, 216, 0.05); }
         }
-
         .row-updated-fading {
             transition: all 5s ease;
             background-color: transparent !important;
+        }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Sidebar accordion */
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+        .nav-group-header:hover { background-color: #f4f4f5; }
+        .nav-group-header .chevron {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+            color: #a1a1aa;
+        }
+        .nav-group.collapsed .chevron { transform: rotate(-90deg); }
+        .nav-group-items {
+            overflow: hidden;
+            max-height: 500px;
+            transition: max-height 0.25s ease, opacity 0.2s ease;
+            opacity: 1;
+            padding-left: 8px;
+        }
+        .nav-group.collapsed .nav-group-items {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* VS Code sidebar active item */
+        .nav-item.active {
+            border-left: 3px solid #00b4d8;
+            border-radius: 0 6px 6px 0;
+            background-color: #f4f4f5;
+            font-weight: 600;
+            color: #18181b;
+            padding-left: 7px;
+        }
+
+        /* Domain color dots */
+        .domain-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-hr { background-color: #3b82f6; }
+        .dot-finance { background-color: #22c55e; }
+        .dot-crm { background-color: #a855f7; }
+        .dot-iot { background-color: #f97316; }
+        .dot-analytics { background-color: #6366f1; }
+        .dot-itsm { background-color: #f43f5e; }
+
+        /* Swagger-style endpoint card */
+        .endpoint-card {
+            border: 1px solid #e4e4e7;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.15s;
+        }
+        .endpoint-card:hover {
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        /* Clickable endpoint bar */
+        .endpoint-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            user-select: none;
+            background: #fff;
+            transition: background-color 0.12s;
+            border-left: 4px solid transparent;
+        }
+        .endpoint-bar:hover { background-color: #fafafa; }
+        .endpoint-bar.method-get    { border-left-color: #61affe; }
+        .endpoint-bar.method-post   { border-left-color: #49cc90; }
+        .endpoint-bar.method-patch  { border-left-color: #50e3c2; }
+        .endpoint-bar.method-delete { border-left-color: #f93e3e; }
+
+        /* Method badge pill */
+        .method-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 56px;
+            padding: 3px 0;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .method-badge.badge-get    { background-color: #61affe; }
+        .method-badge.badge-post   { background-color: #49cc90; }
+        .method-badge.badge-patch  { background-color: #50e3c2; }
+        .method-badge.badge-delete { background-color: #f93e3e; }
+
+        /* Endpoint path + description in bar */
+        .endpoint-path {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            color: #27272a;
+            white-space: nowrap;
+        }
+        .endpoint-desc {
+            font-size: 12px;
+            color: #a1a1aa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Expand chevron */
+        .expand-chevron {
+            width: 16px;
+            height: 16px;
+            color: #a1a1aa;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .endpoint-card.expanded .expand-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Expandable body */
+        .endpoint-body {
+            display: none;
+            padding: 14px 18px 16px;
+            background: #fafafa;
+            border-top: 1px solid #e4e4e7;
+        }
+        .endpoint-card.expanded .endpoint-body {
+            display: block;
+        }
+
+        /* Client-filter tag in bar */
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            background: #f0fdfa;
+            color: #0d9488;
+            flex-shrink: 0;
         }
     </style>
 </head>
 
 <body class="bg-zinc-50 min-h-screen">
-    <div class="max-w-[95%] mx-auto p-6">
-        <!-- Header -->
-        <header class="mb-8 bg-white rounded-xl border border-zinc-200 p-6 shadow-sm">
-            <a href="/" class="text-sm text-teal-600 hover:text-teal-800 mb-2 inline-block">&larr; Back to Portal</a>
-            <h1 class="text-3xl font-bold text-deepblue mb-2">ACME Corp API Explorer</h1>
-            <p class="text-sm text-zinc-600 mb-4">Enterprise-grade API testing environment with all 161 endpoints</p>
-            <a href="api-documentation.html" target="_blank" class="inline-flex items-center text-sm font-semibold text-orange hover:text-orange-600 transition-colors">
-                View Complete API Documentation →
-            </a>
-
-            <!-- Status Indicators -->
-            <div class="mt-6 grid grid-cols-3 gap-4">
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="connection-status" class="text-2xl font-bold text-deepblue">●</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Connection</div>
-                </div>
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="api-url-display" class="text-sm font-mono font-bold text-deepblue truncate">Loading...</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">API URL</div>
-                </div>
-                <div class="bg-lightblue rounded-lg p-4 text-center">
-                    <div id="response-time" class="text-2xl font-bold text-deepblue">--ms</div>
-                    <div class="text-xs text-zinc-600 uppercase tracking-wide mt-1">Response Time</div>
+    <!-- Sticky Header -->
+    <header class="bg-white border-b border-zinc-200 sticky top-0 z-20">
+        <div class="max-w-[95%] mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="/acme-logo.svg" alt="ACME Corp" class="h-7">
+                <div>
+                    <h1 class="text-sm font-semibold text-zinc-900 leading-tight">API Explorer</h1>
+                    <p class="text-xs text-zinc-400">161 endpoints across 6 domains</p>
                 </div>
             </div>
-        </header>
+            <div class="flex items-center gap-5">
+                <div class="flex items-center gap-1.5">
+                    <span id="connection-dot" class="w-2 h-2 rounded-full bg-zinc-300"></span>
+                    <span id="connection-label" class="text-xs text-zinc-500">Checking...</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-zinc-400">Response:</span>
+                    <span id="response-time" class="text-xs font-medium text-zinc-600">--ms</span>
+                </div>
+                <a href="api-documentation.html" target="_blank" class="text-xs text-teal-600 hover:text-teal-700 transition-colors font-medium">API Docs</a>
+                <a href="/" class="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Back to Portal</a>
+            </div>
+        </div>
+    </header>
 
+    <div class="max-w-[95%] mx-auto px-6 py-6">
         <!-- Main Grid -->
         <div class="grid grid-cols-12 gap-6">
             <!-- Sidebar -->
-            <aside class="col-span-3 space-y-2 sticky top-6 self-start">
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Overview</h3>
-                    <a href="#" class="nav-item active block rounded-lg px-3 py-2 text-sm font-medium transition-colors" data-module="welcome">👋 Welcome</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="stats">📊 Statistics</a>
-                </div>
+            <aside class="col-span-2 sticky top-16 self-start">
+                <div class="bg-white rounded-lg border border-zinc-200 p-1.5 space-y-0.5">
+                    <!-- Overview — always open, no toggle -->
+                    <div class="mb-0.5">
+                        <a href="#" class="nav-item active block rounded-md px-2.5 py-1.5 text-[13px] transition-colors" data-module="welcome">Welcome</a>
+                        <a href="#" class="nav-item block rounded-md px-2.5 py-1.5 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="stats">Statistics</a>
+                    </div>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">HR Module</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-workers">👤 Workers</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-performance">📈 Performance</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="hr-onboarding">🎯 Onboarding</a>
-                    <a href="/legacy-portal/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🏢 Legacy Portal ↗</a>
-                </div>
+                    <hr class="border-zinc-100 my-1">
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Finance</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-invoices">📄 Invoices</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-expenses">💳 Expenses</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="finance-analytics">📊 Analytics</a>
-                </div>
+                    <!-- HR Module -->
+                    <div class="nav-group collapsed" data-group="hr">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-hr"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">HR</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="hr-workers">Workers</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="hr-performance">Performance</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="hr-onboarding">Onboarding</a>
+                            <a href="/legacy-portal/" class="block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" target="_blank">Legacy Portal <span class="text-zinc-400 text-[10px]">&#8599;</span></a>
+                        </div>
+                    </div>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">CRM</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-customers">🏢 Customers</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-sales">💼 Sales</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="crm-support">🎧 Support</a>
-                </div>
+                    <!-- Finance -->
+                    <div class="nav-group collapsed" data-group="finance">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-finance"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Finance</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="finance-invoices">Invoices</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="finance-expenses">Expenses</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="finance-analytics">Analytics</a>
+                        </div>
+                    </div>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">IoT</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-devices">📱 Devices</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-monitoring">📡 Monitoring</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="iot-maintenance">🔧 Maintenance</a>
-                </div>
+                    <!-- CRM -->
+                    <div class="nav-group collapsed" data-group="crm">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-crm"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">CRM</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="crm-customers">Customers</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="crm-sales">Sales</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="crm-support">Support</a>
+                        </div>
+                    </div>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">Analytics</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="reports">📈 Reports</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="projects">📋 Projects</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="workflows">⚙️ Workflows</a>
-                </div>
+                    <!-- IoT -->
+                    <div class="nav-group collapsed" data-group="iot">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-iot"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">IoT</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="iot-devices">Devices</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="iot-monitoring">Monitoring</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="iot-maintenance">Maintenance</a>
+                        </div>
+                    </div>
 
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 px-3">ITSM</h3>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-incidents">🎫 Incidents</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-changes">🔄 Changes</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-requests">📝 Requests</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-problems">🔍 Problems</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-assets">🖥️ Assets</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-knowledge">📚 Knowledge</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-reports">📊 Reports</a>
-                    <a href="#" class="nav-item block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" data-module="itsm-config">⚙️ Config</a>
-                    <a href="/itsm-app/" class="block rounded-lg px-3 py-2 text-sm font-medium transition-colors text-deepblue hover:bg-zinc-100" target="_blank">🖥️ ITSM Console ↗</a>
+                    <!-- Analytics -->
+                    <div class="nav-group collapsed" data-group="analytics">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-analytics"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Analytics</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="reports">Reports</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="projects">Projects</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="workflows">Workflows</a>
+                        </div>
+                    </div>
+
+                    <!-- ITSM -->
+                    <div class="nav-group collapsed" data-group="itsm">
+                        <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <span class="domain-dot dot-itsm"></span>
+                            <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">ITSM</span>
+                        </div>
+                        <div class="nav-group-items">
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-incidents">Incidents</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-changes">Changes</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-requests">Requests</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-problems">Problems</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-assets">Assets</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-knowledge">Knowledge</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-reports">Reports</a>
+                            <a href="#" class="nav-item block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" data-module="itsm-config">Config</a>
+                            <a href="/itsm-app/" class="block rounded-md px-2.5 py-1 text-[13px] text-zinc-600 hover:bg-zinc-50 transition-colors" target="_blank">ITSM Console <span class="text-zinc-400 text-[10px]">&#8599;</span></a>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
             <!-- Main Content -->
-            <main class="col-span-9" id="content-area">
+            <main class="col-span-10 fade-in" id="content-area">
                 <!-- Dynamic content will be injected here -->
             </main>
         </div>
     </div>
 
     <!-- Notification Toast -->
-    <div id="notification-toast" class="fixed top-6 right-6 bg-teal text-white px-6 py-4 rounded-lg shadow-lg hidden transform transition-all duration-300">
+    <div id="notification-toast" class="fixed top-16 right-6 bg-teal-500 text-white px-5 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300 text-sm">
         <!-- Notification message -->
     </div>
 
@@ -298,38 +398,39 @@
         let apiHealth = { isOnline: false, responseTime: 0 };
         let onboardingData = [];
         let updatedByMap = {};
-        let activeStatusFilter = 'all'; // Track active status filter: 'all', 'pending', 'in-progress', 'completed'
+        let activeStatusFilter = 'all';
 
         // ALL ENDPOINTS - Complete Module Definitions
         const modules = {
             welcome: {
                 content: `
-                    <div class="text-center py-16 px-8">
-                        <div class="text-6xl mb-6">🚀</div>
-                        <h2 class="text-4xl font-bold text-deepblue mb-4">ACME Corp API Explorer</h2>
-                        <p class="text-lg text-zinc-600 mb-4">Complete enterprise API with 161 endpoints across all business modules!</p>
-                        <p class="text-sm"><strong>Live API:</strong> <code class="bg-lightblue px-3 py-1 rounded text-deepblue font-mono">${API_BASE}</code></p>
+                    <div class="py-12 px-4">
+                        <div class="text-center mb-10">
+                            <h2 class="text-2xl font-semibold text-zinc-900 mb-2">ACME Corp API Explorer</h2>
+                            <p class="text-sm text-zinc-500 mb-1">Complete enterprise API with 161 endpoints across all business modules</p>
+                            <p class="text-xs text-zinc-400 mt-2">Live API: <code class="bg-zinc-100 px-2 py-0.5 rounded text-zinc-600 font-mono text-xs">${API_BASE}</code></p>
+                        </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('hr-onboarding')">
-                                <h4 class="text-orange text-lg font-bold mb-3">👥 Employee Onboarding</h4>
-                                <p class="text-sm text-zinc-600">Track employee progress and onboarding status</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                            <div class="bg-white rounded-lg border border-zinc-200 p-5 hover:shadow-sm transition-all cursor-pointer" onclick="setActiveModule('hr-onboarding')">
+                                <h4 class="text-teal-600 text-sm font-semibold mb-1.5">Employee Onboarding</h4>
+                                <p class="text-xs text-zinc-500">Track employee progress and onboarding status</p>
                             </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('finance-invoices')">
-                                <h4 class="text-orange text-lg font-bold mb-3">💰 Invoice Approval</h4>
-                                <p class="text-sm text-zinc-600">Automate invoice routing and approval workflows</p>
+                            <div class="bg-white rounded-lg border border-zinc-200 p-5 hover:shadow-sm transition-all cursor-pointer" onclick="setActiveModule('finance-invoices')">
+                                <h4 class="text-teal-600 text-sm font-semibold mb-1.5">Invoice Approval</h4>
+                                <p class="text-xs text-zinc-500">Automate invoice routing and approval workflows</p>
                             </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-customers')">
-                                <h4 class="text-orange text-lg font-bold mb-3">🎯 Customer Health</h4>
-                                <p class="text-sm text-zinc-600">Analyze customer risk and relationship metrics</p>
+                            <div class="bg-white rounded-lg border border-zinc-200 p-5 hover:shadow-sm transition-all cursor-pointer" onclick="setActiveModule('crm-customers')">
+                                <h4 class="text-teal-600 text-sm font-semibold mb-1.5">Customer Health</h4>
+                                <p class="text-xs text-zinc-500">Analyze customer risk and relationship metrics</p>
                             </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('iot-maintenance')">
-                                <h4 class="text-orange text-lg font-bold mb-3">🔧 IoT Maintenance</h4>
-                                <p class="text-sm text-zinc-600">Optimize device maintenance and prevent failures</p>
+                            <div class="bg-white rounded-lg border border-zinc-200 p-5 hover:shadow-sm transition-all cursor-pointer" onclick="setActiveModule('iot-maintenance')">
+                                <h4 class="text-teal-600 text-sm font-semibold mb-1.5">IoT Maintenance</h4>
+                                <p class="text-xs text-zinc-500">Optimize device maintenance and prevent failures</p>
                             </div>
-                            <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-8 cursor-pointer" onclick="setActiveModule('crm-sales')">
-                                <h4 class="text-orange text-lg font-bold mb-3">📊 Sales Intelligence</h4>
-                                <p class="text-sm text-zinc-600">Forecast pipeline and prioritize deals</p>
+                            <div class="bg-white rounded-lg border border-zinc-200 p-5 hover:shadow-sm transition-all cursor-pointer" onclick="setActiveModule('crm-sales')">
+                                <h4 class="text-teal-600 text-sm font-semibold mb-1.5">Sales Intelligence</h4>
+                                <p class="text-xs text-zinc-500">Forecast pipeline and prioritize deals</p>
                             </div>
                         </div>
                     </div>
@@ -337,33 +438,32 @@
             },
             stats: {
                 content: `
-                    <div class="grid grid-cols-4 gap-6 mb-8">
-                        <div class="rounded-xl bg-gradient-to-br from-orange to-orange-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">161</div>
-                            <div class="text-xs uppercase tracking-wide">API Endpoints</div>
+                    <div class="grid grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white rounded-lg border border-zinc-200 p-5 text-center">
+                            <div class="text-3xl font-bold text-navy-700 mb-1">161</div>
+                            <div class="text-xs text-zinc-400 uppercase tracking-wide">API Endpoints</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">42</div>
-                            <div class="text-xs uppercase tracking-wide">Collections</div>
+                        <div class="bg-white rounded-lg border border-zinc-200 p-5 text-center">
+                            <div class="text-3xl font-bold text-teal-600 mb-1">42</div>
+                            <div class="text-xs text-zinc-400 uppercase tracking-wide">Collections</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-deepblue to-zinc-700 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">900+</div>
-                            <div class="text-xs uppercase tracking-wide">Records</div>
+                        <div class="bg-white rounded-lg border border-zinc-200 p-5 text-center">
+                            <div class="text-3xl font-bold text-zinc-700 mb-1">900+</div>
+                            <div class="text-xs text-zinc-400 uppercase tracking-wide">Records</div>
                         </div>
-                        <div class="rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white p-6 text-center shadow-sm">
-                            <div class="text-5xl font-bold mb-2">🟢</div>
-                            <div class="text-xs uppercase tracking-wide">Status</div>
+                        <div class="bg-white rounded-lg border border-zinc-200 p-5 text-center">
+                            <div class="text-3xl font-bold text-emerald-600 mb-1">&#9679;</div>
+                            <div class="text-xs text-zinc-400 uppercase tracking-wide">Status</div>
                         </div>
                     </div>
-                    <div class="text-center mt-12">
-                        <h3 class="text-3xl font-bold text-deepblue mb-4">Production API Status</h3>
-                        <p class="text-lg text-zinc-600">All business modules deployed with enterprise capabilities</p>
+                    <div class="text-center mt-10">
+                        <h3 class="text-xl font-semibold text-zinc-900 mb-2">Production API Status</h3>
+                        <p class="text-sm text-zinc-500">All business modules deployed with enterprise capabilities</p>
                     </div>
                 `
             },
             'hr-workers': {
                 title: 'HR Workers Management',
-                icon: '👥',
                 description: 'Employee records, departments, and organizational hierarchy',
                 endpoints: [
                     { method: 'GET', path: '/hr/workers', description: 'Get all workers in the system' },
@@ -376,7 +476,6 @@
             },
             'hr-performance': {
                 title: 'HR Performance & Reviews',
-                icon: '📈',
                 description: 'Performance reviews, ratings, and goal tracking',
                 endpoints: [
                     { method: 'GET', path: '/hr/performance', description: 'Get all performance review records' },
@@ -387,7 +486,6 @@
             },
             'hr-onboarding': {
                 title: 'HR Onboarding Management',
-                icon: '🎯',
                 description: 'New employee onboarding process tracking',
                 endpoints: [
                     { method: 'GET', path: '/hr/onboarding', description: 'Get all employee onboarding records' },
@@ -406,7 +504,6 @@
             },
             'finance-invoices': {
                 title: 'Finance Invoice Management',
-                icon: '📄',
                 description: 'Invoice processing, approval workflows, and vendor management',
                 endpoints: [
                     { method: 'GET', path: '/finance/invoices', description: 'Get all invoices in the system' },
@@ -420,7 +517,6 @@
             },
             'finance-expenses': {
                 title: 'Finance Expense Management',
-                icon: '💳',
                 description: 'Employee expense reports and reimbursement tracking',
                 endpoints: [
                     { method: 'GET', path: '/finance/expenses', description: 'Get all employee expense reports' },
@@ -431,7 +527,6 @@
             },
             'finance-analytics': {
                 title: 'Finance Analytics & Reporting',
-                icon: '📊',
                 description: 'Financial summaries, budget variance, and cash flow analysis',
                 endpoints: [
                     { method: 'GET', path: '/finance/budget/variance', description: 'Get budget vs actual spending by department' },
@@ -441,7 +536,6 @@
             },
             'crm-customers': {
                 title: 'CRM Customer Management',
-                icon: '🏢',
                 description: 'Customer records, relationship management, and account health',
                 endpoints: [
                     { method: 'GET', path: '/crm/customers', description: 'Get all customer records' },
@@ -454,7 +548,6 @@
             },
             'crm-sales': {
                 title: 'CRM Sales & Opportunities',
-                icon: '💼',
                 description: 'Sales pipeline, opportunities, and revenue forecasting',
                 endpoints: [
                     { method: 'GET', path: '/crm/opportunities', description: 'Get all sales opportunities' },
@@ -467,7 +560,6 @@
             },
             'crm-support': {
                 title: 'CRM Support & Service',
-                icon: '🎧',
                 description: 'Support tickets, customer service, and issue tracking',
                 endpoints: [
                     { method: 'GET', path: '/crm/support/tickets', description: 'Get all customer support tickets' },
@@ -478,7 +570,6 @@
             },
             'iot-devices': {
                 title: 'IoT Device Management',
-                icon: '📱',
                 description: 'Device inventory, status monitoring, and assignments',
                 endpoints: [
                     { method: 'GET', path: '/iot/devices', description: 'Get all IoT devices in the system' },
@@ -490,7 +581,6 @@
             },
             'iot-monitoring': {
                 title: 'IoT Monitoring & Telemetry',
-                icon: '📡',
                 description: 'Real-time data, telemetry, and device performance',
                 endpoints: [
                     { method: 'GET', path: '/iot/telemetry', description: 'Get all telemetry data from devices' },
@@ -500,7 +590,6 @@
             },
             'iot-maintenance': {
                 title: 'IoT Maintenance & Alerts',
-                icon: '🔧',
                 description: 'Maintenance scheduling, alerts, and predictive analytics',
                 endpoints: [
                     { method: 'GET', path: '/iot/alerts', description: 'Get all IoT device alerts' },
@@ -513,7 +602,6 @@
             },
             'reports': {
                 title: 'Reports & Analytics',
-                icon: '📈',
                 description: 'Business intelligence, KPIs, and executive dashboards',
                 endpoints: [
                     { method: 'GET', path: '/reports/employee/summary', description: 'Get employee analytics by department' },
@@ -524,7 +612,6 @@
             },
             'projects': {
                 title: 'Project Management',
-                icon: '📋',
                 description: 'Project tracking, resource allocation, and deliverables',
                 endpoints: [
                     { method: 'GET', path: '/projects', description: 'Get all projects in the system' },
@@ -534,7 +621,6 @@
             },
             'workflows': {
                 title: 'Workflow Management',
-                icon: '⚙️',
                 description: 'Automation workflows, triggers, and process monitoring',
                 endpoints: [
                     { method: 'GET', path: '/workflows/triggers', description: 'Get workflow automation triggers' },
@@ -542,10 +628,9 @@
                     { method: 'GET', path: '/workflows/triggers/errors', description: 'Get failed workflow triggers (client-side filter)' }
                 ]
             },
-            // ═══ ITSM MODULES ═══
+            // ITSM MODULES
             'itsm-incidents': {
                 title: 'ITSM Incident Management',
-                icon: '🎫',
                 description: 'IT incident tracking, assignment, escalation, and resolution workflows',
                 endpoints: [
                     { method: 'GET', path: '/itsm/incidents', description: 'Get all incidents in the ITSM system' },
@@ -571,7 +656,6 @@
             },
             'itsm-changes': {
                 title: 'ITSM Change Management',
-                icon: '🔄',
                 description: 'Change request lifecycle, CAB approvals, and implementation tracking',
                 endpoints: [
                     { method: 'GET', path: '/itsm/changes', description: 'Get all change requests' },
@@ -594,7 +678,6 @@
             },
             'itsm-requests': {
                 title: 'ITSM Service Requests',
-                icon: '📝',
                 description: 'Service request submission, approval workflows, and fulfillment tracking',
                 endpoints: [
                     { method: 'GET', path: '/itsm/requests', description: 'Get all service requests' },
@@ -620,7 +703,6 @@
             },
             'itsm-problems': {
                 title: 'ITSM Problem Management',
-                icon: '🔍',
                 description: 'Root cause analysis, known error database, and problem-incident linking',
                 endpoints: [
                     { method: 'GET', path: '/itsm/problems', description: 'Get all problem records' },
@@ -639,7 +721,6 @@
             },
             'itsm-assets': {
                 title: 'ITSM Assets / CMDB',
-                icon: '🖥️',
                 description: 'Configuration management database, asset tracking, and lifecycle management',
                 endpoints: [
                     { method: 'GET', path: '/itsm/assets', description: 'Get all assets in the CMDB' },
@@ -656,7 +737,6 @@
             },
             'itsm-knowledge': {
                 title: 'ITSM Knowledge Base',
-                icon: '📚',
                 description: 'Knowledge articles, runbooks, and self-service documentation',
                 endpoints: [
                     { method: 'GET', path: '/itsm/knowledge', description: 'Get all knowledge base articles' },
@@ -677,7 +757,6 @@
             },
             'itsm-reports': {
                 title: 'ITSM Reports & Dashboard',
-                icon: '📊',
                 description: 'Operational dashboards, SLA compliance, and team performance analytics',
                 endpoints: [
                     { method: 'GET', path: '/itsm/dashboard/stats', description: 'Get aggregate dashboard statistics across all ITSM modules' },
@@ -693,7 +772,6 @@
             },
             'itsm-config': {
                 title: 'ITSM Configuration & Admin',
-                icon: '⚙️',
                 description: 'Teams, technicians, service catalog, policies, and SLA configurations',
                 endpoints: [
                     { method: 'GET', path: '/itsm/teams', description: 'Get all support teams and their members' },
@@ -718,8 +796,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
-            document.getElementById('api-url-display').textContent = API_BASE;
-
             // Load updatedBy map from localStorage
             const stored = localStorage.getItem('onboarding_updatedBy');
             if (stored) {
@@ -737,6 +813,12 @@
             setInterval(checkApiHealth, 30000);
         });
 
+        // Sidebar accordion toggle
+        function toggleNavGroup(headerEl) {
+            const group = headerEl.closest('.nav-group');
+            group.classList.toggle('collapsed');
+        }
+
         function setupNavigation() {
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
@@ -749,14 +831,20 @@
 
         function setActiveModule(moduleKey) {
             document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active', 'bg-orange', 'text-white');
-                item.classList.add('text-deepblue', 'hover:bg-zinc-100');
+                item.classList.remove('active', 'bg-zinc-100', 'text-zinc-900', 'font-semibold');
+                item.classList.add('text-zinc-600', 'hover:bg-zinc-50');
             });
 
             const activeItem = document.querySelector(`[data-module="${moduleKey}"]`);
             if (activeItem) {
-                activeItem.classList.remove('text-deepblue', 'hover:bg-zinc-100');
-                activeItem.classList.add('active', 'bg-orange', 'text-white');
+                activeItem.classList.remove('text-zinc-600', 'hover:bg-zinc-50');
+                activeItem.classList.add('active', 'bg-zinc-100', 'text-zinc-900', 'font-semibold');
+
+                // Auto-expand parent group if collapsed
+                const parentGroup = activeItem.closest('.nav-group');
+                if (parentGroup && parentGroup.classList.contains('collapsed')) {
+                    parentGroup.classList.remove('collapsed');
+                }
             }
 
             renderModule(moduleKey);
@@ -772,15 +860,12 @@
                 contentArea.innerHTML = module.content;
             } else if (module.endpoints) {
                 contentArea.innerHTML = `
-                    <div class="flex items-start gap-4 mb-8 pb-6 border-b border-zinc-200">
-                        <div class="text-5xl">${module.icon}</div>
-                        <div>
-                            <h2 class="text-3xl font-bold text-deepblue mb-2">${module.title}</h2>
-                            <p class="text-sm text-zinc-600">${module.description}</p>
-                        </div>
+                    <div class="mb-6 pb-5 border-b border-zinc-200">
+                        <h2 class="text-xl font-semibold text-zinc-900 mb-1">${module.title}</h2>
+                        <p class="text-sm text-zinc-500">${module.description}</p>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-3">
                         ${module.endpoints.map((endpoint, index) =>
                             createEndpointCard(endpoint, `${moduleKey}-${index}`)
                         ).join('')}
@@ -796,50 +881,53 @@
             }
         }
 
+        function toggleEndpointCard(cardId) {
+            const card = document.getElementById(`card-${cardId}`);
+            if (card) card.classList.toggle('expanded');
+        }
+
         function createEndpointCard(endpoint, cardId) {
-            const methodColors = {
-                'GET': 'bg-teal-100 text-teal-700 border-teal-200',
-                'POST': 'bg-green-100 text-green-700 border-green-200',
-                'PATCH': 'bg-orange-100 text-orange-700 border-orange-200',
-                'DELETE': 'bg-red-100 text-red-700 border-red-200'
-            };
-            const methodClass = methodColors[endpoint.method] || 'bg-zinc-100 text-zinc-700 border-zinc-200';
+            const methodLower = endpoint.method.toLowerCase();
             const hasBody = endpoint.body;
             const needsParam = endpoint.needsId;
             const isFiltered = endpoint.description.includes('client-side filter');
+            // Convert :id to {id} for display (Swagger style)
+            const displayPath = endpoint.path.replace(/:(\w+)/g, '{$1}');
 
             return `
-                <div class="rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-all p-6">
-                    <div class="flex items-center gap-3 mb-4 flex-wrap">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${methodClass}">${endpoint.method}</span>
-                        <span class="font-mono text-sm font-semibold text-deepblue">${endpoint.path}</span>
-                        ${isFiltered ? '<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-orange text-white">Client Filter</span>' : ''}
+                <div id="card-${cardId}" class="endpoint-card">
+                    <div class="endpoint-bar method-${methodLower}" onclick="toggleEndpointCard('${cardId}')">
+                        <span class="method-badge badge-${methodLower}">${endpoint.method}</span>
+                        <span class="endpoint-path">${displayPath}</span>
+                        <span class="endpoint-desc">${endpoint.description}</span>
+                        ${isFiltered ? '<span class="filter-tag">Filter</span>' : ''}
+                        <svg class="expand-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
-                    <p class="text-sm text-zinc-600 mb-4">${endpoint.description}</p>
+                    <div class="endpoint-body">
+                        ${needsParam ? `
+                            <div class="mb-3">
+                                <label class="block text-xs font-medium text-zinc-600 mb-1">${endpoint.needsId.toUpperCase()} ID:</label>
+                                <input type="text" id="param-${cardId}" placeholder="Auto-filled from API"
+                                    class="w-full h-9 rounded-md border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                            </div>
+                        ` : ''}
 
-                    ${needsParam ? `
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-deepblue mb-2">${endpoint.needsId.toUpperCase()} ID:</label>
-                            <input type="text" id="param-${cardId}" placeholder="Auto-filled from API"
-                                class="w-full h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
+                        ${hasBody ? `
+                            <div class="mb-3">
+                                <label class="block text-xs font-medium text-zinc-600 mb-1">Request Body (JSON):</label>
+                                <textarea id="body-${cardId}" rows="4"
+                                    class="w-full rounded-md border border-zinc-300 px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-teal-500 focus:border-transparent">${JSON.stringify(endpoint.body, null, 2)}</textarea>
+                            </div>
+                        ` : ''}
+
+                        <button id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${needsParam ? `'${needsParam}'` : 'false'}, ${!!hasBody})"
+                            class="w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-navy-700 text-white hover:bg-navy-800 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed">
+                            ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Send Request'}
+                        </button>
+
+                        <div id="response-${cardId}" class="mt-3 hidden">
+                            <div id="response-content-${cardId}" class="bg-zinc-900 rounded-md p-3 text-xs font-mono max-h-80 overflow-y-auto whitespace-pre-wrap text-zinc-200"></div>
                         </div>
-                    ` : ''}
-
-                    ${hasBody ? `
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-deepblue mb-2">Request Body (JSON):</label>
-                            <textarea id="body-${cardId}" rows="5"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">${JSON.stringify(endpoint.body, null, 2)}</textarea>
-                        </div>
-                    ` : ''}
-
-                    <button id="btn-${cardId}" onclick="testEndpoint('${cardId}', '${endpoint.method}', '${endpoint.path}', ${!!needsParam}, ${!!hasBody})"
-                        class="w-full rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed">
-                        ${isFiltered ? 'Test Endpoint (Returns All Data)' : 'Test Endpoint'} 🚀
-                    </button>
-
-                    <div id="response-${cardId}" class="mt-4 hidden">
-                        <div id="response-content-${cardId}" class="bg-lightblue rounded-lg border border-zinc-200 p-4 text-xs font-mono max-h-96 overflow-y-auto whitespace-pre-wrap"></div>
                     </div>
                 </div>
             `;
@@ -847,107 +935,107 @@
 
         function createLiveDataSection() {
             return `
-                <div class="mt-12 pt-8 border-t border-zinc-200">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold text-deepblue">📊 Live Onboarding Data</h3>
-                        <div class="flex gap-3">
+                <div class="mt-10 pt-8 border-t border-zinc-200">
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-lg font-semibold text-zinc-900">Live Onboarding Data</h3>
+                        <div class="flex gap-2">
                             <button onclick="resetOnboardingData()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-600 text-white hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-600">
-                                🔄 Reset to Defaults
+                                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200">
+                                Reset to Defaults
                             </button>
                             <button onclick="toggleGeneratePanel()"
                                 id="generate-toggle-btn"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
-                                ➕ Add Sample Records
+                                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors bg-navy-700 text-white hover:bg-navy-800">
+                                Add Sample Records
                             </button>
                             <button onclick="loadLiveOnboardingData()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-teal text-white hover:bg-teal-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal">
-                                🔄 Refresh Data
+                                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors bg-teal-500 text-white hover:bg-teal-600">
+                                Refresh Data
                             </button>
                         </div>
                     </div>
 
                     <!-- Generate Panel (hidden by default) -->
-                    <div id="generate-panel" class="hidden mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                    <div id="generate-panel" class="hidden mb-5 p-4 bg-teal-50 border border-teal-200 rounded-lg">
                         <div class="flex items-center gap-4 flex-wrap">
                             <div class="flex items-center gap-2">
-                                <label class="text-sm font-semibold text-deepblue">Status:</label>
-                                <select id="generate-status" class="h-10 rounded-lg border border-zinc-300 px-3 text-sm focus:ring-2 focus:ring-orange focus:border-transparent">
+                                <label class="text-xs font-medium text-zinc-700">Status:</label>
+                                <select id="generate-status" class="h-8 rounded-md border border-zinc-300 px-2 text-xs focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                                     <option value="pending" selected>Pending</option>
                                     <option value="in-progress">In Progress</option>
                                     <option value="completed">Completed</option>
                                 </select>
                             </div>
                             <div class="flex items-center gap-2">
-                                <label class="text-sm font-semibold text-deepblue">Count:</label>
+                                <label class="text-xs font-medium text-zinc-700">Count:</label>
                                 <input type="number" id="generate-count" value="5" min="1" max="20"
-                                    class="w-20 h-10 rounded-lg border border-zinc-300 px-3 text-sm text-center focus:ring-2 focus:ring-orange focus:border-transparent">
+                                    class="w-16 h-8 rounded-md border border-zinc-300 px-2 text-xs text-center focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                             </div>
                             <button onclick="generateOnboardingRecords()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-orange text-white hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange">
+                                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors bg-teal-500 text-white hover:bg-teal-600">
                                 Generate
                             </button>
                             <button onclick="toggleGeneratePanel()"
-                                class="rounded-lg px-4 py-2 font-semibold transition-colors bg-zinc-200 text-zinc-700 hover:bg-zinc-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-zinc-300">
+                                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200">
                                 Cancel
                             </button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="grid grid-cols-4 gap-3 mb-5">
                         <div id="filter-all" onclick="setStatusFilter('all')"
-                            class="rounded-xl bg-gradient-to-br from-teal-700 to-teal-800 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105 ring-4 ring-white">
-                            <div id="stat-total" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Total Workers</div>
+                            class="bg-white rounded-lg border-2 border-teal-500 p-3.5 text-center cursor-pointer transition-all hover:shadow-sm">
+                            <div id="stat-total" class="text-2xl font-bold text-navy-700 mb-0.5">-</div>
+                            <div class="text-[10px] text-zinc-400 uppercase tracking-wide">Total Workers</div>
                         </div>
                         <div id="filter-pending" onclick="setStatusFilter('pending')"
-                            class="rounded-xl bg-gradient-to-br from-neutral-400 to-neutral-500 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-pending" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Pending</div>
+                            class="bg-white rounded-lg border border-zinc-200 p-3.5 text-center cursor-pointer transition-all hover:shadow-sm">
+                            <div id="stat-pending" class="text-2xl font-bold text-zinc-600 mb-0.5">-</div>
+                            <div class="text-[10px] text-zinc-400 uppercase tracking-wide">Pending</div>
                         </div>
                         <div id="filter-in-progress" onclick="setStatusFilter('in-progress')"
-                            class="rounded-xl bg-gradient-to-br from-teal to-teal-600 text-white p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-in-progress" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">In Progress</div>
+                            class="bg-white rounded-lg border border-zinc-200 p-3.5 text-center cursor-pointer transition-all hover:shadow-sm">
+                            <div id="stat-in-progress" class="text-2xl font-bold text-teal-600 mb-0.5">-</div>
+                            <div class="text-[10px] text-zinc-400 uppercase tracking-wide">In Progress</div>
                         </div>
                         <div id="filter-completed" onclick="setStatusFilter('completed')"
-                            class="rounded-xl bg-gradient-to-br from-teal-200 to-teal-300 text-teal-900 p-4 text-center shadow-sm cursor-pointer transition-all hover:shadow-lg hover:scale-105">
-                            <div id="stat-completed" class="text-4xl font-bold mb-2">-</div>
-                            <div class="text-xs uppercase tracking-wide">Completed</div>
+                            class="bg-white rounded-lg border border-zinc-200 p-3.5 text-center cursor-pointer transition-all hover:shadow-sm">
+                            <div id="stat-completed" class="text-2xl font-bold text-emerald-600 mb-0.5">-</div>
+                            <div class="text-[10px] text-zinc-400 uppercase tracking-wide">Completed</div>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <div class="relative mb-2">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">🔍</span>
+                        <div class="relative mb-1.5">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             <input type="text" id="onboarding-search" placeholder="Search by name, ID, department, or updated by..."
                                 oninput="filterOnboardingTable()"
-                                class="w-full h-12 rounded-lg border border-zinc-300 bg-white pl-12 pr-12 text-sm focus:ring-2 focus:ring-teal focus:border-transparent focus-visible:ring-2 focus-visible:ring-offset-2">
+                                class="w-full h-10 rounded-md border border-zinc-300 bg-white pl-10 pr-10 text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                             <button id="clear-search-btn" onclick="clearSearch()"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-orange transition-colors hidden">✕</button>
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-teal-600 transition-colors hidden text-sm">&times;</button>
                         </div>
-                        <div id="search-results-info" class="text-xs text-zinc-600"></div>
+                        <div id="search-results-info" class="text-xs text-zinc-400"></div>
                     </div>
 
-                    <div class="rounded-xl border border-zinc-200 shadow-sm">
+                    <div class="bg-white rounded-lg border border-zinc-200 overflow-hidden">
                         <table class="w-full table-fixed">
-                            <thead class="bg-zinc-50">
+                            <thead class="bg-zinc-50 border-b border-zinc-200">
                                 <tr>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Employee ID</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[11%]">Name</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[14%]">Email</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Department</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Position</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Manager</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Status</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[8%]">Start Date</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[10%]">Updated By</th>
-                                    <th class="px-4 py-4 text-left text-xs font-bold text-zinc-700 uppercase tracking-wider w-[7%]">Source</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[7%]">ID</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[11%]">Name</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[14%]">Email</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[10%]">Department</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[10%]">Position</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[10%]">Manager</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[8%]">Status</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[8%]">Start Date</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[10%]">Updated By</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider w-[7%]">Source</th>
                                 </tr>
                             </thead>
-                            <tbody id="onboarding-table-body" class="divide-y divide-zinc-200">
+                            <tbody id="onboarding-table-body" class="divide-y divide-zinc-100">
                                 <tr>
-                                    <td colspan="10" class="px-4 py-8 text-center text-zinc-600">
+                                    <td colspan="10" class="px-3 py-8 text-center text-zinc-400 text-sm">
                                         <span class="loading"></span> Loading data...
                                     </td>
                                 </tr>
@@ -960,11 +1048,9 @@
 
         async function loadLiveOnboardingData(highlightId = null) {
             try {
-                // Use the json-server default endpoint for all onboarding records (at root level, not /api)
                 const onboardingRes = await axios.get(`${window.location.origin}/hr_onboardings`);
                 const onboardings = onboardingRes.data;
 
-                // Map the enriched data directly - no need for additional lookups
                 onboardingData = onboardings.map(onboarding => {
                     return {
                         id: onboarding.id,
@@ -982,7 +1068,6 @@
                     };
                 });
 
-                // Sort by lastUpdated descending (newest first)
                 onboardingData.sort((a, b) => {
                     const dateA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(0);
                     const dateB = b.lastUpdated ? new Date(b.lastUpdated) : new Date(0);
@@ -1001,10 +1086,8 @@
                 document.getElementById('stat-in-progress').textContent = stats.inProgress;
                 document.getElementById('stat-completed').textContent = stats.completed;
 
-                // Apply any active filters (status and/or search)
                 filterOnboardingTable();
 
-                // Handle highlighting if needed
                 if (highlightId) {
                     setTimeout(() => {
                         const row = document.getElementById(`row-${highlightId}`);
@@ -1014,18 +1097,18 @@
                     }, 100);
                 }
 
-                showNotification(`✅ Loaded ${onboardingData.length} onboarding records`);
+                showNotification(`Loaded ${onboardingData.length} onboarding records`);
 
             } catch (error) {
                 console.error('Error loading onboarding data:', error);
                 document.getElementById('onboarding-table-body').innerHTML = `
                     <tr>
-                        <td colspan="10" class="px-4 py-8 text-center text-red-600">
-                            ❌ Error loading data: ${escapeHtml(error.message)}
+                        <td colspan="10" class="px-3 py-8 text-center text-red-500 text-sm">
+                            Error loading data: ${escapeHtml(error.message)}
                         </td>
                     </tr>
                 `;
-                showNotification('❌ Failed to load data', 'error');
+                showNotification('Failed to load data', 'error');
             }
         }
 
@@ -1035,9 +1118,8 @@
             if (data.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="px-4 py-12 text-center">
-                            <div class="text-5xl mb-4 opacity-50">🔍</div>
-                            <p class="text-zinc-600">No results found</p>
+                        <td colspan="10" class="px-3 py-10 text-center">
+                            <p class="text-zinc-400 text-sm">No results found</p>
                         </td>
                     </tr>
                 `;
@@ -1045,27 +1127,27 @@
                 tableBody.innerHTML = data.map(record => {
                     const shouldHighlight = highlightId && record.id === highlightId;
                     const statusColors = {
-                        'pending': 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300',
-                        'in-progress': 'bg-teal-100 text-teal-800 ring-1 ring-teal-300',
-                        'completed': 'bg-green-100 text-green-800 ring-1 ring-green-300'
+                        'pending': 'bg-zinc-100 text-zinc-700',
+                        'in-progress': 'bg-teal-100 text-teal-700',
+                        'completed': 'bg-emerald-100 text-emerald-700'
                     };
-                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-800 ring-1 ring-zinc-300';
+                    const statusClass = statusColors[record.status] || 'bg-zinc-100 text-zinc-700';
 
                     return `
-                        <tr id="row-${record.id}" class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-orange bg-orange-50' : ''}">
-                            <td class="px-4 py-4 text-sm font-mono text-teal break-words">${escapeHtml(record.employeeId)}</td>
-                            <td class="px-4 py-4 text-sm text-deepblue break-words">${escapeHtml(record.workerName)}</td>
-                            <td class="px-4 py-4 text-sm break-words">${escapeHtml(record.email)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.department)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.position)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.manager)}</td>
-                            <td class="px-4 py-4 text-sm">
-                                <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${statusClass}">${escapeHtml(record.status)}</span>
+                        <tr id="row-${record.id}" class="hover:bg-zinc-50 transition-colors ${shouldHighlight ? 'ring-2 ring-teal-500 bg-teal-50' : ''}">
+                            <td class="px-3 py-3 text-xs font-mono text-teal-600 break-words">${escapeHtml(record.employeeId)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-900 break-words">${escapeHtml(record.workerName)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-600 break-words">${escapeHtml(record.email)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-600 break-words">${escapeHtml(record.department)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-600 break-words">${escapeHtml(record.position)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-600 break-words">${escapeHtml(record.manager)}</td>
+                            <td class="px-3 py-3">
+                                <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusClass}">${escapeHtml(record.status)}</span>
                             </td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${formatDate(record.startDate)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600 break-words">${escapeHtml(record.updatedBy)}</td>
-                            <td class="px-4 py-4 text-sm text-zinc-600">
-                                <span class="inline-flex items-center text-sm ${record.source === 'Legacy Portal' ? 'text-orange-600' : 'text-teal-600'}">${escapeHtml(record.source)}</span>
+                            <td class="px-3 py-3 text-xs text-zinc-500 break-words">${formatDate(record.startDate)}</td>
+                            <td class="px-3 py-3 text-xs text-zinc-500 break-words">${escapeHtml(record.updatedBy)}</td>
+                            <td class="px-3 py-3 text-xs">
+                                <span class="${record.source === 'Legacy Portal' ? 'text-amber-600' : 'text-teal-600'}">${escapeHtml(record.source)}</span>
                             </td>
                         </tr>
                     `;
@@ -1075,7 +1157,7 @@
                     setTimeout(() => {
                         const row = document.getElementById(`row-${highlightId}`);
                         if (row) {
-                            row.classList.remove('ring-2', 'ring-orange', 'bg-orange-50');
+                            row.classList.remove('ring-2', 'ring-teal-500', 'bg-teal-50');
                             row.classList.add('row-updated-fading');
                             setTimeout(() => {
                                 row.classList.remove('row-updated-fading');
@@ -1098,11 +1180,11 @@
             toast.classList.remove('hidden');
 
             if (type === 'error') {
-                toast.classList.remove('bg-teal');
+                toast.classList.remove('bg-teal-500');
                 toast.classList.add('bg-red-500');
             } else {
                 toast.classList.remove('bg-red-500');
-                toast.classList.add('bg-teal');
+                toast.classList.add('bg-teal-500');
             }
 
             setTimeout(() => {
@@ -1113,13 +1195,15 @@
         function setStatusFilter(status) {
             activeStatusFilter = status;
 
-            // Update visual indicator - add ring to active filter, remove from others
+            // Update visual indicator - add border highlight to active filter
             document.querySelectorAll('[id^="filter-"]').forEach(card => {
-                card.classList.remove('ring-4', 'ring-white');
+                card.classList.remove('border-2', 'border-teal-500');
+                card.classList.add('border', 'border-zinc-200');
             });
-            document.getElementById(`filter-${status}`).classList.add('ring-4', 'ring-white');
+            const active = document.getElementById(`filter-${status}`);
+            active.classList.remove('border', 'border-zinc-200');
+            active.classList.add('border-2', 'border-teal-500');
 
-            // Re-apply filters
             filterOnboardingTable();
         }
 
@@ -1137,17 +1221,14 @@
                 clearBtn.classList.add('hidden');
             }
 
-            // Apply both status filter and search filter
             let filteredData = onboardingData;
 
-            // First apply status filter
             if (activeStatusFilter !== 'all') {
                 filteredData = filteredData.filter(record => record.status === activeStatusFilter);
             }
 
             const statusFilteredCount = filteredData.length;
 
-            // Then apply search filter
             if (searchTerm) {
                 filteredData = filteredData.filter(record => {
                     return (
@@ -1189,7 +1270,6 @@
             }
         }
 
-        // Toggle the generate panel visibility
         function toggleGeneratePanel() {
             const panel = document.getElementById('generate-panel');
             const btn = document.getElementById('generate-toggle-btn');
@@ -1197,40 +1277,37 @@
             if (panel) {
                 if (panel.classList.contains('hidden')) {
                     panel.classList.remove('hidden');
-                    if (btn) btn.textContent = '✕ Close Panel';
+                    if (btn) btn.textContent = 'Close Panel';
                 } else {
                     panel.classList.add('hidden');
-                    if (btn) btn.textContent = '➕ Add Sample Records';
+                    if (btn) btn.textContent = 'Add Sample Records';
                 }
             }
         }
 
-        // Reset onboarding data to defaults
         async function resetOnboardingData() {
             if (!confirm('This will reset all onboarding records to the default 10 records. Continue?')) {
                 return;
             }
 
             try {
-                showNotification('🔄 Resetting data...');
+                showNotification('Resetting data...');
 
                 const response = await axios.post(`${API_BASE}/hr/onboarding/reset`);
 
                 if (response.data.success) {
-                    showNotification(`✅ Reset complete! ${response.data.count} records restored.`);
-                    // Reset filter to 'all' and reload data
+                    showNotification(`Reset complete! ${response.data.count} records restored.`);
                     activeStatusFilter = 'all';
                     await loadLiveOnboardingData();
                 } else {
-                    showNotification('❌ Reset failed: ' + response.data.error, 'error');
+                    showNotification('Reset failed: ' + response.data.error, 'error');
                 }
             } catch (error) {
                 console.error('Reset error:', error);
-                showNotification('❌ Reset failed: ' + (error.response?.data?.error || error.message), 'error');
+                showNotification('Reset failed: ' + (error.response?.data?.error || error.message), 'error');
             }
         }
 
-        // Generate new sample onboarding records
         async function generateOnboardingRecords() {
             const statusSelect = document.getElementById('generate-status');
             const countInput = document.getElementById('generate-count');
@@ -1239,7 +1316,7 @@
             const count = countInput ? parseInt(countInput.value) || 5 : 5;
 
             try {
-                showNotification(`🔄 Generating ${count} ${status} records...`);
+                showNotification(`Generating ${count} ${status} records...`);
 
                 const response = await axios.post(`${API_BASE}/hr/onboarding/generate`, {
                     status: status,
@@ -1247,16 +1324,15 @@
                 });
 
                 if (response.data.success) {
-                    showNotification(`✅ Generated ${response.data.generated} new record(s)!`);
-                    // Hide the panel and reload data
+                    showNotification(`Generated ${response.data.generated} new record(s)!`);
                     toggleGeneratePanel();
                     await loadLiveOnboardingData();
                 } else {
-                    showNotification('❌ Generation failed: ' + response.data.error, 'error');
+                    showNotification('Generation failed: ' + response.data.error, 'error');
                 }
             } catch (error) {
                 console.error('Generate error:', error);
-                showNotification('❌ Generation failed: ' + (error.response?.data?.error || error.message), 'error');
+                showNotification('Generation failed: ' + (error.response?.data?.error || error.message), 'error');
             }
         }
 
@@ -1271,7 +1347,7 @@
             }
 
             button.disabled = true;
-            button.innerHTML = '<span class="loading"></span> Testing...';
+            button.innerHTML = '<span class="loading"></span> Sending...';
             responseArea.classList.remove('hidden');
 
             let finalPath = path;
@@ -1326,10 +1402,9 @@
                 const responseTime = Math.round(performance.now() - startTime);
                 const dataLength = Array.isArray(response.data) ? response.data.length : 'Object';
 
-                responseContent.innerHTML = `✅ ${response.status} ${escapeHtml(response.statusText)}
-📊 Records: ${dataLength} | ⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
+                responseContent.innerHTML = `<span class="text-emerald-400">${response.status} ${escapeHtml(response.statusText)}</span>
+Records: ${dataLength} | ${responseTime}ms | ${new Date().toLocaleTimeString()}
 
-📋 Response Data:
 ${escapeHtml(JSON.stringify(response.data, null, 2))}`;
 
                 if (window.Prism) {
@@ -1364,15 +1439,14 @@ ${escapeHtml(JSON.stringify(response.data, null, 2))}`;
                 const responseTime = Math.round(performance.now() - startTime);
                 const status = error.response?.status || 'Network Error';
 
-                responseContent.innerHTML = `❌ Error: ${escapeHtml(String(status))}
-⚡ ${responseTime}ms | 🕐 ${new Date().toLocaleTimeString()}
+                responseContent.innerHTML = `<span class="text-red-400">Error: ${escapeHtml(String(status))}</span>
+${responseTime}ms | ${new Date().toLocaleTimeString()}
 
-🔍 Error Details:
 ${escapeHtml(error.response ? JSON.stringify(error.response.data, null, 2) : error.message)}`;
             }
 
             button.disabled = false;
-            button.innerHTML = 'TEST ENDPOINT 🚀';
+            button.innerHTML = 'Send Request';
         }
 
         async function getSampleId(type) {
@@ -1428,18 +1502,25 @@ ${escapeHtml(error.response ? JSON.stringify(error.response.data, null, 2) : err
 
                 apiHealth = { isOnline: true, responseTime: responseTime };
 
-                document.getElementById('connection-status').textContent = '●';
-                document.getElementById('connection-status').style.color = '#31d263';
+                const dot = document.getElementById('connection-dot');
+                const label = document.getElementById('connection-label');
+                dot.classList.remove('bg-zinc-300', 'bg-red-500');
+                dot.classList.add('bg-emerald-500');
+                label.textContent = 'Online';
+
                 document.getElementById('response-time').textContent = `${responseTime}ms`;
 
             } catch (error) {
                 apiHealth.isOnline = false;
-                document.getElementById('connection-status').textContent = '●';
-                document.getElementById('connection-status').style.color = '#f5222d';
+                const dot = document.getElementById('connection-dot');
+                const label = document.getElementById('connection-label');
+                dot.classList.remove('bg-zinc-300', 'bg-emerald-500');
+                dot.classList.add('bg-red-500');
+                label.textContent = 'Offline';
             }
         }
 
-        console.log('🚀 ACME Corp API Explorer - All 161 endpoints ready!');
+        console.log('ACME Corp API Explorer - All 161 endpoints ready');
     </script>
 </body>
 </html>
